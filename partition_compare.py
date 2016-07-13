@@ -12,7 +12,7 @@ Try to see why one might be better than the other.
 import math
 import argparse
 import numpy as np
-from pymetis import part_graph
+#from pymetis import part_graph
 from vtkHelper import saveScalarStructuredGridVTK_binary
 from vtkHelper import saveVelocityAndPressureVTK_binary
 from vtkHelper import saveStructuredPointsVTK_ascii
@@ -146,98 +146,98 @@ def set_adjacency(Nx,Ny,Nz,ex,ey,ez):
 
 
 
+if __name__=='main':
+    Ny_divs = 7
+    Re = 100.
+    # overall domain dimensions
+    Lx_p = 4. # "thickness"
+    Ly_p = 3. # "height"
+    #Lz_p = 10. # "length"
+    Lz_p = 14;
+    
+    
+    # describe brick dimensions and location
+    h_brick = 1./2.
+    #z_brick = 1./2.
+    z_brick=4.
+    x_brick = 1./2.
+    
+    Lo = h_brick;#characteristic length is block height
+    R=0; x_c = 0; z_c = 0;# not used.
+    
+    Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
+    Nx = math.ceil((Ny_divs-1)*(Lx_p/Lo))+1
+    Nz = math.ceil((Ny_divs-1)*(Lz_p/Lo))+1
+    nnodes = Nx*Ny*Nz
+    
+    # compute geometric data only once
+    x = np.linspace(0.,Lx_p,Nx).astype(np.float32);
+    y = np.linspace(0.,Ly_p,Ny).astype(np.float32);
+    z = np.linspace(0.,Lz_p,Nz).astype(np.float32);
+    numEl = Nx*Ny*Nz
+    Y,Z,X = np.meshgrid(y,z,x);
+    
+    XX = np.reshape(X,numEl)
+    YY = np.reshape(Y,numEl)
+    ZZ = np.reshape(Z,numEl)
+    
+    u = np.zeros_like(XX)
+    v = np.zeros_like(XX)
+    w = np.zeros_like(XX)
+    
+    """
+    Now that the geometry is formed, create the adjacency matrix and partition with
+    pymetis.
+    
+    Also, get a partition with my geometric partitioner and compare the two partitions
+    visually.  Perhaps get a surface to volume ratio for both partitions and from
+    that make a prediction as to the performance.
+    """
+    
+    ex = [0.,1.,-1.,0.,0.,0.,0.,1.,-1.,1.,-1.,1.,-1.,1.,-1.]
+    ey = [0.,0.,0.,1.,-1.,0.,0.,1.,1.,-1.,-1.,1.,1.,-1.,-1.]
+    ez = [0.,0.,0.,0.,0.,1.,-1.,1.,1.,1.,1.,-1.,-1.,-1.,-1.]
+    
+    print 'Total lattice points = %d.'%(Nx*Ny*Nz)
+    
+    print 'Setting adjacency list'
+    adjDict = set_adjacency(int(Nx),int(Ny),int(Nz),ex,ey,ez)
+    
+    N_parts = 24
 
-Ny_divs = 7
-Re = 100.
-# overall domain dimensions
-Lx_p = 4. # "thickness"
-Ly_p = 3. # "height"
-#Lz_p = 10. # "length"
-Lz_p = 14;
-
-
-# describe brick dimensions and location
-h_brick = 1./2.
-#z_brick = 1./2.
-z_brick=4.
-x_brick = 1./2.
-
-Lo = h_brick;#characteristic length is block height
-R=0; x_c = 0; z_c = 0;# not used.
-
-Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
-Nx = math.ceil((Ny_divs-1)*(Lx_p/Lo))+1
-Nz = math.ceil((Ny_divs-1)*(Lz_p/Lo))+1
-nnodes = Nx*Ny*Nz
-
-# compute geometric data only once
-x = np.linspace(0.,Lx_p,Nx).astype(np.float32);
-y = np.linspace(0.,Ly_p,Ny).astype(np.float32);
-z = np.linspace(0.,Lz_p,Nz).astype(np.float32);
-numEl = Nx*Ny*Nz
-Y,Z,X = np.meshgrid(y,z,x);
-
-XX = np.reshape(X,numEl)
-YY = np.reshape(Y,numEl)
-ZZ = np.reshape(Z,numEl)
-
-u = np.zeros_like(XX)
-v = np.zeros_like(XX)
-w = np.zeros_like(XX)
-
-"""
-Now that the geometry is formed, create the adjacency matrix and partition with
-pymetis.
-
-Also, get a partition with my geometric partitioner and compare the two partitions
-visually.  Perhaps get a surface to volume ratio for both partitions and from
-that make a prediction as to the performance.
-"""
-
-ex = [0.,1.,-1.,0.,0.,0.,0.,1.,-1.,1.,-1.,1.,-1.,1.,-1.]
-ey = [0.,0.,0.,1.,-1.,0.,0.,1.,1.,-1.,-1.,1.,1.,-1.,-1.]
-ez = [0.,0.,0.,0.,0.,1.,-1.,1.,1.,1.,1.,-1.,-1.,-1.,-1.]
-
-print 'Total lattice points = %d.'%(Nx*Ny*Nz)
-
-print 'Setting adjacency list'
-adjDict = set_adjacency(int(Nx),int(Ny),int(Nz),ex,ey,ez)
-
-N_parts = 24
-
-print 'Nx = %d ' % Nx
-print 'Ny = %d ' % Ny
-print 'Nz = %d ' % Nz
-
-print 'getting METIS partition'
-cuts, part_vert = part_graph(N_parts,adjDict)
-
-print 'getting part_advisor partition'
-px,py,pz = part_advisor(Nx,Ny,Nz,N_parts)
-
-# make sure all of these things are integers...
-Nx = int(Nx); Ny = int(Ny); Nz = int(Nz)
-px = int(px); py = int(py); pz = int(pz)
-part_vert_pa = set_geometric_partition(Nx,Ny,Nz,px,py,pz)
-
-part_vert1D = set_geometric_partition(Nx,Ny,Nz,1,1,N_parts)
-
-cuts_metis = count_cuts(adjDict,part_vert)
-cuts_pa = count_cuts(adjDict,part_vert_pa)
-cuts_1D = count_cuts(adjDict,part_vert1D)
-
-print 'cuts metis = %d ' % cuts_metis
-print 'cuts pa = %d ' % cuts_pa
-print 'cuts_1D = %d ' % cuts_1D
-print 'writing partition to VTK file'
-
-dims = [Nx,Ny,Nz]
-origin = [0,0,0]
-dx = x[1]-x[0]; dy = y[1]-y[0]; dz = z[1]-z[0];
-spacing = [dx,dy,dz]
-
-saveStructuredPointsVTK_ascii(part_vert,'partitions','partition_metis.vtk',dims,origin,spacing)
-saveStructuredPointsVTK_ascii(part_vert_pa,'parititions','partition_pa.vtk',dims,origin,spacing)
-saveStructuredPointsVTK_ascii(part_vert1D,'partitions','partition_1D.vtk',dims,origin,spacing)
-#saveVelocityAndPressureVTK_binary(part_vert,u,v,w,x,y,z,'partition.vtk',dims)
-#saveScalarStructuredGridVTK_binary(part_vert,'partition',XX,YY,ZZ,'partition.vtk',[Nx,Ny,Nz])
+    print 'Nx = %d ' % Nx
+    print 'Ny = %d ' % Ny
+    print 'Nz = %d ' % Nz
+    
+    print 'getting METIS partition'
+    cuts, part_vert = part_graph(N_parts,adjDict)
+    
+    print 'getting part_advisor partition'
+    px,py,pz = part_advisor(Nx,Ny,Nz,N_parts)
+    
+    # make sure all of these things are integers...
+    Nx = int(Nx); Ny = int(Ny); Nz = int(Nz)
+    px = int(px); py = int(py); pz = int(pz)
+    part_vert_pa = set_geometric_partition(Nx,Ny,Nz,px,py,pz)
+    
+    part_vert1D = set_geometric_partition(Nx,Ny,Nz,1,1,N_parts)
+    
+    cuts_metis = count_cuts(adjDict,part_vert)
+    cuts_pa = count_cuts(adjDict,part_vert_pa)
+    cuts_1D = count_cuts(adjDict,part_vert1D)
+    
+    print 'cuts metis = %d ' % cuts_metis
+    print 'cuts pa = %d ' % cuts_pa
+    print 'cuts_1D = %d ' % cuts_1D
+    print 'writing partition to VTK file'
+    
+    dims = [Nx,Ny,Nz]
+    origin = [0,0,0]
+    dx = x[1]-x[0]; dy = y[1]-y[0]; dz = z[1]-z[0];
+    spacing = [dx,dy,dz]
+    
+    saveStructuredPointsVTK_ascii(part_vert,'partitions','partition_metis.vtk',dims,origin,spacing)
+    saveStructuredPointsVTK_ascii(part_vert_pa,'parititions','partition_pa.vtk',dims,origin,spacing)
+    saveStructuredPointsVTK_ascii(part_vert1D,'partitions','partition_1D.vtk',dims,origin,spacing)
+    #saveVelocityAndPressureVTK_binary(part_vert,u,v,w,x,y,z,'partition.vtk',dims)
+    #saveScalarStructuredGridVTK_binary(part_vert,'partition',XX,YY,ZZ,'partition.vtk',[Nx,Ny,Nz])

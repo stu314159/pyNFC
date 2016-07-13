@@ -110,7 +110,7 @@ def factors(n):
     """
     return filter(lambda i: n % i == 0, range(1, n + 1))
 
-def part_advisor(Nx,Ny,Nz,num_procs):
+def part_advisor(Nx,Ny,Nz,num_procs, numTrials = 2000):
     """
     Nx = number of points in the x-direction
     Ny = number of points in the y-direction
@@ -127,7 +127,7 @@ def part_advisor(Nx,Ny,Nz,num_procs):
     
     bestScore = float("inf")
     bestPartition = None
-    numTrials = 4000 # not clear to me how big this should be...
+    #numTrials = 4000 # not clear to me how big this should be...
     
     for p in partitionfunc(len(p_facts),3):
         #print p
