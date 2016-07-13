@@ -53,8 +53,12 @@ class Lattice(object):
     def get_nnodes(self):
         return self.Nx*self.Ny*self.Nz
 
-    def initialize_adjDict(self):
-        self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+    def initialize_adjDict(self):  # just playing around here
+        if len(self.adjDict.keys()) != 0:
+            self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+
+    def add_Partition(self):
+        self.partition = Partitioner(self.Nx, self.Ny, self.Nz
 
 
 
