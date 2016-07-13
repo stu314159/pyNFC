@@ -5,6 +5,6 @@
 
 import FluidChannel as fc
 import pyNFC 
-
+from mpi4py import MPI
 
 
