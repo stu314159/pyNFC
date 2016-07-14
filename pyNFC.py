@@ -4,6 +4,9 @@ Implementation file for pyNFC library module -- under development
 
 """
 
+import numpy as np
+from vtkHelper import saveStructuredPointsVTK_ascii as writeVTKpt
+
 class NFC_LBM_partition(object):
     """
     each partition has:
@@ -25,7 +28,82 @@ class NFC_LBM_partition(object):
         else:
             self.lattice = D3Q27Lattice(self.Nx, self.Ny, self.Nz)
 
+        self.numSpd = self.lattice.get_numSpd()
         print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
+        self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
+        self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
+        self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
+        self.load_parts()
+        self.gen_adjacency()
+        self.write_partition_vtk()
+
+
+    def get_XYZ_index(self,g_nd): # this will depend upon a global geometry structure like a brick
+        z = g_nd/(self.Nx*self.Ny)
+        y = (g_nd - z*self.Nx*self.Ny)/self.Nx
+        x = (g_nd - z*self.Nx*self.Ny - y*self.Nx)
+        return (x,y,z)
+
+    def get_gInd_XYZ(self,x,y,z): # this will give global index given x, y, z index
+        return x+y*self.Nx + z*self.Nx*self.Ny
+
+    def gen_adjacency(self):
+        """
+          create an adjacency matrix holding the global node numbers of 
+          neighbors to all lattice points
+        """
+        self.adjacency = np.empty((self.num_local_nodes,self.numSpd),dtype=np.int32) # create the array
+        
+        # do this the bone-headed way:
+        for k in self.global_to_local.keys():
+            (x,y,z) = self.get_XYZ_index(k)
+            for spd in range(self.numSpd):
+                x_t = x + self.ex[spd]; x_t = x_t % self.Nx;
+                y_t = y + self.ey[spd]; y_t = y_t % self.Ny;
+                z_t = z + self.ez[spd]; z_t = z_t % self.Nz;
+                self.adjacency[self.global_to_local[k],spd] = self.get_gInd_XYZ(x_t,y_t,z_t)
+                
+                
+
+
+
+
+    def load_parts(self):
+        """
+           read parts.lbm and get a list of lattice points that I own.
+           create a global-to-local and local-to-global map of lattice points
+        """
+
+        self.parts = np.empty([self.Nx*self.Ny*self.Nz],dtype=np.int32);
+        self.local_to_global = {}; self.global_to_local = {};
+        indx = 0;  #initialize the global counter
+        self.num_local_nodes = 0
+        with open('parts.lbm') as parts:
+            for p in parts:
+                p_i = np.int32(p); # convert to np.int32
+                self.parts[indx] = p_i # store in my local array (will need to use this repeatedly)
+                if p_i == self.rank: # if this lp is assigned to the current rank:
+                    self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
+                    self.global_to_local[indx] = self.num_local_nodes; # put in global-to-local dictionary
+                    self.num_local_nodes+=1
+                indx+=1 # either way increment the global counter
+
+
+    def write_partition_vtk(self):
+        """
+          output a vtk file to visualize partition body and halo points
+        """
+        partition_body = np.zeros(self.Nx*self.Ny*self.Nz);
+        pp = np.where(self.parts == self.rank)
+        partition_body[pp] = (self.rank + 1)*100
+        vtk_filename = 'partition_map' + str(self.rank) + '.vtk'
+        dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
+        origin = [0., 0., 0.]; 
+        spacing = [1., 1., 1.];
+        writeVTKpt(partition_body,'partition',vtk_filename,dims,origin,spacing)
+                
+
+
 
 class Lattice(object):
     """
