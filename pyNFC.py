@@ -121,6 +121,9 @@ class NFC_LBM_partition(object):
         partition_body = np.zeros(self.Nx*self.Ny*self.Nz);
         pp = np.where(self.parts == self.rank)
         partition_body[pp] = (self.rank + 1)*100
+        # also signify boundary nodes and halo nodes for each rank
+        partition_body[self.halo_nodes_g] += (self.rank+1)*10
+        partition_body[self.boundary_nodes_g] -= (self.rank+1)*10
         vtk_filename = 'partition_map' + str(self.rank) + '.vtk'
         dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
         origin = [0., 0., 0.]; 
