@@ -35,7 +35,7 @@ from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
 # Read data from params.lbm
 input_file_name = 'params.lbm'
 input_data = open(input_file_name,'r')
-latticeType = int(input_data.readline())
+latticeType = str(input_data.readline().rstrip())
 Num_ts = int(input_data.readline())
 ts_rep_freq = int(input_data.readline())
 Warmup_ts = int(input_data.readline())
