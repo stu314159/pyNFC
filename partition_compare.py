@@ -12,7 +12,7 @@ Try to see why one might be better than the other.
 import math
 import argparse
 import numpy as np
-#from pymetis import part_graph
+from pymetis import part_graph
 from vtkHelper import saveScalarStructuredGridVTK_binary
 from vtkHelper import saveVelocityAndPressureVTK_binary
 from vtkHelper import saveStructuredPointsVTK_ascii

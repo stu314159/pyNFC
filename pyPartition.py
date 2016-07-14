@@ -11,6 +11,7 @@ import numpy as np
 import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
+from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
 
 class Lattice(object):
     """
@@ -27,7 +28,10 @@ class Lattice(object):
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz
         self.ex = []; self.ey = []; self.ez = []
         self.bbSpd = []; self.w = []; 
-        self.adjDict = {};
+        #self.initialize_adjDict(); # just do it.
+        self.adjDict = None
+        self.cutSize = None  # must ask for cut size after partitioning
+        self.partition = None # must give extra inputs for the partition
 
     def get_dims(self):
         return [self.Nx, self.Ny, self.Nz]
@@ -53,14 +57,35 @@ class Lattice(object):
     def get_nnodes(self):
         return self.Nx*self.Ny*self.Nz
 
-    def initialize_adjDict(self):  # just playing around here
-        if len(self.adjDict.keys()) != 0:
-            self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
-
-    def add_Partition(self):
-        self.partition = Partitioner(self.Nx, self.Ny, self.Nz
+    def initialize_adjDict(self):  
+        
+        self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
 
 
+    def compute_cutSize(self):
+        if self.adjDict == None: # verify that the adjacency list has been initialized
+            raise ValueError('adjacency list must be initialized before getting cut size')
+        else:
+            self.cutSize = pc.count_cuts(self.adjDict,self.partition.get_partition()) #yeah -- looks overly complicated
+
+        return self.cutSize
+
+    def get_cutSize(self):
+        return self.cutSize
+
+    def set_Partition(self, numParts = 1, numTrials = 2000, style = '1D'):
+        """
+          numParts = number of partitions
+          numTrials = number of random 3D partition permutations should be tested
+          style = ['1D', '3D','metis']
+
+        """
+        self.partition = Partitioner(self.Nx, self.Ny, self.Nz, 
+                                     numParts = numParts, adjList = self.adjDict,
+                                     numTrials = numTrials,
+                                     style = style)
+
+    
 
 class D3Q15Lattice(Lattice):
     """
@@ -98,7 +123,7 @@ class D3Q27Lattice(Lattice):
     """
     def __init__(self,Nx,Ny,Nz):
         super(D3Q27Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex =  [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]
+        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]
         self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]
         self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]
         self.bbSpd = [0,14,15,16,17,18,19,20,21,22,23,24,25,26,
@@ -113,25 +138,37 @@ class Partitioner:
      the class that will do the work to select and obtain a partition
     """
 
-    def __init__(self,Nx,Ny,Nz,numParts,numTrials = 2000):
+    def __init__(self,Nx,Ny,Nz,numParts,adjList,numTrials = 2000, style = '1D'):
         """
           Nx - number of lattice points in the x-direction (int)
           Ny - number of lattice points in the y-direction (int)
           Nz - number of lattice points in the z-direction (int)
           numParts - number of partitions to form (int)
+          adjList - adjacency list (dictionary)
           numTrials - number of attempts that the randomized
                       partition advisor should use to find 
                       a good partitioning
+          style - '1D', '3D','metis' partition style
                       
         """
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz
         self.numParts = numParts
         self.numTrials = numTrials
-        print "calling part advisor"
-        [self.px,self.py,self.pz] = ps.part_advisor(self.Nx,self.Ny,self.Nz,self.numParts,self.numTrials)
-        print "setting geometric partition"
-        self.part_vert = pc.set_geometric_partition(self.Nx, self.Ny, self.Nz,
+        self.style = style
+        self.adjList = adjList
+
+        if style=='1D':
+            self.px = 1; self.py = 1; self.pz = self.numParts;
+        elif style=='3D':
+            [self.px,self.py,self.pz] = ps.part_advisor(self.Nx,self.Ny,self.Nz,
+                                                        self.numParts,
+                                                        self.numTrials)
+                    
+        if (style == '1D' or style == '3D'):  
+            self.part_vert = pc.set_geometric_partition(self.Nx, self.Ny, self.Nz,
                                                 self.px, self.py, self.pz)
+        else:
+          [cuts,  self.part_vert] = part_graph(self.numParts,self.adjList) 
 
 
 
@@ -142,36 +179,73 @@ class Partitioner:
 
         return self.part_vert[:]
 
-
+    
     def get_partition_sizes(self):
         """
           give access to partition sizes
         """
         return [self.px, self.py, self.pz]
 
-    def write_vtk(self):
+    def write_vtk(self,file_name = 'partition_pa.vtk'):
         """
           write out a vtk file to allow visualization of the partitioning
         """
         dims = [self.Nx, self.Ny, self.Nz]
         origin = [0., 0., 0.]
         spacing = [0.1, 0.1, 0.1] #<-- no need for this to correspond to actual physical spacing
-        writeVTK(self.part_vert,'partitions','partition_pa.vtk',dims,origin,spacing)
+        writeVTK(self.part_vert,'partitions',file_name,dims,origin,spacing)
 
 
+    def write_partition(self):
+        """
+         write the partition information to parts.lbm
+        """
+        parts = open('parts.lbm','w')
+        for p in self.part_vert:
+            parts.write('%d \n'% p)
 
+        parts.close()
    
         
 
 
 if __name__=="__main__":
     """
-      put testing code here
+      put testing code here  
     """
-    lat = D3Q15Lattice(5,5,5)
-    print "ex = ", lat.get_ex()
-    print "num_spd = ", lat.get_numSpd()
+    #Nx = 447; Ny = 447; Nz = 838;from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+    Nx = 50; Ny = 50; Nz = 250;
+    print "nnodes = %g" % (Nx*Ny*Nz)
+    lat15 = D3Q15Lattice(Nx, Ny, Nz);
+    print "initializing the adjacency list"
+    lat15.initialize_adjDict();
+    numProcs = 64;
+    print "setting the partition"
+    lat15.set_Partition(numParts = numProcs,numTrials = 8000,style = '3D')
 
-    lat2 = D3Q19Lattice(5,5,5)
-    print "num_spd D3Q19 = ", lat2.get_ex()
-    print "num_spd D3Q19 = ", lat2.get_numSpd()
+    print "compute cut size"
+    lat15.compute_cutSize()
+    print "cut size = %g" % lat15.get_cutSize()
+
+    print "writing vtk file for partition"
+    lat15.partition.write_vtk('partition_pa.vtk')
+
+    print "re-set partition for 1D geometric"
+    lat15.set_Partition(numParts = numProcs,style='1D')
+    print "getting new cut size"
+    lat15.compute_cutSize()
+    print "cut size for 1D geometric partition = %g" % lat15.get_cutSize()
+
+    print "writing vtk file for 1D partition"
+    lat15.partition.write_vtk('partition_1D.vtk')
+
+    print "re-set partition for metis"
+    lat15.set_Partition(numParts= numProcs, style = 'metis')
+    lat15.compute_cutSize()
+    print "cut size for metis partition = %g" % lat15.get_cutSize()
+    print "writing vtk file for metis partition"
+    lat15.partition.write_vtk('partition_metis.vtk')
+
+    print "writing metis partition to disk"
+    lat15.partition.write_partition()
+    

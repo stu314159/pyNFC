@@ -51,15 +51,15 @@ class Partition:
         # obviously, change this measure if it proves crappy.
         
         # estimate surface to volume ratio of the typical partition
-        #vol = lx*ly*lz
-        #surf = 2.*lx*ly + 2.*lx*lz + 2.*lz*ly
-        #self.score = surf/vol
-        
         vol = lx*ly*lz
         surf = 2.*lx*ly + 2.*lx*lz + 2.*lz*ly
-        interior = vol - surf
+        self.score = surf/vol
         
-        self.score = (surf/interior)
+        #vol = lx*ly*lz
+        #surf = 2.*lx*ly + 2.*lx*lz + 2.*lz*ly
+        #interior = vol - surf
+        
+        #self.score = (surf/interior)
         
         
         
