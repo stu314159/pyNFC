@@ -35,6 +35,7 @@ class NFC_LBM_partition(object):
         self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
         self.load_parts()
         self.gen_adjacency()
+        self.get_halo_nodes()
         self.write_partition_vtk()
 
 
@@ -65,6 +66,30 @@ class NFC_LBM_partition(object):
                 
                 
 
+
+    def get_halo_nodes(self):
+        """
+         Identify global node numbers that must be incorporated onto the halo.
+         Identify the stream-out speeds associated with each halo node and the partition
+         each halo node belongs in.
+         Also compute and record the stream-in speeds for each associated halo node.
+         By convention, the halo nodes will be sorted by incoming/outgoing partition
+         and by increasing global node number
+         
+        """
+        self.halo_nodes_g = []   # global node number of all lattice points in this partition's halo
+        self.boundary_nodes_g = [] # global node number of all lattice points on this partition's boundary 
+        for l_nd in range(self.num_local_nodes):
+            for spd in range(1,self.numSpd): # spd 0 is always in the local partition
+                tgt_node_g = self.adjacency[l_nd,spd];
+                tgt_part = self.parts[tgt_node_g];
+                if tgt_part != self.rank: # the target node is in a different partition
+                    self.halo_nodes_g.append(tgt_node_g)
+                    self.boundary_nodes_g.append(self.local_to_global[l_nd])
+        # when done looping through adjacency list, remove repeated elements of the list.
+        self.halo_nodes_g = np.unique(self.halo_nodes_g)
+        self.boundary_nodes_g = np.unique(self.boundary_nodes_g)
+            
 
 
 

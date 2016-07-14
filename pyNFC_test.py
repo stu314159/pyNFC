@@ -43,5 +43,4 @@ p_conv_fact = float(input_data.readline())
 input_data.close()
 
 # each process initialize their partition:
-#lattice_type = 'D3Q27'
 myPart = pyNFC.NFC_LBM_partition(rank,size,Nx,Ny,Nz,lattice_type)
