@@ -31,6 +31,7 @@ sphereChannel.write_mat_file(geom_file_stub)
 
 # set simulation parameters (as used in genInput.py):
 geom_filename = geom_file_stub + '.mat'
+lattice_type = 'D3Q27'
 Num_ts = 100
 ts_rep_freq = 10
 Warmup_ts = 0
@@ -147,7 +148,7 @@ if run_dec!='n' and run_dec!='N':
     print 'Ok! Cross your fingers!!'
     # write the input file
     params = open('params.lbm','w')
-    params.write('%d \n'%1) # lattice selection (keep.  We might actually use this)
+    params.write('%s \n'% lattice_type) # lattice selection (keep.  We might actually use this)
     
     params.write('%d \n'%Num_ts)
     params.write('%d \n'%ts_rep_freq)
@@ -183,14 +184,22 @@ else:
 # add the partitioning work here; just use metis; if you can make it work with metis,
 # it also should "just work" for geometric partitioning schemes
 
-lat15 = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
+if lattice_type == 'D3Q15':
+   lat = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
+elif lattice_type == 'D3Q19':
+   lat = pp.D3Q19Lattice(int(Nx),int(Ny),int(Nz))
+else:
+   lat = pp.D3Q27Lattice(int(Nx),int(Ny),int(Nz))
+
+
+#lat15 = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
 print "initializing the adjacency list"
-lat15.initialize_adjDict();
+lat.initialize_adjDict();
 print "creating metis partition"
-lat15.set_Partition(numParts= numProcs, style = 'metis')
-lat15.compute_cutSize()
-print "cut size for metis partition = %g" % lat15.get_cutSize()
+lat.set_Partition(numParts= numProcs, style = 'metis')
+lat.compute_cutSize()
+print "cut size for metis partition = %g" % lat.get_cutSize()
 print "writing vtk file for metis partition"
-lat15.partition.write_vtk('partition_metis.vtk')
+lat.partition.write_vtk('partition_metis.vtk')
 print "writing metis partition to disk"
-lat15.partition.write_partition()
+lat.partition.write_partition()

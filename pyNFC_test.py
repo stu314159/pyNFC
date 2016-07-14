@@ -21,7 +21,7 @@ import FluidChannel as fc
 # Read data from params.lbm
 input_file_name = 'params.lbm'
 input_data = open(input_file_name,'r')
-latticeType = int(input_data.readline())
+lattice_type = str(input_data.readline().rstrip()) # perhaps I can actually use this as intended now
 Num_ts = int(input_data.readline())
 ts_rep_freq = int(input_data.readline())
 Warmup_ts = int(input_data.readline())
@@ -43,5 +43,5 @@ p_conv_fact = float(input_data.readline())
 input_data.close()
 
 # each process initialize their partition:
-lattice_type = 'D3Q27'
+#lattice_type = 'D3Q27'
 myPart = pyNFC.NFC_LBM_partition(rank,size,Nx,Ny,Nz,lattice_type)

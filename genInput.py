@@ -18,6 +18,7 @@ Restart_flag = 1, this is a restart; an appropriate restart data file must be av
 Some suggested problem inputs:
 
 Geom_name: geometry_description.mat
+lattice_type: D3Q15
 Num_ts: 10000
 ts_rep_freq: 1000
 Warmup_ts: 0
@@ -37,6 +38,7 @@ followed by a comparatively short number of time steps during which you collect 
 # build input parser
 parser = argparse.ArgumentParser(prog='genInput.py',description='Process LBM input arguments')
 parser.add_argument('geom_filename',type=str)
+parser.add_argument('lattice_type',type=str)
 parser.add_argument('Num_ts',type=int)
 parser.add_argument('ts_rep_freq',type=int)
 parser.add_argument('Warmup_ts',type=int)
@@ -50,6 +52,7 @@ args = parser.parse_args()
 
 # assign to required variables
 geom_filename = args.geom_filename
+lattice_type = args.lattice_type
 Num_ts = args.Num_ts
 ts_rep_freq = args.ts_rep_freq
 Warmup_ts = args.Warmup_ts
@@ -164,7 +167,7 @@ if run_dec!='n' and run_dec!='N':
     print 'Ok! Cross your fingers!!'
     # write the input file
     params = open('params.lbm','w')
-    params.write('%d \n'%1) # lattice selection (keep.  We might actually use this)
+    params.write('%s \n'% lattice_type) # lattice selection (keep.  We might actually use this)
     
     params.write('%d \n'%Num_ts)
     params.write('%d \n'%ts_rep_freq)
