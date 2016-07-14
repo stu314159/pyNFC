@@ -7,7 +7,6 @@
 """
 
 import FluidChannel as fc
-import pyNFC 
 import pyPartition as pp
 from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
 import numpy as np
