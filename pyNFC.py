@@ -34,35 +34,43 @@ class NFC_Halo_Data_Organizer(object):
         #else:
         #    self.halo_data[gnn] = [spd]
 
-    def get_lists(self):
+    def make_lists(self): # only need be done once
         """
           once all data is inserted, this function will return
           two lists: the gnn for outgoing data to this rank; and
                      the vector of speeds for the outgoing data.
         """
-        gnn_list = []
-        spd_list = []
+        self.gnn_list = []
+        self.spd_list = []
         sorted_keys = sorted(self.halo_data.keys()); # sort the gnn keys
         for k in sorted_keys:
             values = self.halo_data[k]; values = sorted(values) # sort the spds for each gnn
             for v in values:
-                gnn_list.append[k]
-                spd_list.append[v]
+                self.gnn_list.append(k)
+                self.spd_list.append(v)
 
-        return gnn_list[:], spd_list[:]
-  
+        
+
+    def make_lists_local(self,global_to_local):
+        """
+         make and store local node number version of lists (but keep gnn ordering) -- be careful
+        """
+        self.lnn_list = []
+        for g in self.gnn_list: # preserve order?
+            self.lnn_list.append(global_to_local[g]) #preserve order?
+        
 
 
 class NFC_Part_Communicator(object):
     """
      class designed to handle the communication tasks for an NFC_LBM_partition
     """
-    def __init__(self,rank,size,comm,comm_list_out):
+    def __init__(self,rank,size,comm,comm_list_gnn, comm_list_spd):
         """
           rank - which MPI process
           size - number of MPI processes
           comm - MPI communicator
-          comm_list - list of tuples containing all data to be exchanged
+          comm_list_gnn - list of global node numbers
           
 
           Each partition needs to know:
@@ -223,8 +231,16 @@ class NFC_LBM_partition(object):
         #iterate through communication list to put the communication items into the correct HDO
         for c in self.communication_list_out:
             self.HDO_out_dict[c[0]].insert(c[1],c[2])
+        
         for c in self.communication_list_in:
             self.HDO_in_dict[c[0]].insert(c[1],c[2])
+
+        # now construct global and local node lists required for data book-keeping
+        for ngb in ngb_list:
+            self.HDO_out_dict[ngb].make_lists()
+            self.HDO_out_dict[ngb].make_lists_local(self.global_to_local)
+            self.HDO_in_dict[ngb].make_lists()
+            self.HDO_in_dict[ngb].make_lists_local(self.global_to_local)
             
        
 
