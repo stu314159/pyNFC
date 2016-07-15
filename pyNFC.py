@@ -141,7 +141,7 @@ class NFC_LBM_partition(object):
         self.get_halo_nodes() # halo nodes are all global node numbers - local node number lists also produced
         self.get_interior_nodes() # local node numbers of all interior nodes produced
         self.allocate_data_arrays() # all global data arrays that will be required for the LBM simulation
-        #self.initialize_node_lists() # snl, inl and onl lists from pre-processed data
+        self.initialize_node_lists() # snl, inl and onl lists from pre-processed data
 
 
        
@@ -149,6 +149,42 @@ class NFC_LBM_partition(object):
         self.report_statistics() # say something about yourself
         # comment out when you are done visualizing the partitions 
         self.write_partition_vtk() # visualize each partition interior, boundary and halo
+
+    def initialize_node_lists(self):
+        """
+         load pre-processor data into inl, onl and snl lists
+        """    
+        inl_filename = "inl.lbm"; 
+        
+        inl_f = open(inl_filename,'r');
+        numINL = int(inl_f.readline());
+        for i in range(numINL):
+            gIN = int(inl_f.readline());
+            if gIN in self.global_to_local:
+               lIN = self.global_to_local[gIN]
+               self.inl[lIN] = 1
+        inl_f.close()
+
+        onl_filename = "onl.lbm";
+        onl_f = open(onl_filename,'r');
+        numONL = int(onl_f.readline());
+        for i in range(numONL):
+            gOUT = int(onl_f.readline());
+            if gOUT in self.global_to_local:
+                lOUT = self.global_to_local[gOUT]
+                self.onl[lOUT] = 1
+        onl_f.close()
+
+        snl_filename = "snl.lbm";
+        snl_f = open(snl_filename,'r');
+        numSNL = int(snl_f.readline());
+        for i in range(numSNL):
+            gSNL = int(snl_f.readline());
+            if gSNL in self.global_to_local:
+                lSNL = self.global_to_local[gSNL]
+                self.snl[lSNL] = 1
+        snl_f.close()
+
 
     def report_statistics(self):
         """
