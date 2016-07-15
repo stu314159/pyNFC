@@ -90,7 +90,14 @@ class NFC_LBM_partition(object):
         # when done looping through adjacency list, remove repeated elements of the list.
         self.halo_nodes_g = np.unique(self.halo_nodes_g)
         self.boundary_nodes_g = np.unique(self.boundary_nodes_g)
-            
+
+        """
+         now that I know how many halo nodes there are, I need to assign local node numbers to them.
+    
+         also, need to make lists with local node numbers for interior and boundary nodes
+
+        """
+        self.num_halo_nodes = len(self.halo_nodes_g);
 
 
 
@@ -101,12 +108,15 @@ class NFC_LBM_partition(object):
         """
 
         self.parts = np.empty([self.Nx*self.Ny*self.Nz],dtype=np.int32);
+        self.part_sizes = np.zeros(self.size,dtype=np.int32); # so each process knows how many
+        # lattice points are local to each partition -- particularly for offseting MPI write operations.
         self.local_to_global = {}; self.global_to_local = {};
         indx = 0;  #initialize the global counter
         self.num_local_nodes = 0
         with open('parts.lbm') as parts:
             for p in parts:
                 p_i = np.int32(p); # convert to np.int32
+                self.part_sizes[p_i]+= 1 # increment the counter for particular partition num_local_nodes
                 self.parts[indx] = p_i # store in my local array (will need to use this repeatedly)
                 if p_i == self.rank: # if this lp is assigned to the current rank:
                     self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
@@ -114,6 +124,12 @@ class NFC_LBM_partition(object):
                     self.num_local_nodes+=1
                 indx+=1 # either way increment the global counter
 
+        
+
+       
+
+        
+        
 
     def write_partition_vtk(self):
         """
