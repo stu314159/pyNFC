@@ -109,6 +109,9 @@ class NFC_LBM_partition(object):
         """
           rank - MPI rank for this partition
           size - MPI size for MPI COMM WORLD
+          comm - MPI communicator
+          Nx, Ny, Nz so the partition has info about the overall
+                     lattice structure
           lattice_type - ['D3Q15' | 'D3Q19' | 'D3Q27']
         """
         self.rank = rank; self.size = size; self.comm = comm # MPI variabes
@@ -127,9 +130,15 @@ class NFC_LBM_partition(object):
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
         self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
         self.bb_Spd = np.array(self.lattice.get_bbSpd(),dtype=np.int32);
+
+        # these functions must be called in sequence to ensure the appropriate
+        # member data has been constructed
         self.load_parts()
         self.gen_adjacency() # adjacency list using global node numbers
-        self.get_halo_nodes() # halo nodes are all global node numbers
+        self.get_halo_nodes() # halo nodes are all global node numbers - local node number lists also produced
+        self.get_interior_nodes() # local node numbers of all interior nodes produced
+
+        # comment out when you are done visualizing the partitions 
         self.write_partition_vtk() # visualize each partition interior, boundary and halo
 
 
@@ -159,6 +168,19 @@ class NFC_LBM_partition(object):
                 self.adjacency[self.global_to_local[k],spd] = self.get_gInd_XYZ(x_t,y_t,z_t)
                 
                 
+
+    def get_interior_nodes(self):
+        """
+         generate a sorted list of all nodes not on the boundary or halo.
+         assumes that self.get_halo_nodes(self) has already been called by the
+         constructor so that halo and boundary node lists have already been formed
+
+        """
+        all_nodes = np.arange(self.total_nodes,dtype=np.int32)
+        not_interior = np.union1d(np.array(self.bnl_l,dtype=np.int32),
+                                  np.array(self.hnl_l,dtype=np.int32))
+
+        self.int_l = np.setxor1d(all_nodes,not_interior) # self.int_l = interior node list in local node numbers
 
 
     def get_halo_nodes(self):
@@ -190,11 +212,15 @@ class NFC_LBM_partition(object):
                     self.communication_list_in.append((tgt_part,self.local_to_global[l_nd],self.bb_Spd[spd]))
         # when done looping through adjacency list, remove repeated elements of the list.
         self.halo_nodes_g = np.unique(self.halo_nodes_g)  # this should be sorted too.
+        
+
         self.boundary_nodes_g = np.unique(self.boundary_nodes_g) 
         self.bnl_l = [] # boundary node list.  Local node number of all boundary nodes.
         for bn in self.boundary_nodes_g:
             self.bnl_l.append(self.global_to_local[bn])
         self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
+        
+        
 
         """
          now that I know how many halo nodes there are, I need to assign local node numbers to them.
@@ -213,7 +239,11 @@ class NFC_LBM_partition(object):
             self.global_to_local[hn] = ln;
 
         #print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
-
+       
+        # make a list of the local node numbers of all halo nodes
+        self.hnl_l = []  # halo node list.  (in case I use a different scheme for locally numbering halo nodes)
+        for hn in self.halo_nodes_g:
+            self.hnl_l.append(self.global_to_local[hn])
 
         """
           Let's work here to sort out the commmunication requirement.  The NFC_Part_Communicator will handle the
