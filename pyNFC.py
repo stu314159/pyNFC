@@ -88,8 +88,8 @@ class NFC_LBM_partition(object):
                     self.halo_nodes_g.append(tgt_node_g)
                     self.boundary_nodes_g.append(self.local_to_global[l_nd])
         # when done looping through adjacency list, remove repeated elements of the list.
-        self.halo_nodes_g = np.unique(self.halo_nodes_g)
-        self.boundary_nodes_g = np.unique(self.boundary_nodes_g)
+        self.halo_nodes_g = np.unique(self.halo_nodes_g)  # this should be sorted too.
+        self.boundary_nodes_g = np.unique(self.boundary_nodes_g) 
 
         """
          now that I know how many halo nodes there are, I need to assign local node numbers to them.
@@ -98,6 +98,17 @@ class NFC_LBM_partition(object):
 
         """
         self.num_halo_nodes = len(self.halo_nodes_g);
+        self.total_nodes = self.num_local_nodes + self.num_halo_nodes;
+
+
+        # assign local node numbers to the halo nodes and add to the local_to_global map
+        ln = self.num_local_nodes
+        for hn in self.halo_nodes_g:
+            self.local_to_global[ln] = hn;
+            self.global_to_local[hn] = ln;
+
+        print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
+       
 
 
 
