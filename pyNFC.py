@@ -17,6 +17,40 @@ class NFC_Halo_Data_Organizer(object):
           constructor
         """
         self.ngb_rank = ngb_rank
+        self.halo_data = {}
+
+    def get_ngb_rank():
+        return self.ngb_rank
+
+    def insert(self,gnn,spd):
+        """
+         data insertion function:
+         gnn - global node number of outgoing/incoming halo data
+         spd - speed of outgoing/incoming halo data
+        """
+        self.halo_data.setdefault(gnn,[]).append(spd) # more pythonic
+        #if gnn in self.halo_data.keys():
+        #    self.halo_data[gnn].append(spd)
+        #else:
+        #    self.halo_data[gnn] = [spd]
+
+    def get_lists(self):
+        """
+          once all data is inserted, this function will return
+          two lists: the gnn for outgoing data to this rank; and
+                     the vector of speeds for the outgoing data.
+        """
+        gnn_list = []
+        spd_list = []
+        sorted_keys = sorted(self.halo_data.keys()); # sort the gnn keys
+        for k in sorted_keys:
+            values = self.halo_data[k]; values = sorted(values) # sort the spds for each gnn
+            for v in values:
+                gnn_list.append[k]
+                spd_list.append[v]
+
+        return gnn_list[:], spd_list[:]
+  
 
 
 class NFC_Part_Communicator(object):
@@ -181,9 +215,17 @@ class NFC_LBM_partition(object):
         """
         ngb_list = np.unique(ngb_list)# this will also be sorted.
         #print "rank %d has %d neighbors: %s" % (self.rank,len(ngb_list), str(ngb_list))
-        self.HDO_list = [] # halo data organizer list
+        self.HDO_out_dict = {} # halo data organizer dictionary for outgoing
+        self.HDO_in_dict = {} # halo data organizer dictionary for incoming data
         for ngb in ngb_list:
-            self.HDO_list.append(NFC_Halo_Data_Organizer(ngb))
+            self.HDO_out_dict[ngb] = NFC_Halo_Data_Organizer(ngb)
+            self.HDO_in_dict[ngb] = NFC_Halo_Data_Organizer(ngb)
+        #iterate through communication list to put the communication items into the correct HDO
+        for c in self.communication_list_out:
+            self.HDO_out_dict[c[0]].insert(c[1],c[2])
+        for c in self.communication_list_in:
+            self.HDO_in_dict[c[0]].insert(c[1],c[2])
+            
        
 
 
