@@ -6,19 +6,20 @@ Implementation file for pyNFC library module -- under development
 
 import numpy as np
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTKpt
+from mpi4py import MPI
 
 class NFC_LBM_partition(object):
     """
     each partition has:
          
     """
-    def __init__(self,rank,size,Nx,Ny,Nz,lattice_type='D3Q15'):
+    def __init__(self,rank,size,comm,Nx,Ny,Nz,lattice_type='D3Q15'):
         """
           rank - MPI rank for this partition
           size - MPI size for MPI COMM WORLD
           lattice_type - ['D3Q15' | 'D3Q19' | 'D3Q27']
         """
-        self.rank = rank; self.size = size;
+        self.rank = rank; self.size = size; self.comm = comm # MPI variabes
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz; # all partitions need to know the global domain structure
         
         if lattice_type == 'D3Q15':
