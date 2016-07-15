@@ -58,6 +58,12 @@ class NFC_Halo_Data_Organizer(object):
         self.lnn_list = []
         for g in self.gnn_list: # preserve order?
             self.lnn_list.append(global_to_local[g]) #preserve order?
+
+    def count_data_members(self):
+        """
+          report the number of items to be sent from this partition
+        """
+        return len(self.gnn_list)
         
 
 
@@ -138,9 +144,32 @@ class NFC_LBM_partition(object):
         self.get_halo_nodes() # halo nodes are all global node numbers - local node number lists also produced
         self.get_interior_nodes() # local node numbers of all interior nodes produced
 
+       
+        
+        self.report_statistics() # say something about yourself
         # comment out when you are done visualizing the partitions 
         self.write_partition_vtk() # visualize each partition interior, boundary and halo
 
+    def report_statistics(self):
+        """
+          gather and report a collection of interesting (?) statistics:
+              - number of local nodes
+              - number of interior nodes and boundary nodes
+              - number of ngb partitions
+              - number of f_alphas to communicate in total
+
+        """
+
+        num_local_nodes = self.num_local_nodes
+        num_interior_nodes = len(self.int_l)
+        num_boundary_nodes = len(self.bnl_l)
+        num_nbg = len(self.HDO_out_dict)
+        num_dat = 0
+        for key in self.HDO_out_dict:
+            num_dat+=self.HDO_out_dict[key].count_data_members()
+
+        print "rank %d has %d local nodes, %d interior nodes, %d boundary nodes, %d neighbors and %d data elements to commmunicate"%(self.rank, num_local_nodes, num_interior_nodes, num_boundary_nodes, num_nbg, num_dat)
+    
 
     def get_XYZ_index(self,g_nd): # this will depend upon a global geometry structure like a brick
         z = g_nd/(self.Nx*self.Ny)
@@ -188,7 +217,7 @@ class NFC_LBM_partition(object):
          Identify global node numbers that must be incorporated onto the halo.
          Identify the stream-out speeds associated with each halo node and the partition
          each halo node belongs in.
-         Also compute and record the stream-in speeds for each associated halo node.
+         Also compute and record the stream-in speeds for each associateself.halo_nodes_gd halo node.
          By convention, the halo nodes will be sorted by incoming/outgoing partition
          and by increasing global node number
          
@@ -219,8 +248,6 @@ class NFC_LBM_partition(object):
         for bn in self.boundary_nodes_g:
             self.bnl_l.append(self.global_to_local[bn])
         self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
-        
-        
 
         """
          now that I know how many halo nodes there are, I need to assign local node numbers to them.
@@ -231,12 +258,17 @@ class NFC_LBM_partition(object):
         self.num_halo_nodes = len(self.halo_nodes_g);
         self.total_nodes = self.num_local_nodes + self.num_halo_nodes;
 
-
-        # assign local node numbers to the halo nodes and add to the local_to_global map
+        """
+        assign local node numbers to the halo nodes and add to the local_to_global map
+        assume halo nodes are given local node numbers in order of increasing global node
+        number starting after all local node numbers.  This may not be optimal, so be 
+        prepared to change it.
+        """
         ln = self.num_local_nodes
         for hn in self.halo_nodes_g:
             self.local_to_global[ln] = hn;
             self.global_to_local[hn] = ln;
+            ln+=1 # increment the local node counter so halo nodes are assigned unique numbers
 
         #print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
        
