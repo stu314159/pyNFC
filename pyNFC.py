@@ -140,6 +140,9 @@ class NFC_LBM_partition(object):
         self.gen_adjacency() # adjacency list using global node numbers
         self.get_halo_nodes() # halo nodes are all global node numbers - local node number lists also produced
         self.get_interior_nodes() # local node numbers of all interior nodes produced
+        self.allocate_data_arrays() # all global data arrays that will be required for the LBM simulation
+        #self.initialize_node_lists() # snl, inl and onl lists from pre-processed data
+
 
        
         
@@ -351,6 +354,17 @@ class NFC_LBM_partition(object):
         spacing = [1., 1., 1.];
         writeVTKpt(partition_body,'partition',vtk_filename,dims,origin,spacing)
                 
+
+
+    def allocate_data_arrays(self):
+        """
+         allocate arrays for LBM simulation
+        """
+        self.fEven = np.empty([self.total_nodes , self.numSpd],dtype=np.float32)
+        self.fOdd = np.empty_like(self.fEven)
+        self.snl = np.zeros([self.total_nodes],dtype=np.int32);
+        self.inl = np.zeros([self.total_nodes],dtype=np.int32);
+        self.onl = np.zeros([self.total_nodes],dtype=np.int32);
 
 
 
