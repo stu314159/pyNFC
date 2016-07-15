@@ -8,6 +8,56 @@ import numpy as np
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTKpt
 from mpi4py import MPI
 
+class NFC_Halo_Data_Organizer(object):
+    """
+     collect and organize how halo data will be organized prior to communication
+    """
+    def __init__(self,ngb_rank):
+        """
+          constructor
+        """
+        self.ngb_rank = ngb_rank
+
+
+class NFC_Part_Communicator(object):
+    """
+     class designed to handle the communication tasks for an NFC_LBM_partition
+    """
+    def __init__(self,rank,size,comm,comm_list_out):
+        """
+          rank - which MPI process
+          size - number of MPI processes
+          comm - MPI communicator
+          comm_list - list of tuples containing all data to be exchanged
+          
+
+          Each partition needs to know:
+            a) the list of MPI ranks it needs to exchange halo data with;
+            b) for each exchange pair the # of data elements to be exchanged;
+            
+            Of course each process also has to manage the local/global node numbers
+            for which each data element is bound as well as the associated speed.
+
+            (for both incoming and outgoing data) as well as what order it will arrive in.
+            by convention: 
+
+                a) each partition will send data to neighboring partitions in order of 
+                   increasing global lattice point number; and
+                b) for lattice points receiving multiple speeds from the SAME neighbor partition,
+                   the data will be provided by increasing spd number.
+
+            how this is accomplished, and which classes accomplish this, is the design question
+            yet to be answered.
+          
+        """
+        self.rank = rank; self.size = size; self.comm = comm;
+        self.comm_list = comm_list;
+        self.lattice = lattice;
+        
+
+
+
+
 class NFC_LBM_partition(object):
     """
     each partition has:
@@ -34,6 +84,7 @@ class NFC_LBM_partition(object):
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
         self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
+        self.bb_Spd = np.array(self.lattice.get_bbSpd(),dtype=np.int32);
         self.load_parts()
         self.gen_adjacency() # adjacency list using global node numbers
         self.get_halo_nodes() # halo nodes are all global node numbers
@@ -80,19 +131,28 @@ class NFC_LBM_partition(object):
         """
         self.halo_nodes_g = []   # global node number of all lattice points in this partition's halo
         self.boundary_nodes_g = [] # global node number of all lattice points on this partition's boundary 
-        self.communication_list = [] # list of tuples containing partition, global LP and speed that must be
+        self.communication_list_out = [] # list of tuples containing partition, global LP and speed that must be
         # transfered from the HALO to neighboring partitions
+        self.communication_list_in = [] # list of tuples containing origin partition, global LP and speed 
+        # that is transfered from neighboring lattice point into boundary nodes of the partition.
+        ngb_list = [] # local list of neighbors for constructing the list of NFC_Halo_Data_Organizer objects
         for l_nd in range(self.num_local_nodes):
             for spd in range(1,self.numSpd): # spd 0 is always in the local partition
                 tgt_node_g = self.adjacency[l_nd,spd];
                 tgt_part = self.parts[tgt_node_g];
                 if tgt_part != self.rank: # the target node is in a different partition
+                    ngb_list.append(tgt_part)
                     self.halo_nodes_g.append(tgt_node_g)
                     self.boundary_nodes_g.append(self.local_to_global[l_nd])
-                    self.communication_list.append((tgt_part,tgt_node_g,spd))
+                    self.communication_list_out.append((tgt_part,tgt_node_g,spd))
+                    self.communication_list_in.append((tgt_part,self.local_to_global[l_nd],self.bb_Spd[spd]))
         # when done looping through adjacency list, remove repeated elements of the list.
         self.halo_nodes_g = np.unique(self.halo_nodes_g)  # this should be sorted too.
         self.boundary_nodes_g = np.unique(self.boundary_nodes_g) 
+        self.bnl_l = [] # boundary node list.  Local node number of all boundary nodes.
+        for bn in self.boundary_nodes_g:
+            self.bnl_l.append(self.global_to_local[bn])
+        self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
 
         """
          now that I know how many halo nodes there are, I need to assign local node numbers to them.
@@ -111,6 +171,19 @@ class NFC_LBM_partition(object):
             self.global_to_local[hn] = ln;
 
         #print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
+
+
+        """
+          Let's work here to sort out the commmunication requirement.  The NFC_Part_Communicator will handle the
+          actual comms, but this object needs to know the details of how to order the outgoing data and how
+          to distribute the incoming data.
+           
+        """
+        ngb_list = np.unique(ngb_list)# this will also be sorted.
+        #print "rank %d has %d neighbors: %s" % (self.rank,len(ngb_list), str(ngb_list))
+        self.HDO_list = [] # halo data organizer list
+        for ngb in ngb_list:
+            self.HDO_list.append(NFC_Halo_Data_Organizer(ngb))
        
 
 
