@@ -31,7 +31,8 @@ sphereChannel.write_mat_file(geom_file_stub)
 
 # set simulation parameters (as used in genInput.py):
 geom_filename = geom_file_stub + '.mat'
-lattice_type = 'D3Q15'
+lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
+partition_style = 'metis' # [ '1D' | '3D' | 'metis']
 Num_ts = 100
 ts_rep_freq = 10
 Warmup_ts = 0
@@ -195,11 +196,12 @@ else:
 #lat15 = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
 print "initializing the adjacency list"
 lat.initialize_adjDict();
-print "creating metis partition"
-lat.set_Partition(numParts= numProcs, style = 'metis')
+print "creating %s partition for %d processes" % (partition_style, numProcs)
+lat.set_Partition(numParts= numProcs, style = partition_style)
 lat.compute_cutSize()
-print "cut size for metis partition = %g" % lat.get_cutSize()
-print "writing vtk file for metis partition"
-lat.partition.write_vtk('partition_metis.vtk')
-print "writing metis partition to disk"
+print "cut size for %s partition = %g" % (partition_style, lat.get_cutSize())
+print "writing vtk file for %s partition" % partition_style
+partition_vtk_filename = "partition_%s.vtk" % partition_style
+lat.partition.write_vtk(partition_vtk_filename)
+print "writing %s partition to disk" % partition_style
 lat.partition.write_partition()

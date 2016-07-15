@@ -29,10 +29,7 @@ class NFC_Halo_Data_Organizer(object):
          spd - speed of outgoing/incoming halo data
         """
         self.halo_data.setdefault(gnn,[]).append(spd) # more pythonic
-        #if gnn in self.halo_data.keys():
-        #    self.halo_data[gnn].append(spd)
-        #else:
-        #    self.halo_data[gnn] = [spd]
+        
 
     def make_lists(self): # only need be done once
         """
@@ -380,6 +377,7 @@ class Lattice(object):
     def get_ex(self):
         return self.ex[:]
 
+
     def get_ey(self):
         return self.ey[:]
 
@@ -410,6 +408,7 @@ class D3Q15Lattice(Lattice):
         self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1]
         self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,1,1,-1,-1]
         self.ez = [0,0,0,0,0,1,-1,1,1,1,1,-1,-1,-1,-1]
+
         self.bbSpd = [0,2,1,4,3,6,5,14,13,12,11,10,9,8,7]
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
 	       1./72.,1./72.,1./72.,1./72.,
