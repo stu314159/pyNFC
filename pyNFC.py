@@ -30,7 +30,7 @@ class NFC_LBM_partition(object):
             self.lattice = D3Q27Lattice(self.Nx, self.Ny, self.Nz)
 
         self.numSpd = self.lattice.get_numSpd()
-        print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
+        #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
         self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
@@ -80,6 +80,8 @@ class NFC_LBM_partition(object):
         """
         self.halo_nodes_g = []   # global node number of all lattice points in this partition's halo
         self.boundary_nodes_g = [] # global node number of all lattice points on this partition's boundary 
+        self.communication_list = [] # list of tuples containing partition, global LP and speed that must be
+        # transfered from the HALO to neighboring partitions
         for l_nd in range(self.num_local_nodes):
             for spd in range(1,self.numSpd): # spd 0 is always in the local partition
                 tgt_node_g = self.adjacency[l_nd,spd];
@@ -87,6 +89,7 @@ class NFC_LBM_partition(object):
                 if tgt_part != self.rank: # the target node is in a different partition
                     self.halo_nodes_g.append(tgt_node_g)
                     self.boundary_nodes_g.append(self.local_to_global[l_nd])
+                    self.communication_list.append((tgt_part,tgt_node_g,spd))
         # when done looping through adjacency list, remove repeated elements of the list.
         self.halo_nodes_g = np.unique(self.halo_nodes_g)  # this should be sorted too.
         self.boundary_nodes_g = np.unique(self.boundary_nodes_g) 
@@ -107,7 +110,7 @@ class NFC_LBM_partition(object):
             self.local_to_global[ln] = hn;
             self.global_to_local[hn] = ln;
 
-        print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
+        #print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
        
 
 
