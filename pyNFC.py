@@ -35,9 +35,9 @@ class NFC_LBM_partition(object):
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
         self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
         self.load_parts()
-        self.gen_adjacency()
-        self.get_halo_nodes()
-        self.write_partition_vtk()
+        self.gen_adjacency() # adjacency list using global node numbers
+        self.get_halo_nodes() # halo nodes are all global node numbers
+        self.write_partition_vtk() # visualize each partition interior, boundary and halo
 
 
     def get_XYZ_index(self,g_nd): # this will depend upon a global geometry structure like a brick
@@ -121,10 +121,10 @@ class NFC_LBM_partition(object):
         """
         partition_body = np.zeros(self.Nx*self.Ny*self.Nz);
         pp = np.where(self.parts == self.rank)
-        partition_body[pp] = (self.rank + 1)*100
+        partition_body[pp] = 100 # set interior nodes for each partition
         # also signify boundary nodes and halo nodes for each rank
-        partition_body[self.halo_nodes_g] += (self.rank+1)*10
-        partition_body[self.boundary_nodes_g] -= (self.rank+1)*10
+        partition_body[self.halo_nodes_g] = 200 # halo nodes have max value for partition
+        partition_body[self.boundary_nodes_g] = 150 # boundary nodes --- intermediate to interior and halo
         vtk_filename = 'partition_map' + str(self.rank) + '.vtk'
         dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
         origin = [0., 0., 0.]; 
