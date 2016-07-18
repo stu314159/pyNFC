@@ -125,8 +125,17 @@ class NFC_LBM_partition(object):
             # update macroscopic boundary if on inlet or outlet
             if self.inl[lp] == 1:
                 uz = self.u_bc; ux = 0.; uy = 0.;
-                #rho = self.lattice.set_inlet_velocity_bc_macro(f,uz)
-                
+                rho = self.lattice.set_inlet_velocity_bc_macro(f,uz)
+            if self.onl[lp] == 1:
+                rho = self.rho_lbm; ux = 0.; uy = 0.;
+                uz = self.lattice.set_outlet_density_bc_macro(f,rho)
+
+            if self.snl[lp] == 1:
+                ux = 0.; uy = 0.; uz = 0.;
+
+            # if not a solid node, compute equilibrium
+            if self.snl[lp] != 1:
+                f_eq = self.lattice.compute_equilibrium(f,rho,[ux, uy, uz])
            
 
            

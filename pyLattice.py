@@ -55,7 +55,20 @@ class Lattice(object):
         uy = np.dot(f,self.ey)/rho;
         uz = np.dot(f,self.ez)/rho;
         return rho, ux, uy, uz  
-    
+
+    def compute_equilibrium(self,f,rho,u):
+        """
+           given f, rho and u (vector - all macro velocities)
+           return f_eq
+
+        """
+        numSpd = self.get_numSpd();
+        ux = u[0]; uy = u[1]; uz = u[2];
+        f_eq = np.zeros(numSpd,dtype = np.float32)
+        for spd in numSpd:
+             cu = 3.*(self.ex[spd]*ux + self.ey[spd]*uy + self.ez[spd]*uz)
+             f_eq[spd] = self.w[spd]*rho*(1. + cu + 0.5*(cu*cu) - 
+                           3./2.*(ux*ux + uy*uy + uz*uz))    
 
 class D3Q15Lattice(Lattice):
     """
@@ -83,6 +96,13 @@ class D3Q15Lattice(Lattice):
 
         #rho = (1./(1.-uz))*(2.0*(f6+f11+f12+f13+f14)+(f0+f1+f2+f3+f4)); <-- C code
         rho = (1./(1. - uz))*(2.*(f[6]+f[11]+f[12]+f[13]+f[14])+(f[0]+f[1]+f[2]+f[3]+f[4])
+
+    def set_outlet_density_bc_macro(self,f,rho): 
+        """
+          compute macroscopic uz for density outlet
+          bc using Regularized BC methods
+        """
+        uz = -1. + (1./rho)*(2.*(f[6]+f[11]+f[12]+f[13]+f[14])+(f[0]+f[1]+f[2]+f[3]+f[4])
     
 
 
@@ -107,6 +127,13 @@ class D3Q19Lattice(Lattice):
         #rho = (1./(1.-uz))*(2.0*(f6+f13+f14+f17+f18)+(f0+f1+f2+f3+f4+f7+f8+f9+f10));
         rho = (1./(1.-uz))*(2.*(f[6]+f[13]+f[14]+f[17]+f[18])+(f[0]+f[1]+f[2]+f[3]+f[4]+f[7]+f[8]+f[9]+f[10]))
 
+    def set_outlet_density_bc_macro(self,f,rho): 
+        """
+          compute macroscopic uz for density outlet
+          bc using Regularized BC methods
+        """
+        uz = -1. + (1./rho)*(2.*(f[6]+f[13]+f[14]+f[17]+f[18])+(f[0]+f[1]+f[2]+f[3]+f[4]+f[7]+f[8]+f[9]+f[10]))
+
    
 class D3Q27Lattice(Lattice):
     """
@@ -125,4 +152,13 @@ class D3Q27Lattice(Lattice):
 
     def set_inlet_velocity_bc_macro(self,f,uz):
         rho = (1./(1. - uz))*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
+                             (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18])
+
+
+    def set_outlet_density_bc_macro(self,f,rho): 
+        """
+          compute macroscopic uz for density outlet
+          bc using Regularized BC methods
+        """
+        uz = -1. + (1./rho)*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
                              (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18])
