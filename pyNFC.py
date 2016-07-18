@@ -124,8 +124,9 @@ class NFC_LBM_partition(object):
 
             # update macroscopic boundary if on inlet or outlet
             if self.inl[lp] == 1:
-                uz = self.u_bc;
+                uz = self.u_bc; ux = 0.; uy = 0.;
                 #rho = self.lattice.set_inlet_velocity_bc_macro(f,uz)
+                
            
 
            
@@ -195,7 +196,7 @@ class NFC_LBM_partition(object):
         return (x,y,z)
 
     def get_gInd_XYZ(self,x,y,z): # this will give global index given x, y, z index
-        return x+y*self.Nx + z*self.Nx*self.Ny
+        return x+y*self.Nx + z*self.Nx*self.Nyrho = (1./(1.-uz))*(2.0*(f6+f11+f12+f13+f14)+(f0+f1+f2+f3+f4));
 
     def gen_adjacency(self):
         """
