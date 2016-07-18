@@ -95,7 +95,7 @@ class NFC_Part_Communicator(object):
             yet to be answered.
           
         """
-        self.rank = rank; self.size = size; self.comm = comm;
+        self.rank = rank; self.size = size; self.comm = comm;lattice_type='D3Q15',
         self.comm_list = comm_list;
         self.lattice = lattice;
         
@@ -108,7 +108,7 @@ class NFC_LBM_partition(object):
     each partition has:
          
     """
-    def __init__(self,rank,size,comm,Nx,Ny,Nz,lattice_type='D3Q15'):
+    def __init__(self,rank,size,comm,Nx,Ny,Nz,rho_lbm,u_bc,omega,Cs,lattice_type='D3Q15',):
         """
           rank - MPI rank for this partition
           size - MPI size for MPI COMM WORLD
@@ -116,9 +116,18 @@ class NFC_LBM_partition(object):
           Nx, Ny, Nz so the partition has info about the overall
                      lattice structure
           lattice_type - ['D3Q15' | 'D3Q19' | 'D3Q27']
+
+          rho_lbm - scaled density for outlet boundary condition
+          u_bc - scaled velocity for inlet boundary condition
+          omega - relaxation constant for LBM collisions
+          Cs - parameter for turbulence model
         """
         self.rank = rank; self.size = size; self.comm = comm # MPI variabes
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz; # all partitions need to know the global domain structure
+
+        # LBM simulation parameters
+        self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
+        
         
         if lattice_type == 'D3Q15':
             self.lattice = D3Q15Lattice(self.Nx, self.Ny, self.Nz)
@@ -348,6 +357,8 @@ class NFC_LBM_partition(object):
         """
            read parts.lbm and get a list of lattice points that I own.
            create a global-to-local and local-to-global map of lattice points
+
+           these maps are later updated to include halo nodes associated with each partition
         """
 
         self.parts = np.empty([self.Nx*self.Ny*self.Nz],dtype=np.int32);
@@ -363,7 +374,7 @@ class NFC_LBM_partition(object):
                 self.parts[indx] = p_i # store in my local array (will need to use this repeatedly)
                 if p_i == self.rank: # if this lp is assigned to the current rank:
                     self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
-                    self.global_to_local[indx] = self.num_local_nodes; # put in global-to-local dictionary
+                    self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
                     self.num_local_nodes+=1
                 indx+=1 # either way increment the global counter
 
@@ -396,14 +407,14 @@ class NFC_LBM_partition(object):
         """
          allocate arrays for LBM simulation
         """
+        # some thought/testing should be done regarding the shape of this data array.
         self.fEven = np.empty([self.total_nodes , self.numSpd],dtype=np.float32)
         self.fOdd = np.empty_like(self.fEven)
         self.snl = np.zeros([self.total_nodes],dtype=np.int32);
         self.inl = np.zeros([self.total_nodes],dtype=np.int32);
         self.onl = np.zeros([self.total_nodes],dtype=np.int32);
 
-
-
+      
 class Lattice(object):
     """
        define the layout and adjacency of the LBM lattice
