@@ -8,6 +8,8 @@ import numpy as np
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTKpt
 from mpi4py import MPI
 
+import pyLattice as pl
+
 class NFC_Halo_Data_Organizer(object):
     """
      collect and organize how halo data will be organized prior to communication
@@ -130,11 +132,11 @@ class NFC_LBM_partition(object):
         
         
         if lattice_type == 'D3Q15':
-            self.lattice = D3Q15Lattice(self.Nx, self.Ny, self.Nz)
+            self.lattice = pl.D3Q15Lattice(self.Nx, self.Ny, self.Nz)
         elif lattice_type == 'D3Q19':
-            self.lattice = D3Q19Lattice(self.Nx, self.Ny, self.Nz)
+            self.lattice = pl.D3Q19Lattice(self.Nx, self.Ny, self.Nz)
         else:
-            self.lattice = D3Q27Lattice(self.Nx, self.Ny, self.Nz)
+            self.lattice = pl.D3Q27Lattice(self.Nx, self.Ny, self.Nz)
 
         self.numSpd = self.lattice.get_numSpd()
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
@@ -155,12 +157,73 @@ class NFC_LBM_partition(object):
 
         self.initialize_data_arrays() # fEven, fOdd - in future, include restart data load.
 
+        
+
 
        
         
         self.report_statistics() # say something about yourself
         # comment out when you are done visualizing the partitions 
         self.write_partition_vtk() # visualize each partition interior, boundary and halo
+
+
+    def take_LBM_timestep(self,isEven):
+        """
+          carry out the LBM process for a time step.  Orchestrate processing of all
+          lattice points and communicating data between MPI partitions.
+        """
+        pass
+        # process boundary lattice points
+        #--> uncomment when ready to test #self.process_lattice_points(isEven,self.bnl_l)
+
+        # extract halo data
+
+
+        # initiate communication of halo data
+
+
+        # process interior lattice points
+        self.process_lattice_points(isEven,self.int_l)
+
+        # be sure MPI communication is done
+
+
+        # load incoming data to appropriate array
+
+
+        # done.
+        
+
+    def process_lattice_points(self,isEven,lp_list):
+        """
+          carry out the LBM process for a list of lattice points
+          isEven - boolean to indicate if this is an even time step or odd time step
+          lp_list - list of lattice points to be processed (e.g. interior lattice points or boundary lattice points)
+
+        """
+
+        # point fIn and fOut to the right data arrays
+        if isEven:
+            fIn = self.fEven; fOut = self.fOdd
+        else:
+            fIn = self.fOdd; fOut = self.fEven
+
+        # initially, implement exactly as you would for C/C++
+        # goal: be sure to get the correct answer; worry about performance later
+
+        for lp in lp_list:
+            f = fIn[lp,:]
+            # get macroscopic data
+            rho,ux,uy,uz = self.lattice.compute_macroscopic_data(f)
+
+            # update macroscopic boundary if on inlet or outlet
+            if self.inl[lp] == 1:
+                uz = self.u_bc;
+                #rho = self.lattice.set_inlet_velocity_bc_macro(f,uz)
+           
+
+           
+
 
     def initialize_node_lists(self):
         """
@@ -425,94 +488,6 @@ class NFC_LBM_partition(object):
             self.fEven[idx,:] = self.rho_lbm * self.w
             self.fOdd[idx,:] = self.rho_lbm * self.w
 
-class Lattice(object):
-    """
-       define the layout and adjacency of the LBM lattice
-    """
-    def __init__(self,Nx,Ny,Nz):
-        """
-            basic constructor
-            Nx - number of lattice points in the x-direction
-            Ny - number of lattice points in the y-direction
-            Nz - number of lattice points in the z-direction
-            
-        """
-        self.Nx = Nx; self.Ny = Ny; self.Nz = Nz
-        self.ex = []; self.ey = []; self.ez = []
-        self.bbSpd = []; self.w = []; 
-        
-
-    def get_dims(self):
-        return [self.Nx, self.Ny, self.Nz]
-
-    def get_ex(self):
-        return self.ex[:]
-
-
-    def get_ey(self):
-        return self.ey[:]
-
-    def get_ez(self):
-        return self.ez[:]
-
-    def get_numSpd(self):
-        return len(self.ex)
-
-    def get_bbSpd(self):
-        return self.bbSpd[:]
-
-    def get_w(self):
-        return self.w[:]
-
-      
-    
-
-class D3Q15Lattice(Lattice):
-    """
-      D3Q15 Lattice
-    """
-    def __init__(self,Nx,Ny,Nz):
-        """
-          D3Q15 Lattice
-        """
-        super(D3Q15Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1]
-        self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,1,1,-1,-1]
-        self.ez = [0,0,0,0,0,1,-1,1,1,1,1,-1,-1,-1,-1]
-
-        self.bbSpd = [0,2,1,4,3,6,5,14,13,12,11,10,9,8,7]
-        self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
-	       1./72.,1./72.,1./72.,1./72.,
-	       1./72.,1./72.,1./72.,1./72.]
-
-class D3Q19Lattice(Lattice):
-    """
-    """
-    def __init__(self,Nx,Ny,Nz):
-        super(D3Q19Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,0,0,0,0]
-        self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,0,0,0,0,1,-1,1,-1]
-        self.ez = [0,0,0,0,0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1]
-        self.bbSpd = [0, 2, 1, 4, 3, 6, 5, 10, 9, 8, 7, 14, 13, 12, 11, 18, 17, 16, 15]
-        self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
-	       1./72.,1./72.,1./72.,1./72.,
-	       1./72.,1./72.,1./72.,1./72.]
-
-   
-class D3Q27Lattice(Lattice):
-    """
-    """
-    def __init__(self,Nx,Ny,Nz):
-        super(D3Q27Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]
-        self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]
-        self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]
-        self.bbSpd = [0,14,15,16,17,18,19,20,21,22,23,24,25,26,
-	      1,2,3,4,5,6,7,8,9,10,11,12,13]
-        self.w = [8./27.,2./27.,2./27.,2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-	       1./54.,1./216.,1./216,1./216.,1./216.,2./27.,2./27.,
-	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-		1./54.,1./216.,1./216,1./216.,1./216.]
 
 
 

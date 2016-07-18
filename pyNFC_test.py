@@ -44,3 +44,6 @@ input_data.close()
 
 # each process initialize their partition:
 myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,omega,Cs,lattice_type)
+
+# do one time step
+myPart.take_LBM_timestep(True)
