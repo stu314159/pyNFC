@@ -142,6 +142,7 @@ class NFC_LBM_partition(object):
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
         self.ez = np.array(self.lattice.get_ez(),dtype=np.int32);
         self.bb_Spd = np.array(self.lattice.get_bbSpd(),dtype=np.int32);
+        self.w = np.array(self.lattice.get_w(),dtype=np.float32);
 
         # these functions must be called in sequence to ensure the appropriate
         # member data has been constructed
@@ -151,6 +152,8 @@ class NFC_LBM_partition(object):
         self.get_interior_nodes() # local node numbers of all interior nodes produced
         self.allocate_data_arrays() # all global data arrays that will be required for the LBM simulation
         self.initialize_node_lists() # snl, inl and onl lists from pre-processed data
+
+        self.initialize_data_arrays() # fEven, fOdd - in future, include restart data load.
 
 
        
@@ -379,10 +382,6 @@ class NFC_LBM_partition(object):
                 indx+=1 # either way increment the global counter
 
         
-
-       
-
-        
         
 
     def write_partition_vtk(self):
@@ -414,7 +413,18 @@ class NFC_LBM_partition(object):
         self.inl = np.zeros([self.total_nodes],dtype=np.int32);
         self.onl = np.zeros([self.total_nodes],dtype=np.int32);
 
-      
+    def initialize_data_arrays(self):
+        """
+         set initial density distributions.  Currently implemented to
+         initialize everything to the outlet pressure boundary condition with
+         zero velocity
+
+        """
+        
+        for idx in range(self.total_nodes):
+            self.fEven[idx,:] = self.rho_lbm * self.w
+            self.fOdd[idx,:] = self.rho_lbm * self.w
+
 class Lattice(object):
     """
        define the layout and adjacency of the LBM lattice
