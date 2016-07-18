@@ -75,6 +75,14 @@ class D3Q15Lattice(Lattice):
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
 
+    def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
+        """
+          compute macroscopic density for velocity inlet
+          bc using Regularized BC methods
+        """
+
+        #rho = (1./(1.-uz))*(2.0*(f6+f11+f12+f13+f14)+(f0+f1+f2+f3+f4)); <-- C code
+        rho = (1./(1. - uz))*(2.*(f[6]+f[11]+f[12]+f[13]+f[14])+(f[0]+f[1]+f[2]+f[3]+f[4])
     
 
 
@@ -90,6 +98,9 @@ class D3Q19Lattice(Lattice):
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
+
+    def set_inlet_velocity_bc_macro(self,f,uz):
+        pass  # update this when ready
 
    
 class D3Q27Lattice(Lattice):
@@ -107,4 +118,5 @@ class D3Q27Lattice(Lattice):
 	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
 		1./54.,1./216.,1./216,1./216.,1./216.]
 
-
+    def set_inlet_velocity_bc_macro(self,f,uz):
+        pass  # update this when ready
