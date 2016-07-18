@@ -124,4 +124,5 @@ class D3Q27Lattice(Lattice):
 		1./54.,1./216.,1./216,1./216.,1./216.]
 
     def set_inlet_velocity_bc_macro(self,f,uz):
-        pass  # update this when ready
+        rho = (1./(1. - uz))*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
+                             (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18])
