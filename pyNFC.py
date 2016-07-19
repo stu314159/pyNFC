@@ -132,7 +132,7 @@ class NFC_LBM_partition(object):
                 ndType = 0
              
             # process lattice point and get outlet value
-            fOut = self.lattice.computefOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
+            fOut = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
            
 
            
@@ -202,7 +202,7 @@ class NFC_LBM_partition(object):
         return (x,y,z)
 
     def get_gInd_XYZ(self,x,y,z): # this will give global index given x, y, z index
-        return x+y*self.Nx + z*self.Nx*self.Nyrho = (1./(1.-uz))*(2.0*(f6+f11+f12+f13+f14)+(f0+f1+f2+f3+f4));
+        return x+y*self.Nx + z*self.Nx*self.Ny
 
     def gen_adjacency(self):
         """

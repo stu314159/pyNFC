@@ -72,7 +72,7 @@ class Lattice(object):
         numSpd = self.get_numSpd();
         ux = u[0]; uy = u[1]; uz = u[2];
         f_eq = np.zeros(numSpd,dtype = np.float32)
-        for spd in numSpd:
+        for spd in range(numSpd):
              cu = 3.*(self.ex[spd]*ux + self.ey[spd]*uy + self.ez[spd]*uz)
              f_eq[spd] = self.w[spd]*rho*(1. + cu + 0.5*(cu*cu) - 
                            3./2.*(ux*ux + uy*uy + uz*uz)) 
@@ -114,7 +114,7 @@ class Lattice(object):
         if ndType == 2:
             rho = self.set_inlet_velocity_bc_macro(fIn,uz)
         elif ndType == 3:
-            uz = self.set_outlet_pressure_bc_macro(fIn,rho)
+            uz = self.set_outlet_density_bc_macro(fIn,rho)
 
         if ndType != 1: #solid nodes do not need fEq
             fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])
@@ -180,12 +180,14 @@ class D3Q15Lattice(Lattice):
                  corresponding bounce-back speeds: 6, 14, 13, 12, 11
 
         """
-        sp = [5,7,8,9,10]; bbSp = [6,14,13,12,11];
+        sp = [5,7,8,9,10]; 
+        bbSp = [6,14,13,12,11];
         f[sp] += f[bbSp] - fEq[bbSp];
+        return f
 
 
     def bounceBack_outletBoundary_micro(self,f,fEq):
-         """
+        """
           input:
              f and fEq
 
@@ -200,8 +202,10 @@ class D3Q15Lattice(Lattice):
                  corresponding bounce-back speeds: 5, 7, 8, 9, 10
 
         """
-        sp = [6, 14, 13, 12, 11]; bbSp = [5, 7, 8, 9, 10];
+        sp = [6, 14, 13, 12, 11] 
+        bbSp = [5, 7, 8, 9, 10]
         f[sp] += f[bbSp] - fEq[bbSp];
+        return f
 
     def regularize_boundary_nodes(self,f,fEq):
         pass #implement soon
@@ -315,21 +319,18 @@ class D3Q27Lattice(Lattice):
 
 
     def bounceBack_inletBoundary_micro(self,f,fEq):
-         """
-          input:
-             f and fEq
-
+        """
+         input:
+            f and fEq
           output:
-             f with micro velocities for speeds into the
-             domain (unknown) adjusted by "bouncing back"
-             the non-equilibrium component of the known
-             speeds in opposite direction:
+            f with micro velocities for speeds into the
+            domain (unknown) adjusted by "bouncing back"
+            the non-equilibrium component of the known
+            speeds in opposite direction:
 
-
-          for D3Q27, unknown speeds on (low-z) inlet: 7,9,11,13,16,19,21,23,25
-                          bbSpd = 20,22,24,26,3,6,8,10,12
-                 
-
+         for D3Q27, unknown speeds on (low-z) inlet: 7,9,11,13,16,19,21,23,25
+                         bbSpd = 20,22,24,26,3,6,8,10,12
+                
         """
         sp = [7,9,11,13,16,19,21,23,25]; bbSp = [20,22,24,26,3,6,8,10,12];
         f[sp] += f[bbSp] - fEq[bbSp];
@@ -365,7 +366,7 @@ if __name__=="__main__":
       put testing code here
     """
 
-from sympy import *
-
-f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f13 = symbols("f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14")
-print "f0 + f1 = " + str(f0 + f1)
+#from sympy import *
+#
+#f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f13 = symbols("f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14")
+#print "f0 + f1 = " + str(f0 + f1)
