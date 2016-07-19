@@ -136,6 +136,38 @@ class Lattice(object):
                 
         return S         
 
+
+    def apply_turbulence_model(self,omega,Cs,S):
+        """
+         1-parameter Smagorinsky-type turbulence model.  Formulation still needs confirmation
+         implemented in fasion of NFC
+
+        """
+        nu = ((1./omega) - 0.5)/3.0
+        P = np.sqrt(S[1,1]**2 + S[2,2]**2 + S[3,3]**2 + 2.0*(S[1,2]**2 + S[1,3]**2 + S[2,3]**2))
+        P *= Cs; P = np.sqrt(P + nu**2) - nu; #yeah; I don't believe it either.
+        nu_e = P/6.;
+        omega_t = 1./(3.*(nu + nu_e) + 0.5)
+
+        return omega_t 
+
+    def relax(self,fIn,fEq,omega):
+        """
+           execute LBM relaxation
+
+        """
+        fOut = fIn - omega*(fIn - fEq);
+        return fOut[:]
+
+    def bounce_back(self,fIn):
+        """
+
+          execute LBM bounce-back for solid nodes
+
+        """
+
+        fOut = fIn[self.get_bbSpd()]
+        return fOut[:]
         
 
     def compute_fOut(self,fIn,ndType,omega,Cs=0.,u_bc=0.,rho_bc=1.):
@@ -175,11 +207,17 @@ class Lattice(object):
             uz = self.set_outlet_density_bc_macro(fIn,rho)
 
         if ndType != 1: #solid nodes do not need fEq
-            fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])
+            fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])        
+            if ((ndType == 2) or (ndType == 3)):
+                fIn = self.regularize_boundary_nodes(fIn,fEq)
 
-        
-        if ((ndType == 2) or (ndType == 3)):
-            fIn = self.regularize_boundary_nodes(fIn,fEq)
+            S = self.compute_strain_tensor(fIn,fEq)
+            omega = self.apply_turbulence_model(omega,Cs,S)
+            f = self.relax(fIn,fEq,omega)
+        else:
+            f = self.bounce_back(fIn);
+
+        return f[:]
 
 
 
