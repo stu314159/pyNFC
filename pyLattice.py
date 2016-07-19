@@ -121,6 +121,21 @@ class Lattice(object):
 
         return f[:]
 
+    def compute_strain_tensor(self,f,fEq):
+        """  
+          generate the 3x3 viscous strain tensor
+          for use with 1-parameter turbulence model
+        """
+        numSpd = self.get_numSpd()
+        S = np.zeros([3,3],dtype=np.float32) # 3 x 3 for 3D models
+        for spd in range(numSpd):
+            e = [self.ex[:], self.ey[:], self.ez[:]];
+            for i in range(3):
+                for j in range(3):
+                   S[i,j] += e[i][spd]*e[j][spd]*(f[spd] - fEq[spd])
+                
+        return S         
+
         
 
     def compute_fOut(self,fIn,ndType,omega,Cs=0.,u_bc=0.,rho_bc=1.):
