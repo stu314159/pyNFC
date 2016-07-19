@@ -94,7 +94,7 @@ class Lattice(object):
             self.Qflat[i,:] = qt.flatten()
 
 
-    def compute_Pi1_flat(self,f):
+    def compute_Pi1_flat(self,f,fEq):
         """
           generate the 3 x 3 x numSpd tensor and store in flattened array
           format.  (see pg 46 Latt dissertation for regularization algorithm adapted)
@@ -102,8 +102,26 @@ class Lattice(object):
         numSpd = self.get_numSpd();
         Pi1_flat = np.zeros([9],dtype=np.float32) # 9 for any 3-D lattice
         for spd in range(numSpd):
-            Pi1_flat+=f[spd]*self.Qflat[spd,:]
+            Pi1_flat+=(f[spd]-fEq[spd])*self.Qflat[spd,:]
 
+        return Pi1_flat[:]
+
+
+    def regularize_boundary_nodes(self,f,fEq):
+        """
+          apply regularization process to inlet and outlet boundary nodes
+          as adapted from J. Latt dissertation.
+
+        """
+        numSpd = self.get_numSpd();
+        Pi1_flat = self.compute_Pi1_flat(f,fEq)
+        for spd in range(numSpd):
+            ft = self.w[spd]*(9./2.)*np.dot(self.Qflat[spd,:],Pi1_flat)
+            f[spd] = fEq[spd] + ft
+
+        return f[:]
+
+        
 
     def compute_fOut(self,fIn,ndType,omega,Cs=0.,u_bc=0.,rho_bc=1.):
         """
@@ -146,7 +164,7 @@ class Lattice(object):
 
         
         if ((ndType == 2) or (ndType == 3)):
-            pass # implement soon
+            fIn = self.regularize_boundary_nodes(fIn,fEq)
 
 
 
