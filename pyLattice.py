@@ -164,11 +164,30 @@ class D3Q15Lattice(Lattice):
     
         return uz
 
-    def set_inlet_velocity_bc_micro(self,f,fEq):
-        pass # implement soon
+    def bounceBack_inletBoundary_micro(self,f,fEq):
+        """
+          input:
+             f and fEq
+
+          output:
+             f with micro velocities for speeds into the
+             domain (unknown) adjusted by "bouncing back"
+             the non-equilibrium component of the known
+             speeds in opposite direction:
 
 
-    def set_outlet_pressure_bc_micro(self,f,fEq):
+          for D3Q15, unknown speeds on (low-z) inlet: 5, 7, 8, 9, 10
+                 corresponding bounce-back speeds: 6, 14, 13, 12, 11
+
+        """
+        sp = [5,7,8,9,10]; bbSp = [6,14,13,12,11];
+        f[sp] += f[bbSp] - fEq[bbSp];
+
+
+    def bounceBack_outletBoundary_micro(self,f,fEq):
+        pass #implement soon
+
+    def regularize_boundary_nodes(self,f,fEq):
         pass #implement soon
 
 
@@ -205,12 +224,31 @@ class D3Q19Lattice(Lattice):
 
         return uz
 
-    def set_inlet_velocity_bc_micro(self,f,fEq):
-        pass # implement soon
+    def bounceBack_inletBoundary_micro(self,f,fEq):
+        """
+          input:
+             f and fEq
+
+          output:
+             f with micro velocities for speeds into the
+             domain (unknown) adjusted by "bouncing back"
+             the non-equilibrium component of the known
+             speeds in opposite direction:
 
 
-    def set_outlet_pressure_bc_micro(self,f,fEq):
+          for D3Q19, unknown speeds on (low-z) inlet: 5,11,12,15,16
+                 corresponding bounce-back speeds: 6,14,13,18,17
+
+        """
+        sp = [5,11,12,15,16]; bbSp = [6,14,13,18,17];
+        f[sp] += f[bbSp] - fEq[bbSp];
+
+    def bounceBack_outletBoundary_micro(self,f,fEq):
         pass #implement soon
+
+    def regularize_boundary_nodes(self,f,fEq):
+        pass #implement soon
+
 
 
 class D3Q27Lattice(Lattice):
@@ -244,12 +282,33 @@ class D3Q27Lattice(Lattice):
         return uz
 
 
-    def set_inlet_velocity_bc_micro(self,f,fEq):
-        pass # implement soon
+    def bounceBack_inletBoundary_micro(self,f,fEq):
+         """
+          input:
+             f and fEq
+
+          output:
+             f with micro velocities for speeds into the
+             domain (unknown) adjusted by "bouncing back"
+             the non-equilibrium component of the known
+             speeds in opposite direction:
 
 
-    def set_outlet_pressure_bc_micro(self,f,fEq):
+          for D3Q27, unknown speeds on (low-z) inlet: 7,9,11,13,16,19,21,23,25
+                          bbSpd = 20,22,24,26,3,6,8,10,12
+                 
+
+        """
+        sp = [7,9,11,13,16,19,21,23,25]; bbSp = [20,22,24,26,3,6,8,10,12];
+        f[sp] += f[bbSp] - fEq[bbSp];
+
+
+    def bounceBack_outletBoundary_micro(self,f,fEq):
         pass #implement soon
+
+    def regularize_boundary_nodes(self,f,fEq):
+        pass #implement soon
+
 
 
 if __name__=="__main__":
