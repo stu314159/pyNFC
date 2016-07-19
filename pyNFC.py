@@ -117,7 +117,9 @@ class NFC_LBM_partition(object):
         # initially, implement exactly as you would for C/C++
         # goal: be sure to get the correct answer; worry about performance later
 
+        print "rank = %d, executing 1 time step for %d nodes" % (self.rank, len(lp_list))
         for lp in lp_list:
+        
 
             # get microscopic densities
             f = fIn[lp,:]
@@ -132,7 +134,8 @@ class NFC_LBM_partition(object):
                 ndType = 0
              
             # process lattice point and get outlet value
-            fOut = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
+            
+            f = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
            
 
            

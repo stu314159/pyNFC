@@ -88,10 +88,10 @@ class Lattice(object):
         cs2 = 1./3.
         numSpd = self.get_numSpd();
         self.Qflat = np.empty([numSpd,9],dtype=np.float32) # for 3-D lattices
-        for i in range(numSpd):
+        for spd in range(numSpd):
             c_i = [self.ex[spd], self.ey[spd], self.ez[spd]]
             qt = np.outer(c_i,c_i); qt -= cs2*eye3;
-            self.Qflat[i,:] = qt.flatten()
+            self.Qflat[spd,:] = qt.flatten()
 
 
     def compute_Pi1_flat(self,f,fEq):
@@ -113,8 +113,10 @@ class Lattice(object):
           as adapted from J. Latt dissertation.
 
         """
+        
         numSpd = self.get_numSpd();
         Pi1_flat = self.compute_Pi1_flat(f,fEq)
+        
         for spd in range(numSpd):
             ft = self.w[spd]*(9./2.)*np.dot(self.Qflat[spd,:],Pi1_flat)
             f[spd] = fEq[spd] + ft
@@ -132,8 +134,8 @@ class Lattice(object):
             e = [self.ex[:], self.ey[:], self.ez[:]];
             for i in range(3):
                 for j in range(3):
-                   S[i,j] += e[i][spd]*e[j][spd]*(f[spd] - fEq[spd])
-                
+                    S[i,j] += e[i][spd]*e[j][spd]*(f[spd] - fEq[spd])
+                     
         return S         
 
 
@@ -144,7 +146,7 @@ class Lattice(object):
 
         """
         nu = ((1./omega) - 0.5)/3.0
-        P = np.sqrt(S[1,1]**2 + S[2,2]**2 + S[3,3]**2 + 2.0*(S[1,2]**2 + S[1,3]**2 + S[2,3]**2))
+        P = np.sqrt(S[0,0]**2 + S[1,1]**2 + S[2,2]**2 + 2.0*(S[0,1]**2 + S[0,2]**2 + S[1,2]**2))
         P *= Cs; P = np.sqrt(P + nu**2) - nu; #yeah; I don't believe it either.
         nu_e = P/6.;
         omega_t = 1./(3.*(nu + nu_e) + 0.5)
@@ -156,6 +158,7 @@ class Lattice(object):
            execute LBM relaxation
 
         """
+        
         fOut = fIn - omega*(fIn - fEq);
         return fOut[:]
 
@@ -201,14 +204,18 @@ class Lattice(object):
             raise ValueError("ndType must be one of 0, 1, 2, or 3")
 
         rho, ux, uy, uz = self.compute_macroscopic_data(fIn)
+
+        
         if ndType == 2:
             rho = self.set_inlet_velocity_bc_macro(fIn,uz)
         elif ndType == 3:
             uz = self.set_outlet_density_bc_macro(fIn,rho)
+            
 
         if ndType != 1: #solid nodes do not need fEq
             fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])        
             if ((ndType == 2) or (ndType == 3)):
+                self.create_Qflat();
                 fIn = self.regularize_boundary_nodes(fIn,fEq)
 
             S = self.compute_strain_tensor(fIn,fEq)
@@ -303,10 +310,7 @@ class D3Q15Lattice(Lattice):
         f[sp] += f[bbSp] - fEq[bbSp];
         return f
 
-    def regularize_boundary_nodes(self,f,fEq):
-        pass #implement soon
-
-
+ 
 
 
 class D3Q19Lattice(Lattice):
@@ -378,10 +382,7 @@ class D3Q19Lattice(Lattice):
         sp = [6,14,13,18,17]; bbSp = [5,11,12,15,16];
         f[sp] += f[bbSp] - fEq[bbSp];
 
-    def regularize_boundary_nodes(self,f,fEq):
-        pass #implement soon
-
-
+ 
 
 class D3Q27Lattice(Lattice):
     """
@@ -452,11 +453,7 @@ class D3Q27Lattice(Lattice):
         sp = [20,22,24,26,3,6,8,10,12]; bbSp = [7,9,11,13,16,19,21,23,25];
         f[sp] += f[bbSp] - fEq[bbSp];
 
-    def regularize_boundary_nodes(self,f,fEq):
-        pass #implement soon
-
-
-
+  
 if __name__=="__main__":
     """  
       put testing code here
