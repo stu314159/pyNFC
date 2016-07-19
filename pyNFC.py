@@ -72,9 +72,9 @@ class NFC_LBM_partition(object):
 
        
         
-        self.report_statistics() # say something about yourself
+        #self.report_statistics() # say something about yourself
         # comment out when you are done visualizing the partitions 
-        self.write_partition_vtk() # visualize each partition interior, boundary and halo
+        #self.write_partition_vtk() # visualize each partition interior, boundary and halo
 
 
     def take_LBM_timestep(self,isEven):
@@ -84,7 +84,8 @@ class NFC_LBM_partition(object):
         """
         
         # process boundary lattice points
-        #--> uncomment when ready to test #self.process_lattice_points(isEven,self.bnl_l)
+        #print "rank %d processing %d nodes on the boundary"%(self.rank, len(self.bnl_l))
+        self.process_lattice_points(isEven,self.bnl_l)
 
         # extract halo data
 
@@ -93,6 +94,7 @@ class NFC_LBM_partition(object):
 
 
         # process interior lattice points
+        #print "rank %d processing %d nodes on the interior"%(self.rank, len(self.int_l))
         self.process_lattice_points(isEven,self.int_l)
 
         # be sure MPI communication is done
