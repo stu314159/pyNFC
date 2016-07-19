@@ -61,6 +61,10 @@ class NFC_LBM_partition(object):
         self.allocate_data_arrays() # all global data arrays that will be required for the LBM simulation
         self.initialize_node_lists() # snl, inl and onl lists from pre-processed data
 
+        # halo nodes are now incorporated into local node lists and data arrays.
+        # convert the adjacency matrix so that it is local
+        self.convert_adjacency_to_local() 
+
         self.initialize_data_arrays() # fEven, fOdd - in future, include restart data load.
 
         
@@ -78,7 +82,7 @@ class NFC_LBM_partition(object):
           carry out the LBM process for a time step.  Orchestrate processing of all
           lattice points and communicating data between MPI partitions.
         """
-        pass
+        
         # process boundary lattice points
         #--> uncomment when ready to test #self.process_lattice_points(isEven,self.bnl_l)
 
@@ -117,7 +121,7 @@ class NFC_LBM_partition(object):
         # initially, implement exactly as you would for C/C++
         # goal: be sure to get the correct answer; worry about performance later
 
-        print "rank = %d, executing 1 time step for %d nodes" % (self.rank, len(lp_list))
+        
         for lp in lp_list:
         
 
@@ -136,6 +140,8 @@ class NFC_LBM_partition(object):
             # process lattice point and get outlet value
             
             f = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
+
+            # stream to outlet value
            
 
            
@@ -224,6 +230,17 @@ class NFC_LBM_partition(object):
                 self.adjacency[self.global_to_local[k],spd] = self.get_gInd_XYZ(x_t,y_t,z_t)
                 
                 
+
+    def convert_adjacency_to_local(self):
+        """
+          convert the elements of the adjacency matrix into local node numbers
+
+        """
+        for nd in range(self.num_local_nodes):
+            for spd in range(self.numSpd):
+                lInd = self.global_to_local[self.adjacency[nd,spd]]
+                self.adjacency[nd,spd] = lInd
+
 
     def get_interior_nodes(self):
         """
