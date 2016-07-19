@@ -94,6 +94,17 @@ class Lattice(object):
             self.Qflat[i,:] = qt.flatten()
 
 
+    def compute_Pi1_flat(self,f):
+        """
+          generate the 3 x 3 x numSpd tensor and store in flattened array
+          format.  (see pg 46 Latt dissertation for regularization algorithm adapted)
+        """
+        numSpd = self.get_numSpd();
+        Pi1_flat = np.zeros([9],dtype=np.float32) # 9 for any 3-D lattice
+        for spd in range(numSpd):
+            Pi1_flat+=f[spd]*self.Qflat[spd,:]
+
+
     def compute_fOut(self,fIn,ndType,omega,Cs=0.,u_bc=0.,rho_bc=1.):
         """
            input:
