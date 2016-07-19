@@ -49,6 +49,13 @@ class Lattice(object):
         """
           given microscopic density distribution values,
           compute and return macroscopic density and velocity
+
+         input:
+           f - local particle density distribution
+
+         outputs:
+           rho - macroscopic density
+           ux, uy, uz - macroscopic velocity components.
         """
         rho = np.sum(f)
         ux = np.dot(f,self.ex)/rho;
@@ -71,6 +78,52 @@ class Lattice(object):
                            3./2.*(ux*ux + uy*uy + uz*uz)) 
 
         return f_eq[:]   
+
+
+    def compute_fOut(self,fIn,ndType,omega,Cs=0.,u_bc=0.,rho_bc=1.):
+        """
+           input:
+            fIn - incoming particle density distribution
+            ndType - [0 | 1 | 2 | 3] 
+                     0 = interior fluid node
+                     1 = solid node
+                     2 = inlet velocity node
+                     3 = outlet pressure node
+            omega - relaxation parameter
+            Cs - (optional) Smagorinsky turbulence parameter
+            u_bc - (optional) inlet velocity 
+            rho_bc - (optional) outlet pressure
+            
+          output:
+           fOut - outgoing particle density distribution for streaming
+
+        """
+        fluidNode = False; solidNode = False; inletNode = False; outletNode = False;
+        if ndType == 0:
+            fluidNode = True;
+        elif ndType == 1:
+            solidNode = True;
+        elif ndType == 2:
+            inletNode = True;
+        elif ndType == 3:
+            outletNode = True;
+        else:
+            raise ValueError("ndType must be one of 0, 1, 2, or 3")
+
+        rho, ux, uy, uz = self.compute_macroscopic_data(fIn)
+        if ndType == 2:
+            rho = self.set_inlet_velocity_bc_macro(fIn,uz)
+        elif ndType == 3:
+            uz = self.set_outlet_pressure_bc_macro(fIn,rho)
+
+        if ndType != 1: #solid nodes do not need fEq
+            fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])
+
+        
+        if ((ndType == 2) or (ndType == 3)):
+            pass # implement soon
+
+
 
 class D3Q15Lattice(Lattice):
     """
@@ -98,6 +151,7 @@ class D3Q15Lattice(Lattice):
 
         #rho = (1./(1.-uz))*(2.0*(f6+f11+f12+f13+f14)+(f0+f1+f2+f3+f4)); <-- C code
         rho = (1./(1. - uz))*(2.*(f[6]+f[11]+f[12]+f[13]+f[14])+(f[0]+f[1]+f[2]+f[3]+f[4]))
+
         return rho
  
 
@@ -109,6 +163,16 @@ class D3Q15Lattice(Lattice):
         uz = -1. + (1./rho)*(2.*(f[6]+f[11]+f[12]+f[13]+f[14])+(f[0]+f[1]+f[2]+f[3]+f[4]))
     
         return uz
+
+    def set_inlet_velocity_bc_micro(self,f,fEq):
+        pass # implement soon
+
+
+    def set_outlet_pressure_bc_micro(self,f,fEq):
+        pass #implement soon
+
+
+
 
 class D3Q19Lattice(Lattice):
     """
@@ -138,9 +202,17 @@ class D3Q19Lattice(Lattice):
           bc using Regularized BC methods
         """
         uz = -1. + (1./rho)*(2.*(f[6]+f[13]+f[14]+f[17]+f[18])+(f[0]+f[1]+f[2]+f[3]+f[4]+f[7]+f[8]+f[9]+f[10]))
+
         return uz
 
-   
+    def set_inlet_velocity_bc_micro(self,f,fEq):
+        pass # implement soon
+
+
+    def set_outlet_pressure_bc_micro(self,f,fEq):
+        pass #implement soon
+
+
 class D3Q27Lattice(Lattice):
     """
     """
@@ -169,7 +241,15 @@ class D3Q27Lattice(Lattice):
         """
         uz = -1. + (1./rho)*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
                              (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18]))
-        return rho
+        return uz
+
+
+    def set_inlet_velocity_bc_micro(self,f,fEq):
+        pass # implement soon
+
+
+    def set_outlet_pressure_bc_micro(self,f,fEq):
+        pass #implement soon
 
 
 if __name__=="__main__":

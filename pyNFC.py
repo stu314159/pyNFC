@@ -118,24 +118,21 @@ class NFC_LBM_partition(object):
         # goal: be sure to get the correct answer; worry about performance later
 
         for lp in lp_list:
+
+            # get microscopic densities
             f = fIn[lp,:]
-            # get macroscopic data
-            rho,ux,uy,uz = self.lattice.compute_macroscopic_data(f)
-
-            # update macroscopic boundary if on inlet or outlet
+            # get node type
             if self.inl[lp] == 1:
-                uz = self.u_bc; ux = 0.; uy = 0.;
-                rho = self.lattice.set_inlet_velocity_bc_macro(f,uz)
-            if self.onl[lp] == 1:
-                rho = self.rho_lbm; ux = 0.; uy = 0.;
-                uz = self.lattice.set_outlet_density_bc_macro(f,rho)
-
-            if self.snl[lp] == 1:
-                ux = 0.; uy = 0.; uz = 0.;
-
-            # if not a solid node, compute equilibrium
-            if self.snl[lp] != 1:
-                f_eq = self.lattice.compute_equilibrium(f,rho,[ux, uy, uz])
+                ndType = 1
+            elif self.onl[lp] == 1:
+                ndType = 2
+            elif self.snl[lp] == 1:
+                ndType = 3
+            else:
+                ndType = 0
+             
+            # process lattice point and get outlet value
+            fOut = self.lattice.computefOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
            
 
            
