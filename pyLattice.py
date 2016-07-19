@@ -185,7 +185,23 @@ class D3Q15Lattice(Lattice):
 
 
     def bounceBack_outletBoundary_micro(self,f,fEq):
-        pass #implement soon
+         """
+          input:
+             f and fEq
+
+          output:
+             f with micro velocities for speeds into the
+             domain (unknown) adjusted by "bouncing back"
+             the non-equilibrium component of the known
+             speeds in opposite direction:
+
+
+          for D3Q15, unknown speeds on (high-z) outlet: 6, 14, 13, 12, 11
+                 corresponding bounce-back speeds: 5, 7, 8, 9, 10
+
+        """
+        sp = [6, 14, 13, 12, 11]; bbSp = [5, 7, 8, 9, 10];
+        f[sp] += f[bbSp] - fEq[bbSp];
 
     def regularize_boundary_nodes(self,f,fEq):
         pass #implement soon
@@ -244,7 +260,23 @@ class D3Q19Lattice(Lattice):
         f[sp] += f[bbSp] - fEq[bbSp];
 
     def bounceBack_outletBoundary_micro(self,f,fEq):
-        pass #implement soon
+        """
+          input:
+             f and fEq
+
+          output:
+             f with micro velocities for speeds into the
+             domain (unknown) adjusted by "bouncing back"
+             the non-equilibrium component of the known
+             speeds in opposite direction:
+
+
+          for D3Q19, unknown speeds on (high-z) outlet: 6,14,13,18,17
+                 corresponding bounce-back speeds: 5,11,12,15,16
+
+        """
+        sp = [6,14,13,18,17]; bbSp = [5,11,12,15,16];
+        f[sp] += f[bbSp] - fEq[bbSp];
 
     def regularize_boundary_nodes(self,f,fEq):
         pass #implement soon
@@ -304,7 +336,24 @@ class D3Q27Lattice(Lattice):
 
 
     def bounceBack_outletBoundary_micro(self,f,fEq):
-        pass #implement soon
+        """
+          input:
+             f and fEq
+
+          output:
+             f with micro velocities for speeds into the
+             domain (unknown) adjusted by "bouncing back"
+             the non-equilibrium component of the known
+             speeds in opposite direction:
+
+
+          for D3Q27, unknown speeds on (high-z) outlet: 20,22,24,26,3,6,8,10,12
+                          bbSpd = 7,9,11,13,16,19,21,23,25
+                 
+
+        """
+        sp = [20,22,24,26,3,6,8,10,12]; bbSp = [7,9,11,13,16,19,21,23,25];
+        f[sp] += f[bbSp] - fEq[bbSp];
 
     def regularize_boundary_nodes(self,f,fEq):
         pass #implement soon
