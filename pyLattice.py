@@ -79,6 +79,20 @@ class Lattice(object):
 
         return f_eq[:]   
 
+    def create_Qflat(self):
+        """
+         generate the 3 x 3 x numSpd tensor and store as numSpd x 9 'flattened' array
+           the tensor is: e_i e_i - cs**2(I)
+        """
+        eye3 = np.identity(3,dtype=np.float32);
+        cs2 = 1./3.
+        numSpd = self.get_numSpd();
+        self.Qflat = np.empty([numSpd,9],dtype=np.float32) # for 3-D lattices
+        for i in range(numSpd):
+            c_i = [self.ex[spd], self.ey[spd], self.ez[spd]]
+            qt = np.outer(c_i,c_i); qt -= cs2*eye3;
+            self.Qflat[i,:] = qt.flatten()
+
 
     def compute_fOut(self,fIn,ndType,omega,Cs=0.,u_bc=0.,rho_bc=1.):
         """
