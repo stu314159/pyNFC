@@ -84,17 +84,23 @@ class NFC_LBM_partition(object):
         """
         
         # process boundary lattice points
-        #print "rank %d processing %d nodes on the boundary"%(self.rank, len(self.bnl_l))
+        tst_rank = 0;
+        if self.rank == tst_rank:
+            print "rank %d processing boundary nodes" % (tst_rank)   
         self.process_lattice_points(isEven,self.bnl_l)
 
         # extract halo data
-
+        if self.rank == tst_rank:
+            print "rank %d extracting halo data" % (tst_rank)
+        self.extract_halo_data(isEven)
 
         # initiate communication of halo data
 
 
         # process interior lattice points
         #print "rank %d processing %d nodes on the interior"%(self.rank, len(self.int_l))
+        if self.rank == tst_rank:
+            print "rank %d processing interior nodes" % (tst_rank)
         self.process_lattice_points(isEven,self.int_l)
 
         # be sure MPI communication is done
@@ -364,7 +370,19 @@ class NFC_LBM_partition(object):
         self.ngb_list = ngb_list[:] # make this a data member
             
        
+    def extract_halo_data(self,isEven):
+        """
+           function to extract data from halo nodes and 
+           place into data buffers for HDO objects
 
+        """
+        if isEven:
+            fOut = self.fOdd
+        else:
+            fOut = self.fEven
+
+        for ngb in self.ngb_list:
+            self.HDO_out_dict[ngb].extract_data(fOut)
 
 
     def load_parts(self):

@@ -68,6 +68,15 @@ class NFC_Halo_Data_Organizer(object):
         self.buffer = np.empty([len(self.gnn_list)],dtype=np.float32)
 
 
+    def extract_data(self,fOut):
+        """
+          extract required data from fOut and place into buffer
+        """
+        for d in range(len(self.lnn_list)):
+            ln = self.lnn_list[d]; spd = self.spd_list[d];
+            self.buffer[d] = fOut[ln,spd]
+
+
 class NFC_Part_Communicator(object):
     """
      class designed to handle the communication tasks for an NFC_LBM_partition
