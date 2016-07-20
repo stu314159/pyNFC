@@ -47,7 +47,7 @@ myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,omega,Cs,
 
 # do some time stepping
 numTs = 3
-plot_freq = 2;
+plot_freq = 1;
 if rank == 0:
     time1 = time.time()
 

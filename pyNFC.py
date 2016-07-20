@@ -71,6 +71,13 @@ class NFC_LBM_partition(object):
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
 
+        # mpi file writing variables
+        self.vtk_dump_num = 0;
+        self.vtk_ux_stub = 'ux'; self.vtk_uy_stub = 'uy'; self.vtk_uz_stub = 'uz'
+        self.vtk_rho_stub = 'density'
+
+        self.vtk_suffix = '.b_dat'
+
 
        
         
@@ -223,10 +230,48 @@ class NFC_LBM_partition(object):
 
         """
 
-        if rank == 0:
-            print "plotting data"
+        if self.rank == 0:
+            print "computing local macroscopic data"
 
         ux, uy, uz, rho = self.compute_local_data(isEven);
+
+        if self.rank == 0:
+            print "writing data"
+
+        # self.offset_bytes is the number of bytes offset
+
+        # file mode
+        amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
+
+        # create file names
+        ux_fn = self.vtk_ux_stub + str(self.vtk_dump_num) + self.vtk_suffix
+        uy_fn = self.vtk_uy_stub + str(self.vtk_dump_num) + self.vtk_suffix
+        uz_fn = self.vtk_uz_stub + str(self.vtk_dump_num) + self.vtk_suffix
+        rho_fn = self.vtk_rho_stub + str(self.vtk_dump_num) + self.vtk_suffix
+        
+        # write ux
+        fh = MPI.File.Open(self.comm,ux_fn,amode)
+        fh.Write_at_all(self.offset_bytes,ux)
+        fh.Close()
+
+        # write uy
+        fh = MPI.File.Open(self.comm,uy_fn,amode)
+        fh.Write_at_all(self.offset_bytes,uy)
+        fh.Close()
+
+        # write uz
+        fh = MPI.File.Open(self.comm,uz_fn,amode)
+        fh.Write_at_all(self.offset_bytes,uz)
+        fh.Close()
+
+        # write rho
+        fh = MPI.File.Open(self.comm,rho_fn,amode)
+        fh.Write_at_all(self.offset_bytes,rho)
+        fh.Close()
+        
+
+        # when done writing, increment vtk dump number
+        self.vtk_dump_num += 1
 
 
     def compute_local_data(self,isEven):
@@ -244,12 +289,12 @@ class NFC_LBM_partition(object):
 
         for lp in self.lnl_l: # this sucks.  basically requires that 
         # self.lnl_l goes from 0 to self.num_local_nodes...
-            for spd in self.numSpd:
+            for spd in range(self.numSpd):
                 rho[lp]+=f[lp,spd];
                 ux[lp]+=self.ex[spd]*f[lp,spd];
                 uy[lp]+=self.ey[spd]*f[lp,spd];
                 uz[lp]+=self.ez[spd]*f[lp,spd];
-            ux/=rho; uy/=rho; uz/=rho
+            	ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
             
 
         return ux, uy, uz, rho
@@ -489,11 +534,11 @@ class NFC_LBM_partition(object):
 
         # save the cumsum of all partitions with rank lower than self.rank
         # to use in offsetting MPI write operations.
-        self.offset_int = np.sum(self.part_sizes[0:self.rank]) # this should exclude the current rank.
+        offset_int = np.sum(self.part_sizes[0:self.rank]) # this should exclude the current rank.
         offset_check = np.sum(self.part_sizes[0:self.rank+1])
-        assert (offset_check - self.offset_int) == self.num_local_nodes
-        if self.rank == 5:
-            print "assert checked successfully"
+        assert (offset_check - offset_int) == self.num_local_nodes
+        
+        self.offset_bytes = offset_int * np.dtype(np.float32).itemsize;
 
         
         
