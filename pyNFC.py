@@ -294,7 +294,10 @@ class NFC_LBM_partition(object):
                 ux[lp]+=self.ex[spd]*f[lp,spd];
                 uy[lp]+=self.ey[spd]*f[lp,spd];
                 uz[lp]+=self.ez[spd]*f[lp,spd];
-            	ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
+            ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
+        ux[self.snl] = 0.; uy[self.snl]= 0.; uz[self.snl] = 0.;
+        
+                
             
 
         return ux, uy, uz, rho
