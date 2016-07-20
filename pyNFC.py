@@ -66,7 +66,9 @@ class NFC_LBM_partition(object):
         self.convert_adjacency_to_local() 
 
         self.initialize_data_arrays() # fEven, fOdd - in future, include restart data load.
-
+        self.out_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
+        self.in_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
+        self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
 
 
@@ -95,7 +97,18 @@ class NFC_LBM_partition(object):
         self.extract_halo_data(isEven)
 
         # initiate communication of halo data
-
+        if self.rank == tst_rank:
+            print "rank %d initiate send/recv of halo data" % (tst_rank)
+        for ngb in range(self.num_ngb):
+            ngb_rnk = self.ngb_list[ngb]
+            self.out_requests[ngb] = self.comm.Isend([self.HDO_out_dict[ngb_rnk].buffer,
+                                            self.HDO_out_dict[ngb_rnk].buff_len,
+                                            MPI.FLOAT],ngb_rnk,self.rank)
+            self.in_requests[ngb] = self.comm.Irecv([self.HDO_in_dict[ngb_rnk].buffer,
+                                           self.HDO_in_dict[ngb_rnk].buff_len,
+                                           MPI.FLOAT],ngb_rnk,MPI.ANY_TAG)
+        
+        
 
         # process interior lattice points
         #print "rank %d processing %d nodes on the interior"%(self.rank, len(self.int_l))
@@ -104,6 +117,9 @@ class NFC_LBM_partition(object):
         self.process_lattice_points(isEven,self.int_l)
 
         # be sure MPI communication is done
+        if self.rank == tst_rank:
+            print "rank %d waiting for MPI coms" % (tst_rank)
+        MPI.Request.Waitall(self.in_requests,self.statuses)
 
 
         # load incoming data to appropriate array
@@ -368,6 +384,7 @@ class NFC_LBM_partition(object):
 
 
         self.ngb_list = ngb_list[:] # make this a data member
+        self.num_ngb = len(self.ngb_list)
             
        
     def extract_halo_data(self,isEven):

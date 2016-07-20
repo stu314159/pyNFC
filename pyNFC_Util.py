@@ -65,7 +65,8 @@ class NFC_Halo_Data_Organizer(object):
         """
           construct buffer for data in/out
         """
-        self.buffer = np.empty([len(self.gnn_list)],dtype=np.float32)
+        self.buff_len = len(self.gnn_list)
+        self.buffer = np.empty([self.buff_len],dtype=np.float32)
 
 
     def extract_data(self,fOut):
