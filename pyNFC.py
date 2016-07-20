@@ -217,6 +217,45 @@ class NFC_LBM_partition(object):
         snl_f.close()
 
 
+    def write_data(self,isEven):
+        """
+          write your partition of data to the MPI data file
+
+        """
+
+        if rank == 0:
+            print "plotting data"
+
+        ux, uy, uz, rho = self.compute_local_data(isEven);
+
+
+    def compute_local_data(self,isEven):
+        """
+          compute ux, uy, uz and rho for output at requested data dump intervals
+        """
+        if isEven:
+            f = self.fEven;
+        else:
+            f = self.fOdd;
+
+        # prepare arrays to hold the data
+        ux = np.zeros([self.num_local_nodes],dtype=np.float32)
+        uz = rho = uy = np.zeros_like(ux)
+
+        for lp in self.lnl_l: # this sucks.  basically requires that 
+        # self.lnl_l goes from 0 to self.num_local_nodes...
+            for spd in self.numSpd:
+                rho[lp]+=f[lp,spd];
+                ux[lp]+=self.ex[spd]*f[lp,spd];
+                uy[lp]+=self.ey[spd]*f[lp,spd];
+                uz[lp]+=self.ez[spd]*f[lp,spd];
+            ux/=rho; uy/=rho; uz/=rho
+            
+
+        return ux, uy, uz, rho
+        
+
+
     def report_statistics(self):
         """
           gather and report a collection of interesting (?) statistics:
@@ -349,7 +388,7 @@ class NFC_LBM_partition(object):
             ln+=1 # increment the local node counter so halo nodes are assigned unique numbers
 
         #print "rank %d has %d local nodes and %d halo nodes" % (self.rank, self.num_local_nodes,self.num_halo_nodes)
-       
+        self.lnl_l = range(self.num_local_nodes); # "local node list - local (node numbers) "again, be prepared to change this.
         # make a list of the local node numbers of all halo nodes
         self.hnl_l = []  # halo node list.  (in case I use a different scheme for locally numbering halo nodes)
         for hn in self.halo_nodes_g:

@@ -47,14 +47,19 @@ myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,omega,Cs,
 
 # do some time stepping
 numTs = 3
-plot_freq = 1;
+plot_freq = 2;
 if rank == 0:
     time1 = time.time()
 
 for ts in range(numTs):
     if rank==0:
         print "executing time step %d" % ts
-    myPart.take_LBM_timestep(ts%2 == 0)
+    isEven = (ts%2 == 0)
+    myPart.take_LBM_timestep(isEven)
+
+    if ((ts > 0) and (ts % plot_freq == 0)):
+        myPart.write_data(isEven)
+    
 
 if rank == 0:
     time2 = time.time()
