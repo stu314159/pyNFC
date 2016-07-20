@@ -76,8 +76,14 @@ ZZ = np.reshape(Z,numEl)
 # compute the number of data dumps I expect to process
 nDumps = (Num_ts-Warmup_ts)/plot_freq + 1 # initial data plus Num_ts/plot_freq updates
 
-# load obst_file.lbm to get the obstacle.  Should also zero out the velocity of
-# the walls.
+"""
+  need to create a map that will align the order of the binary data files with
+  the required order of the vtk files.  This need only be done once.
+
+"""
+
+order_map = np.fromfile('ordering.b_dat',dtype=np.int32).astype(np.int32)
+
 
 for i in range(rank,nDumps,size):
     # say something comforting
@@ -87,10 +93,21 @@ for i in range(rank,nDumps,size):
     ux_fn = 'ux'+str(i)+'.b_dat'
     uy_fn = 'uy'+str(i)+'.b_dat'
     uz_fn = 'uz'+str(i)+'.b_dat'
-    ux = np.fromfile(ux_fn,dtype=np.float32).astype(np.float64)
-    uy = np.fromfile(uy_fn,dtype=np.float32).astype(np.float64)
-    uz = np.fromfile(uz_fn,dtype=np.float32).astype(np.float64)
-    pressure = np.fromfile(rho_fn,dtype=np.float32).astype(np.float64)
+
+    # at this point, ux, uy and uz are out of order
+    ux_i = np.fromfile(ux_fn,dtype=np.float32).astype(np.float64)
+    uy_i = np.fromfile(uy_fn,dtype=np.float32).astype(np.float64)
+    uz_i = np.fromfile(uz_fn,dtype=np.float32).astype(np.float64)
+    pressure_i = np.fromfile(rho_fn,dtype=np.float32).astype(np.float64)
+
+    # re-order per order_map
+    ux = ux_i[order_map]
+    uy = uy_i[order_map]
+    uz = uz_i[order_map]
+    pressure = pressure_i[order_map]
+
+    # note that this scheme roughly doubles the memory useage of this routine.   
+    # may be an issue for very large data-sets.
     
     # convert velocity to physical units
     ux /= u_conv_fact

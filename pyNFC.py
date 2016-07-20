@@ -223,6 +223,34 @@ class NFC_LBM_partition(object):
                 self.snl[lSNL] = 1
         snl_f.close()
 
+    def write_node_sorting(self):
+        """
+           write a file "ordering.b_dat" that will contain the global 
+           node numbers of each local node (in order)
+
+           this will facilitate post-processing
+
+        """
+        # create numpy array with global node numbers of local nodes
+        node_roster = np.empty([self.num_local_nodes],dtype=np.int32)
+
+        # poplulate the node roster from self.num_local_nodes + self.local_to_global
+        for nd in range(self.num_local_nodes):
+            node_roster[nd] = self.local_to_global[nd]
+
+
+        # file mode
+        amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
+        
+        # file name
+        file_name = 'ordering.b_dat'
+
+        #
+        fh = MPI.File.Open(self.comm,file_name,amode)
+        offset = self.offset_number*np.dtype(np.int32).itemsize
+        fh.Write_at_all(offset,node_roster) 
+        fh.Close()
+
 
     def write_data(self,isEven):
         """
@@ -537,11 +565,11 @@ class NFC_LBM_partition(object):
 
         # save the cumsum of all partitions with rank lower than self.rank
         # to use in offsetting MPI write operations.
-        offset_int = np.sum(self.part_sizes[0:self.rank]) # this should exclude the current rank.
+        self.offset_int = np.sum(self.part_sizes[0:self.rank]) # this should exclude the current rank.
         offset_check = np.sum(self.part_sizes[0:self.rank+1])
-        assert (offset_check - offset_int) == self.num_local_nodes
+        assert (offset_check - self.offset_int) == self.num_local_nodes
         
-        self.offset_bytes = offset_int * np.dtype(np.float32).itemsize;
+        self.offset_bytes = self.offset_int * np.dtype(np.float32).itemsize;
 
         
         
