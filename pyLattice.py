@@ -218,7 +218,7 @@ class Lattice(object):
                 self.create_Qflat();
                 fIn = self.regularize_boundary_nodes(fIn,fEq)
 
-            S = self.compute_strain_tensor(fIn,fEq)
+            S = self.compute_strain_tensor(fIn,fEq) #<-- this function takes ~90% of the compute time.
             omega = self.apply_turbulence_model(omega,Cs,S)
             f = self.relax(fIn,fEq,omega)
         else:

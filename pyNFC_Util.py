@@ -5,6 +5,8 @@ definition module for some pyNFC utility classes
 
 """
 
+import numpy as np
+
 class NFC_Halo_Data_Organizer(object):
     """
      collect and organize how halo data will be organized prior to communication
@@ -30,7 +32,7 @@ class NFC_Halo_Data_Organizer(object):
 
     def make_lists(self): # only need be done once
         """
-          once all data is inserted, this function will return
+          once all data is inserted, this function will create
           two lists: the gnn for outgoing data to this rank; and
                      the vector of speeds for the outgoing data.
         """
@@ -43,7 +45,7 @@ class NFC_Halo_Data_Organizer(object):
                 self.gnn_list.append(k)
                 self.spd_list.append(v)
 
-        
+              
 
     def make_lists_local(self,global_to_local):
         """
@@ -58,7 +60,12 @@ class NFC_Halo_Data_Organizer(object):
           report the number of items to be sent from this partition
         """
         return len(self.gnn_list)
-        
+
+    def allocate_buffer(self):
+        """
+          construct buffer for data in/out
+        """
+        self.buffer = np.empty([len(self.gnn_list)],dtype=np.float32)
 
 
 class NFC_Part_Communicator(object):

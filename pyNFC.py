@@ -144,9 +144,17 @@ class NFC_LBM_partition(object):
             f = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
 
             # stream to outlet value
-           
+            self.stream(fOut,f,lp)
 
            
+    def stream(self,fOut,f,lp):
+        """
+            stream collided particle density distributions to neighbor lattice points
+        """
+
+        for spd in range(self.numSpd):
+            tgtNd = self.adjacency[lp,spd]
+            fOut[tgtNd,spd] = f[spd]
 
 
     def initialize_node_lists(self):
@@ -347,8 +355,13 @@ class NFC_LBM_partition(object):
         for ngb in ngb_list:
             self.HDO_out_dict[ngb].make_lists()
             self.HDO_out_dict[ngb].make_lists_local(self.global_to_local)
+            self.HDO_out_dict[ngb].allocate_buffer() # buffer is _.buffer
             self.HDO_in_dict[ngb].make_lists()
             self.HDO_in_dict[ngb].make_lists_local(self.global_to_local)
+            self.HDO_in_dict[ngb].allocate_buffer()
+
+
+        self.ngb_list = ngb_list[:] # make this a data member
             
        
 
