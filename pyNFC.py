@@ -123,7 +123,9 @@ class NFC_LBM_partition(object):
 
 
         # load incoming data to appropriate array
-
+        if self.rank == tst_rank:
+            print "rank %d inserting boundary data" % (tst_rank)
+        self.insert_boundary_data(isEven)
 
         # done.
         
@@ -399,7 +401,22 @@ class NFC_LBM_partition(object):
             fOut = self.fEven
 
         for ngb in self.ngb_list:
-            self.HDO_out_dict[ngb].extract_data(fOut)
+            self.HDO_out_dict[ngb].extract_halo_data(fOut)
+
+
+    def insert_boundary_data(self,isEven):
+        """
+          function to insert data passed from neighboring partitions
+          into the boundary points where they belong
+        """
+
+        if isEven:
+            f = self.fOdd
+        else:
+            f = self.fEven
+
+        for ngb in self.ngb_list:
+            self.HDO_in_dict[ngb].insert_boundary_data(f)
 
 
     def load_parts(self):
@@ -408,6 +425,9 @@ class NFC_LBM_partition(object):
            create a global-to-local and local-to-global map of lattice points
 
            these maps are later updated to include halo nodes associated with each partition
+
+           lastly - get a count of lattice points associated with each partition so that 
+           the local rank can calculate the necessary offset for file outputs
         """
 
         self.parts = np.empty([self.Nx*self.Ny*self.Nz],dtype=np.int32);
@@ -426,6 +446,15 @@ class NFC_LBM_partition(object):
                     self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
                     self.num_local_nodes+=1
                 indx+=1 # either way increment the global counter
+
+
+        # save the cumsum of all partitions with rank lower than self.rank
+        # to use in offsetting MPI write operations.
+        self.offset_int = np.sum(self.part_sizes[0:self.rank]) # this should exclude the current rank.
+        offset_check = np.sum(self.part_sizes[0:self.rank+1])
+        assert (offset_check - self.offset_int) == self.num_local_nodes
+        if self.rank == 5:
+            print "assert checked successfully"
 
         
         

@@ -69,13 +69,22 @@ class NFC_Halo_Data_Organizer(object):
         self.buffer = np.empty([self.buff_len],dtype=np.float32)
 
 
-    def extract_data(self,fOut):
+    def extract_halo_data(self,fOut):
         """
           extract required data from fOut and place into buffer
         """
         for d in range(len(self.lnn_list)):
             ln = self.lnn_list[d]; spd = self.spd_list[d];
             self.buffer[d] = fOut[ln,spd]
+
+    def insert_boundary_data(self,f):
+        """
+           insert stream-in data into the appropriate boundary node/speed
+        """
+        for d in range(len(self.lnn_list)):
+            ln = self.lnn_list[d]; spd = self.spd_list[d];
+            f[ln,spd] = self.buffer[d]
+
 
 
 class NFC_Part_Communicator(object):
