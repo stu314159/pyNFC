@@ -101,10 +101,10 @@ for i in range(rank,nDumps,size):
     pressure_i = np.fromfile(rho_fn,dtype=np.float32).astype(np.float64)
 
     # re-order per order_map
-    ux = ux_i[order_map]
-    uy = uy_i[order_map]
-    uz = uz_i[order_map]
-    pressure = pressure_i[order_map]
+    ux[order_map] = ux_i
+    uy[order_map] = uy_i
+    uz[order_map] = uz_i
+    pressure[order_map] = pressure_i
 
     # note that this scheme roughly doubles the memory useage of this routine.   
     # may be an issue for very large data-sets.
