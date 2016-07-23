@@ -42,7 +42,7 @@ dt = 0.002
 Cs = 0
 Restart_flag = 0
 
-numProcs = 24  #<--- for this version, I will need to know how many partitions I intend to create
+numProcs = 8  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
