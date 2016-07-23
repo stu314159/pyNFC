@@ -101,6 +101,8 @@ for i in range(rank,nDumps,size):
     pressure_i = np.fromfile(rho_fn,dtype=np.float32).astype(np.float64)
 
     # re-order per order_map
+    ux = np.zeros_like(ux_i); uy = np.zeros_like(uy_i); uz = np.zeros_like(uz_i);
+    pressure = np.zeros_like(pressure_i)
     ux[order_map] = ux_i
     uy[order_map] = uy_i
     uz[order_map] = uz_i
