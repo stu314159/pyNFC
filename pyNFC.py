@@ -247,7 +247,7 @@ class NFC_LBM_partition(object):
 
         #
         fh = MPI.File.Open(self.comm,file_name,amode)
-        offset = self.offset_number*np.dtype(np.int32).itemsize
+        offset = self.offset_int*np.dtype(np.int32).itemsize
         fh.Write_at_all(offset,node_roster) 
         fh.Close()
 

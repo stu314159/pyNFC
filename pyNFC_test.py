@@ -44,14 +44,15 @@ input_data.close()
 
 # each process initialize their partition:
 myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,omega,Cs,lattice_type)
+myPart.write_node_sorting() # should this be done in the constructor?
 
 # do some time stepping
-numTs = 3
-plot_freq = 1;
+#numTs = 10
+#plot_freq = 5;
 if rank == 0:
     time1 = time.time()
 
-for ts in range(numTs):
+for ts in range(Num_ts):
     if rank==0:
         print "executing time step %d" % ts
     isEven = (ts%2 == 0)
@@ -66,5 +67,5 @@ if rank == 0:
     ex_time = time2 - time1
     print "approximate execution time is %g seconds" % (ex_time)
     numLP = Nx*Ny*Nz
-    LPUs = numLP*numTs/(ex_time)
+    LPUs = numLP*Num_ts/(ex_time)
     print "approximate LPU/sec = %g " % LPUs
