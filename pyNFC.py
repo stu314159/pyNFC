@@ -172,10 +172,10 @@ class NFC_LBM_partition(object):
              
             # process lattice point and get outlet value
             
-            f = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
+            f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
 
             # stream to outlet value
-            self.stream(fOut,f,lp)
+            self.stream(fOut,f_o,lp)
 
            
     def stream(self,fOut,f,lp):

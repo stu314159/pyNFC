@@ -42,7 +42,7 @@ l_conv_fact = float(input_data.readline())
 p_conv_fact = float(input_data.readline())
 input_data.close()
 
-print "process %d of %d says hello!" % (rank, size)
+#print "process %d of %d says hello!" % (rank, size)
 
 # each process initialize their partition:
 myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,omega,Cs,lattice_type)
