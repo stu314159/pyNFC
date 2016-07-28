@@ -191,7 +191,8 @@ class NFC_LBM_partition(object):
     def initialize_node_lists(self):
         """
          load pre-processor data into inl, onl and snl lists
-        """    
+        """
+        
         inl_filename = "inl.lbm"; 
         
         inl_f = open(inl_filename,'r');
@@ -323,7 +324,10 @@ class NFC_LBM_partition(object):
                 uy[lp]+=self.ey[spd]*f[lp,spd];
                 uz[lp]+=self.ez[spd]*f[lp,spd];
             ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
-        ux[self.snl] = 0.; uy[self.snl]= 0.; uz[self.snl] = 0.;
+        ux[np.where(self.snl[:self.num_local_nodes]==1)] = 0.;
+        uy[np.where(self.snl[:self.num_local_nodes]==1)]= 0.;
+        uz[np.where(self.snl[:self.num_local_nodes]==1)] = 0.;
+        uz[np.where(self.inl[:self.num_local_nodes]==1)] = self.u_bc # set boundary condition
         
                 
             

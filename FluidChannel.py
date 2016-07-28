@@ -2,7 +2,6 @@
 """
 Class implementation file for the Python class FluidChannel
 Depends on vtkHelper module for geometry visualization functionality
-
 """
 import math
 import argparse
@@ -79,7 +78,6 @@ class GolfBall(EmptyChannel):
                      of the golf ball
            N_e = number of dimples along all [0,pi] elevation angles 
            N_e = number of dimples along all [0,2pi] azimuthal angles
-
         """
         self.sphere = SO;
         self.d_dimp = d_dimp;
@@ -152,7 +150,6 @@ class EllipticalScourPit(EmptyChannel):
         """
          return a list of all indices of lattice points within the boundaries of the
          scour pit obstacle
-
         """
        
         ellip_a = 2.*2.*self.cyl_rad
@@ -199,8 +196,7 @@ class ConeScourPit(EmptyChannel):
 
     def get_obstList(self,X,Y,Z):
         """
-         return a list of all indices of lattice points within the boundaries of the conical scour pit obstacle
-
+         return a list of all indices of lattice points within the boundaries of the conical scour pit obstacle.  x_s is defined in 'Scour at marine structures' by Richard Whitehouse, 1998.  Assumes river sand with phi (angle of repose) equal to 30 degrees.  h_cone is equal to rad_cone*tan(30) = rad_cone*0.57735
         """
        
         x_c_cone = self.x_c
@@ -229,7 +225,7 @@ class ConeScourPit(EmptyChannel):
 
 class SinglePile(EmptyChannel):
     """
-    a channel with a single pile, no scour
+    a channel with a single pile, no scour.  Used for comparison to both elliptical and conical scour pits.
     """
 
     def __init__(self,x_c,z_c,cyl_rad):
@@ -246,7 +242,6 @@ class SinglePile(EmptyChannel):
     def get_obstList(self,X,Y,Z):
         """
          return a list of all indices of lattice points within the boundaries of the bed Bed thickness is equal to the diameter of the piling (2x radius)
-
         """
        
     	#Bed
@@ -264,7 +259,7 @@ class SinglePile(EmptyChannel):
 
 class WavyBed(EmptyChannel):
     """
-    a channel with a single pile, Sin-wave bottom
+    a channel with a single pile, Sin-wave bottom.  
     """
 
     def __init__(self,x_c,z_c,cyl_rad):
@@ -280,13 +275,13 @@ class WavyBed(EmptyChannel):
 
     def get_obstList(self,X,Y,Z):
         """
-         return a list of all indices of lattice points within the boundaries of the bed Bed thickness is equal to the diameter of the piling (2x radius)
+waveh and wavel are used to characterize the sine wave for the bed.  shallower sin waves do better in remaining stable throughout the simulation at low Reynolds numbers.
 
         """
        
     	#Bed
 	waveh = 0.125
-	wavel = 10        
+	wavel = 5        
 	floor_part = np.array(np.where(Y < (waveh*np.sin(wavel*Z) + 2*self.cyl_rad))).flatten()
 	
 	#Piling
@@ -299,14 +294,15 @@ class WavyBed(EmptyChannel):
         
         return list(obst_list[:])
 
+
 class PipeContract(EmptyChannel):
     """
-    a single smooth pipe with diameter in, diam_in, through a contraction and leaving at diameter out, diam_out.  Contraction assumed to be 45 degrees.  Channel assumed to be 2 x 2 x 8.  Lo = diam_out (smaller diameter).  Contraction begins at z = 4.
+    a single smooth pipe with diameter in, diam_in, through a contraction and leaving at diameter out, diam_out.  Contraction assumed to be 45 degrees.  Channel assumed to be 2 x 2 x 8.  Lo = diam_out (smaller diameter).  Contraction begins at z = 4.  For a clean pipe, diam_in = 1.8 and diam_out = 0.8.
     """
 
     def __init__(self,diam_in,diam_out):
         """
-          constructor giving the x and z coordinates of the piling center along with the radius of the cylindrical piling
+ constructor identifying diameters into and out of contraction.  Recommend diam_in = 1.8 and diam_out = 0.8
         """
         self.diam_in = diam_in
 	self.diam_out = diam_out
@@ -351,12 +347,12 @@ class PipeContract(EmptyChannel):
 
 class PipeExpand(EmptyChannel):
     """
-    a single smooth pipe with diameter in, diam_in, through an expansion and leaving at diameter out, diam_out.  Expansion assumed to be 45 degrees.  Channel assumed to be 2 x 2 x 8.  Lo = diam_in (smaller diameter).  Expansion begins at z = 4.
+    opposite of pipe contraction.  a single smooth pipe with diameter in, diam_in, through an expansion and leaving at diameter out, diam_out.  Expansion assumed to be 45 degrees.  Channel assumed to be 2 x 2 x 8.  Lo = diam_in (smaller diameter).  Expansion begins at z = 4.  Best works when diam_in = 0.8 and diam_out = 1.8
     """
 
     def __init__(self,diam_in,diam_out):
         """
-          constructor giving the x and z coordinates of the piling center along with the radius of the cylindrical piling
+          constructor identifying pipe diameters into and out of expansion.  Recommend diam_in = 0.8 and diam_out = 1.8
         """
         self.diam_in = diam_in
 	self.diam_out = diam_out
@@ -370,21 +366,21 @@ class PipeExpand(EmptyChannel):
         """
        #Pipe in - find all points exterior of small
 	pipe_in = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_in/2)**2)).flatten()
-	pipe_in_stop = np.array(np.where(Z <= 3 + 0.5*(self.diam_out - self.diam_in))).flatten()
+	pipe_in_stop = np.array(np.where(Z <= 1.5 + 0.5*(self.diam_out - self.diam_in))).flatten()
 	pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
 
 	#Expansion - find all points exterior of expansion
 	r_cone = self.diam_in
 	h_cone = self.diam_in	
-	expansion = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (r_cone/h_cone)**2*(Z - 3)**2)).flatten()
-	expansion_start = np.array(np.where(Z >= 3 + 0.5*(self.diam_out - self.diam_in)))
+	expansion = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (r_cone/h_cone)**2*(Z - 1.5)**2)).flatten()
+	expansion_start = np.array(np.where(Z >= 1.5 + 0.5*(self.diam_out - self.diam_in)))
 	#expansion_stop = np.array(np.where(Z <= 4)).flatten()
 	expansion = np.intersect1d(expansion[:],expansion_start[:])
 	#expansion = np.intersect1d(expansion[:],expansion_stop[:])
 
 	#Pipe out - final all points exterior of smaller pipe
 	pipe_out = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_out/2)**2)).flatten()
-	pipe_out_start = np.array(np.where(Z >= 3 + 0.5*(self.diam_in - self.diam_out))).flatten()
+	pipe_out_start = np.array(np.where(Z >= 1.5 + 0.5*(self.diam_in - self.diam_out))).flatten()
 	pipe_out = np.intersect1d(pipe_out[:],pipe_out_start[:])
 
 
@@ -401,16 +397,15 @@ class PipeExpand(EmptyChannel):
 
 class PipeTurn(EmptyChannel):
     """
-  
+  Provides an s-shaped pipe of constant radius with two 180-degree turns constructed out of constant-radius tori.  Diameter needs to be 0.5 for 
     """
 
-    def __init__(self,diam_in,diam_out):
+    def __init__(self,diam_in):
         """
-          constructor giving the x and z coordinates of the piling center along with the radius of the cylindrical piling
+          constructor providing pipe diameter for use in Lo.  Use 0.5.
         """
         self.diam_in = diam_in
-	self.diam_out = diam_out
-
+	
     def get_Lo(self):
         return self.diam_in
 
@@ -468,9 +463,181 @@ class PipeTurn(EmptyChannel):
 
 	obst_list = pipe[:]
 
-       
         return list(obst_list[:])
 
+class PipeOut(EmptyChannel):
+    """
+  Class consisting of a single pipe of diam_in and length length_in exiting a wall into an open space.  
+    """
+
+    def __init__(self,diam_in,length_in):
+        """
+        defines the diameter and length (z axis) of pipe leading to open area
+        """
+        self.diam_in = diam_in
+	self.length_in = length_in
+
+    def get_Lo(self):
+        return self.diam_in
+
+    def get_obstList(self,X,Y,Z):
+        """
+   Define solid areas around pipe.  Everything else will be open.  Ensure coordinates for center of circle match center of Lx-Ly.
+        """
+       #Pipe In
+	pipe_in = np.array(np.where((X - 0.5*(4))**2 + (Y - 0.5*(4))**2 >= (0.5*self.diam_in)**2)).flatten()
+	pipe_in_stop = np.array(np.where(Z <= self.length_in)).flatten()
+	pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
+
+
+	obst_list = pipe_in[:]
+
+        return list(obst_list[:])
+
+class Butterfly(EmptyChannel):
+    """
+  A geometry class that defines a fully open butterfly valve within a pipe of diam=1.0.  
+    """
+
+    def __init__(self,diam):
+        """
+          constructor identifying pipe diameter.  Must be a 1 diam pipe inside a 1.2 x 1.2 x 8 channel.  Valve center at z = 3.
+        """
+        self.diam = diam
+	
+
+    def get_Lo(self):
+        return self.diam
+
+    def get_obstList(self,X,Y,Z):
+        """
+   Define solid areas
+
+        """
+
+	#Pipe
+	pipe = np.array(np.where((X - 0.6)**2 + (Y - 0.6)**2 >= 0.5**2)).flatten()
+
+	#Seat
+	seat = np.array(np.where((X - 0.6)**2 + (Y - 0.6)**2 >= 0.42**2)).flatten()
+	seat_start = np.array(np.where(Z >= 2.975)).flatten()
+	seat_stop = np.array(np.where(Z <= 3.025)).flatten()
+	seat = np.intersect1d(seat[:],seat_start[:])
+	seat = np.intersect1d(seat[:],seat_stop[:])
+
+	#Pivot
+	pivot = np.array(np.where((X - 0.6)**2 + (Z - 3)**2 <= 0.075**2)).flatten()
+
+	#Front Disc
+	front_disc = np.array(np.where((Y - 0.6)**2 + (Z - 3)**2 <= 0.5**2)).flatten()
+	front_disc_stop = np.array(np.where(Z <= 3.0)).flatten()
+	front_disc_x_min = np.array(np.where(X >= 0.525)).flatten()
+	front_disc_x_max = np.array(np.where(X <= 0.575)).flatten()
+
+	front_disc = np.intersect1d(front_disc[:],front_disc_stop[:])
+	front_disc = np.intersect1d(front_disc[:],front_disc_x_min[:])
+	front_disc = np.intersect1d(front_disc[:],front_disc_x_max[:])
+
+	#Back Disc
+	back_disc = np.array(np.where((Y - 0.6)**2 + (Z - 3)**2 <= 0.5**2)).flatten()
+	back_disc_start = np.array(np.where(Z >= 3.0)).flatten()
+	back_disc_x_min = np.array(np.where(X >= 0.625)).flatten()
+	back_disc_x_max = np.array(np.where(X <= 0.675)).flatten()
+
+	back_disc = np.intersect1d(back_disc[:],back_disc_start[:])
+	back_disc = np.intersect1d(back_disc[:],back_disc_x_min[:])
+	back_disc = np.intersect1d(back_disc[:],back_disc_x_max[:])
+
+	#Put the pieces together
+
+	valve = np.union1d(pipe[:],seat[:])
+	valve = np.union1d(valve[:],pivot[:])
+	valve = np.union1d(valve[:],front_disc[:])
+	valve = np.union1d(valve[:],back_disc[:])
+	
+	obst_list = valve[:]
+
+        return list(obst_list[:])
+
+
+class Tee(EmptyChannel):
+    """
+  establishes a single large pipe with a "tee" into a smaller pipe that loops up and around before rejoining the main line.  The Main line undergoes a contraction after the tee but before the rejoining secondary line.  diam_2 should be smaller than diam_1.
+    """
+
+    def __init__(self,diam_1,diam_2):
+        """
+        Constructor identifying the diameters of the two pipes.  Pipe 1 runs straight through from Z_min to Z_max.  Pipe 2 tees off and runs parallel to Pipe 1.  Pipe 1 enters/exits z planes at y = 1.  Pipe 2 runs at y = 3.  Assumes dimensions of space (X,Y,Z) is (2,4,8).
+        """
+        self.diam_1 = diam_1
+	self.diam_2 = diam_2
+	
+
+    def get_Lo(self):
+        return self.diam_1
+
+    def get_obstList(self,X,Y,Z):
+        """
+   Define solid areas
+
+        """
+
+	#Pipe 1
+	pipe_1a = np.array(np.where((X - 1)**2 + (Y - 1)**2 <= (self.diam_1/2)**2)).flatten()
+	pipe_1a_stop = np.array(np.where(Z<=4.)).flatten()
+	pipe_1a = np.intersect1d(pipe_1a[:],pipe_1a_stop[:])	
+	pipe_1b = np.array(np.where((X - 1)**2 + (Y - 1)**2 <= (self.diam_1/4)**2)).flatten()
+	pipe_1 = np.union1d(pipe_1a[:],pipe_1b[:])
+
+	#Pipe 2 Tee Off
+	tee_1 = np.array(np.where((X - 1)**2 + (Z - 1.5)**2 <= (self.diam_2/2)**2)).flatten()
+	tee_1_start = np.array(np.where(Y >= 1)).flatten()
+	tee_1_end = np.array(np.where(Y <= 3 - 0.5*self.diam_2)).flatten()
+	tee_1 = np.intersect1d(tee_1[:],tee_1_start[:])
+	tee_1 = np.intersect1d(tee_1[:],tee_1_end[:])
+
+	#Pipe 2 Elbow 1
+	elbow_1 = np.array(np.where((self.diam_2/2 - np.sqrt((Y - (3 - self.diam_2/2))**2 + (Z -(1.5 + self.diam_2/2))**2))**2 + (X - 1)**2 <= (self.diam_2/2)**2)).flatten()
+	elbow_1_start = np.array(np.where(Y >= 3- 0.5*self.diam_2)).flatten()
+	elbow_1_stop = np.array(np.where(Z <= 1.5 + self.diam_2/2)).flatten()
+	elbow_1 = np.intersect1d(elbow_1[:],elbow_1_start[:])
+	elbow_1 = np.intersect1d(elbow_1[:],elbow_1_stop[:])
+
+
+	#Pipe 2
+	pipe_2 = np.array(np.where((X - 1)**2 + (Y - 3)**2 <= (self.diam_2/2)**2)).flatten()
+	pipe_2_start = np.array(np.where(Z >= 1.5 + self.diam_2/2)).flatten()
+	pipe_2_stop = np.array(np.where(Z <= 5 - self.diam_2/2)).flatten()
+	pipe_2 = np.intersect1d(pipe_2[:],pipe_2_start[:])
+	pipe_2 = np.intersect1d(pipe_2[:],pipe_2_stop[:])
+
+	#Pipe 2 Elbow 2
+	elbow_2 = np.array(np.where((self.diam_2/2 - np.sqrt((Y - (3 - self.diam_2/2))**2 + (Z -(5- self.diam_2/2))**2))**2 + (X - 1)**2 <= (self.diam_2/2)**2)).flatten()
+	elbow_2_start = np.array(np.where(Y >= 3- 0.5*self.diam_2)).flatten()
+	elbow_2_stop = np.array(np.where(Z >= 5- self.diam_2/2)).flatten()
+	elbow_2 = np.intersect1d(elbow_2[:],elbow_2_start[:])
+	elbow_2 = np.intersect1d(elbow_2[:],elbow_2_stop[:])
+
+	#Pipe 2 Tee In
+	tee_2 = np.array(np.where((X - 1)**2 + (Z - 5)**2 <= (self.diam_2/2)**2)).flatten()
+	tee_2_start = np.array(np.where(Y >= 1)).flatten()
+	tee_2_end = np.array(np.where(Y <= 3 - 0.5*self.diam_2)).flatten()
+	tee_2 = np.intersect1d(tee_2[:],tee_2_start[:])
+	tee_2 = np.intersect1d(tee_2[:],tee_2_end[:])
+
+	empty = np.array(np.where(Y>=0.)).flatten() 
+
+	#Put the pieces together
+	pipe = np.union1d(pipe_1[:],tee_1[:])
+	pipe = np.union1d(pipe[:],elbow_1[:])
+	pipe = np.union1d(pipe[:],pipe_2[:])
+	pipe = np.union1d(pipe[:],elbow_2[:])
+	pipe = np.union1d(pipe[:],tee_2[:])
+	pipe = np.setxor1d(pipe[:], empty[:])	
+ 
+	obst_list = pipe[:]
+
+        return list(obst_list[:])
 
 def fluid_properties(fluid_str):  
    """
@@ -494,12 +661,11 @@ class FluidChannel:
         Ly_p=1.,
         Lz_p=6.,
         fluid='water', 
-        obst=EmptyChannel(1.),
+        obst=EmptyChannel(1.0),
         N_divs = 5,
         wallList=['left','right','top','bottom']):
         """
          class constructor
-
         """
         self.Lx_p = Lx_p
         self.Ly_p = Ly_p
@@ -521,6 +687,7 @@ class FluidChannel:
         x = np.linspace(0.,Lx_p,self.Nx).astype(np.float32);
         y = np.linspace(0.,Ly_p,self.Ny).astype(np.float32);
         z = np.linspace(0.,Lz_p,self.Nz).astype(np.float32);
+	self.l_tol = (x[1]-x[0])/2.;
    
         Y,Z,X = np.meshgrid(y,z,x);
     
@@ -534,7 +701,8 @@ class FluidChannel:
         # identify inlet and outlet nodes - 
         # require the user to set solid boundaries separately
         self.inlet_list = np.where(self.z==0)
-        self.outlet_list = np.where(self.z==Lz_p)
+	print "maximum value of self.z = %g, Lz_p = %g"%(np.amax(self.z),self.Lz_p)
+        self.outlet_list = np.where(self.z>=self.Lz_p)
         
         print "Getting obstacle list"
         # get obstacle list
@@ -564,9 +732,7 @@ class FluidChannel:
         """
           generate the mat file to interface with genInput.py.  Needs to save
           Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, snl, inl and onl.
-
           note that the snl and obst_list need to be combined into one list 
-
         """
         mat_dict = {}
         mat_dict['Lx_p'] = self.Lx_p
@@ -628,22 +794,17 @@ class FluidChannel:
             if w=='right':
                 solid_list_a = np.array(np.where((self.x==0.))).flatten()
             elif w=='left':
-                solid_list_b = np.array(np.where((self.x == self.Lx_p))).flatten()
+		
+                #solid_list_b = np.array(np.where((self.x >= self.Lx_p))).flatten()
+		solid_list_b = np.array(np.where(np.isclose(self.x,self.Lx_p,atol=self.l_tol))).flatten()
+		#print "num nodes on left wall = %d" % len(solid_list_b)
             elif w=='top':
-                solid_list_d = np.array(np.where((self.y == self.Ly_p))).flatten()
+                #solid_list_d = np.array(np.where((self.y >= self.Ly_p))).flatten()
+		solid_list_d = np.array(np.where(np.isclose(self.y,self.Ly_p,atol=self.l_tol))).flatten()
             elif w=='bottom':
                 solid_list_c = np.array(np.where((self.y == 0.))).flatten()
 
         solid_list = np.array(np.union1d(solid_list_a,solid_list_b)); 
         solid_list = np.array(np.union1d(solid_list,solid_list_c))
         self.solid_list = np.array(np.union1d(solid_list,solid_list_d))
-
-
-   
-
-
-
-
-
-
 

@@ -25,7 +25,9 @@ print 'Constructing the channel with smooth sphere'
 geom_file_stub = 'sphere'
 sphereB = fc.SphereObstruction(d_golf_ball/2., aLx_p/2., aLy_p/2., aLz_p/2.)
 sphereChannel = fc.FluidChannel(Lx_p = aLx_p,Ly_p = aLy_p, Lz_p = aLz_p,
-                                N_divs = aN_divs, obst = sphereB)
+                                N_divs = aN_divs, obst = sphereB,
+                                wallList=['left','right','top','bottom'])
+sphereChannel.write_bc_vtk()
 sphereChannel.write_mat_file(geom_file_stub)
 
 
