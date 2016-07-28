@@ -792,7 +792,8 @@ class FluidChannel:
 
         for w in walls:
             if w=='right':
-                solid_list_a = np.array(np.where((self.x==0.))).flatten()
+                #solid_list_a = np.array(np.where((self.x==0.))).flatten()
+		solid_list_a = np.array(np.where(np.isclose(self.x,0.,atol=self.l_tol))).flatten()
             elif w=='left':
 		
                 #solid_list_b = np.array(np.where((self.x >= self.Lx_p))).flatten()
@@ -802,7 +803,8 @@ class FluidChannel:
                 #solid_list_d = np.array(np.where((self.y >= self.Ly_p))).flatten()
 		solid_list_d = np.array(np.where(np.isclose(self.y,self.Ly_p,atol=self.l_tol))).flatten()
             elif w=='bottom':
-                solid_list_c = np.array(np.where((self.y == 0.))).flatten()
+                #solid_list_c = np.array(np.where((self.y == 0.))).flatten()
+		solid_list_c = np.array(np.where(np.isclose(self.y,0.,atol=self.l_tol))).flatten()
 
         solid_list = np.array(np.union1d(solid_list_a,solid_list_b)); 
         solid_list = np.array(np.union1d(solid_list,solid_list_c))

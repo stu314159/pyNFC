@@ -217,11 +217,11 @@ class Lattice(object):
         if ndType != 1: #solid nodes do not need fEq
             fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])        
             if ((ndType == 2) or (ndType == 3)):
-                self.create_Qflat();
+                #self.create_Qflat();
                 fIn = self.regularize_boundary_nodes(fIn,fEq)
 
-            S = self.compute_strain_tensor(fIn,fEq) #<-- this function takes ~90% of the compute time.
-            omega = self.apply_turbulence_model(omega,Cs,S)
+            #S = self.compute_strain_tensor(fIn,fEq) #<-- this function takes ~90% of the compute time.
+            #omega = self.apply_turbulence_model(omega,Cs,S)
             f = self.relax(fIn,fEq,omega)
         else:
             f = self.bounce_back(fIn);
@@ -247,6 +247,7 @@ class D3Q15Lattice(Lattice):
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
+	self.create_Qflat();
 
     def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
         """
@@ -327,6 +328,7 @@ class D3Q19Lattice(Lattice):
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
+	self.create_Qflat();
 
     def set_inlet_velocity_bc_macro(self,f,uz):
         """
@@ -400,6 +402,8 @@ class D3Q27Lattice(Lattice):
 	       1./54.,1./216.,1./216,1./216.,1./216.,2./27.,2./27.,
 	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
 		1./54.,1./216.,1./216,1./216.,1./216.]
+	
+	self.create_Qflat();
 
     def set_inlet_velocity_bc_macro(self,f,uz):
         rho = (1./(1. - uz))*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
