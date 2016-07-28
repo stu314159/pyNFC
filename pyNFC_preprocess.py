@@ -17,8 +17,8 @@ import math
 d_golf_ball = 0.0427 # meters
 aLx_p = 0.16 
 aLy_p = 0.16
-aLz_p = 0.3
-aN_divs = 2
+aLz_p = 0.2
+aN_divs = 10
 
 # construct the basic sphere
 print 'Constructing the channel with smooth sphere'
@@ -39,9 +39,9 @@ Num_ts = 5
 ts_rep_freq = 1
 Warmup_ts = 0
 plot_freq = 1
-Re = 1
+Re = 10
 dt = 0.002
-Cs = 5
+Cs = 0
 Restart_flag = 0
 
 numProcs = 32  #<--- for this version, I will need to know how many partitions I intend to create
