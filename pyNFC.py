@@ -162,11 +162,11 @@ class NFC_LBM_partition(object):
             f = fIn[lp,:]
             # get node type
             if self.inl[lp] == 1:
-                ndType = 1
-            elif self.onl[lp] == 1:
                 ndType = 2
-            elif self.snl[lp] == 1:
+            elif self.onl[lp] == 1:
                 ndType = 3
+            elif self.snl[lp] == 1:
+                ndType = 1
             else:
                 ndType = 0
              

@@ -60,7 +60,7 @@ for ts in range(Num_ts):
     isEven = (ts%2 == 0)
     myPart.take_LBM_timestep(isEven)
 
-    if ((ts > 0) and (ts % plot_freq == 0)):
+    if ((ts % plot_freq == 0)):
         myPart.write_data(isEven)
     
 
