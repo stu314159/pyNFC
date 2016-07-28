@@ -18,7 +18,7 @@ d_golf_ball = 0.0427 # meters
 aLx_p = 0.16 
 aLy_p = 0.16
 aLz_p = 0.2
-aN_divs = 2
+aN_divs = 10
 
 # construct the basic sphere
 print 'Constructing the channel with smooth sphere'
@@ -44,7 +44,7 @@ dt = 0.002
 Cs = 0
 Restart_flag = 0
 
-numProcs = 1  #<--- for this version, I will need to know how many partitions I intend to create
+numProcs = 8  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
