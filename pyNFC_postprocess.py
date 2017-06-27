@@ -9,7 +9,7 @@ No arguments are needed.
 
 Usage:
 
->>python ./process_lbm_data.py
+>>python ./pyNFC_postprocess.py
 
 When done, you should have a set of *.vtk files containing
 pressure and velocity magnitude scalar data and velocity vector data.
