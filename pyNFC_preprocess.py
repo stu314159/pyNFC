@@ -17,7 +17,7 @@ import math
 d_golf_ball = 0.0427 # meters
 aLx_p = 0.16 
 aLy_p = 0.16
-aLz_p = 0.3
+aLz_p = 0.2
 aN_divs = 10
 
 # construct the basic sphere
@@ -25,7 +25,9 @@ print 'Constructing the channel with smooth sphere'
 geom_file_stub = 'sphere'
 sphereB = fc.SphereObstruction(d_golf_ball/2., aLx_p/2., aLy_p/2., aLz_p/2.)
 sphereChannel = fc.FluidChannel(Lx_p = aLx_p,Ly_p = aLy_p, Lz_p = aLz_p,
-                                N_divs = aN_divs, obst = sphereB)
+                                N_divs = aN_divs, obst = sphereB,
+                                wallList=['left','right','top','bottom'])
+sphereChannel.write_bc_vtk()
 sphereChannel.write_mat_file(geom_file_stub)
 
 
@@ -33,16 +35,16 @@ sphereChannel.write_mat_file(geom_file_stub)
 geom_filename = geom_file_stub + '.mat'
 lattice_type = 'D3Q27' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 partition_style = 'metis' # [ '1D' | '3D' | 'metis']
-Num_ts = 10
+Num_ts = 5
 ts_rep_freq = 1
 Warmup_ts = 0
-plot_freq = 3
-Re = 5
+plot_freq = 1
+Re = 10
 dt = 0.002
 Cs = 0
 Restart_flag = 0
 
-numProcs = 24  #<--- for this version, I will need to know how many partitions I intend to create
+numProcs = 8  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
@@ -85,7 +87,7 @@ obstFilename = 'snl.lbm'
 obstFile = open(obstFilename,'w')
 obstFile.write('%i \n'%len(snl))
 for i in range(len(snl)):
-    nd = int(snl[i]); nd=nd-1;# make snl node numbers 0-based
+    nd = int(snl[i]); nd=nd;# make snl node numbers 0-based
     obstFile.write('%i \n'% nd) 
 obstFile.close()
 
@@ -95,7 +97,7 @@ inletFileName = 'inl.lbm'
 inletFile = open(inletFileName,'w')
 inletFile.write('%i \n'%len(inl))
 for i in range(len(inl)):
-    nd = int(inl[i]); nd = nd-1;#make inl node numbers 0-based
+    nd = int(inl[i]); nd = nd;#make inl node numbers 0-based
     inletFile.write('%i \n'% nd) 
 inletFile.close()
 
@@ -105,7 +107,7 @@ outletFileName = 'onl.lbm'
 outletFile = open(outletFileName,'w')
 outletFile.write('%i \n'%len(onl))
 for i in range(len(onl)):
-    nd = int(onl[i]); nd = nd-1;#make onl node numbers 0-based
+    nd = int(onl[i]); nd = nd;#make onl node numbers 0-based
     outletFile.write('%i \n'% nd) 
 outletFile.close()
 

@@ -207,19 +207,21 @@ class Lattice(object):
 
         
         if ndType == 2:
+	    uz = u_bc;
             rho = self.set_inlet_velocity_bc_macro(fIn,uz)
         elif ndType == 3:
+	    rho = rho_bc
             uz = self.set_outlet_density_bc_macro(fIn,rho)
             
 
         if ndType != 1: #solid nodes do not need fEq
             fEq = self.compute_equilibrium(fIn,rho,[ux,uy,uz])        
             if ((ndType == 2) or (ndType == 3)):
-                self.create_Qflat();
+                #self.create_Qflat();
                 fIn = self.regularize_boundary_nodes(fIn,fEq)
 
-            S = self.compute_strain_tensor(fIn,fEq) #<-- this function takes ~90% of the compute time.
-            omega = self.apply_turbulence_model(omega,Cs,S)
+            #S = self.compute_strain_tensor(fIn,fEq) #<-- this function takes ~90% of the compute time.
+            #omega = self.apply_turbulence_model(omega,Cs,S)
             f = self.relax(fIn,fEq,omega)
         else:
             f = self.bounce_back(fIn);
@@ -237,14 +239,15 @@ class D3Q15Lattice(Lattice):
           D3Q15 Lattice
         """
         super(D3Q15Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1]
-        self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,1,1,-1,-1]
-        self.ez = [0,0,0,0,0,1,-1,1,1,1,1,-1,-1,-1,-1]
+        self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1]; self.ex = np.array(self.ex,dtype=np.float32);
+        self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,1,1,-1,-1]; self.ey = np.array(self.ey,dtype=np.float32);
+        self.ez = [0,0,0,0,0,1,-1,1,1,1,1,-1,-1,-1,-1]; self.ez = np.array(self.ez,dtype=np.float32);
 
         self.bbSpd = [0,2,1,4,3,6,5,14,13,12,11,10,9,8,7]
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
+	self.create_Qflat();
 
     def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
         """
@@ -318,13 +321,14 @@ class D3Q19Lattice(Lattice):
     """
     def __init__(self,Nx,Ny,Nz):
         super(D3Q19Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,0,0,0,0]
-        self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,0,0,0,0,1,-1,1,-1]
-        self.ez = [0,0,0,0,0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1]
+        self.ex =  [0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,0,0,0,0]; self.ex = np.array(self.ex,dtype=np.float32)
+        self.ey = [0,0,0,1,-1,0,0,1,1,-1,-1,0,0,0,0,1,-1,1,-1]; self.ey = np.array(self.ey,dtype=np.float32)
+        self.ez = [0,0,0,0,0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1]; self.ez = np.array(self.ez,dtype=np.float32)
         self.bbSpd = [0, 2, 1, 4, 3, 6, 5, 10, 9, 8, 7, 14, 13, 12, 11, 18, 17, 16, 15]
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9.,
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
+	self.create_Qflat();
 
     def set_inlet_velocity_bc_macro(self,f,uz):
         """
@@ -389,15 +393,17 @@ class D3Q27Lattice(Lattice):
     """
     def __init__(self,Nx,Ny,Nz):
         super(D3Q27Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]
-        self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]
-        self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]
+        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]; self.ex = np.array(self.ex,dtype=np.float32)
+        self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]; self.ey = np.array(self.ey,dtype=np.float32)
+        self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]; self.ez = np.array(self.ez,dtype=np.float32)
         self.bbSpd = [0,14,15,16,17,18,19,20,21,22,23,24,25,26,
 	      1,2,3,4,5,6,7,8,9,10,11,12,13]
         self.w = [8./27.,2./27.,2./27.,2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
 	       1./54.,1./216.,1./216,1./216.,1./216.,2./27.,2./27.,
 	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
 		1./54.,1./216.,1./216,1./216.,1./216.]
+	
+	self.create_Qflat();
 
     def set_inlet_velocity_bc_macro(self,f,uz):
         rho = (1./(1. - uz))*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
