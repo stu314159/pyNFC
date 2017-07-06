@@ -260,13 +260,13 @@ class NFC_LBM_partition(object):
 
         """
 
-        if self.rank == 0:
-            print "computing local macroscopic data"
+#        if self.rank == 0:
+#            print "computing local macroscopic data"
 
         ux, uy, uz, rho = self.compute_local_data(isEven);
 
-        if self.rank == 0:
-            print "writing data"
+#        if self.rank == 0:
+#            print "writing data"
 
         # self.offset_bytes is the number of bytes offset
 
