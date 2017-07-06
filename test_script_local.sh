@@ -7,4 +7,4 @@ python ./pyNFC_preprocess.py
 mpirun -np 6 ./pyNFC_test.py
 
 # post-process the results
-mpirun -np 10 ./pyNFC_postprocess.py
+mpirun -np 6 ./pyNFC_postprocess.py
