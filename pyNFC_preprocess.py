@@ -33,18 +33,18 @@ sphereChannel.write_mat_file(geom_file_stub)
 
 # set simulation parameters (as used in genInput.py):
 geom_filename = geom_file_stub + '.mat'
-lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
+lattice_type = 'D3Q27' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 partition_style = 'metis' # [ '1D' | '3D' | 'metis']
-Num_ts = 30
+Num_ts = 200
 ts_rep_freq = 1
 Warmup_ts = 0
-plot_freq = 3
+plot_freq = 20
 Re = 10
 dt = 0.01
 Cs = 0
 Restart_flag = 0
 
-numProcs = 12  #<--- for this version, I will need to know how many partitions I intend to create
+numProcs = 36  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
