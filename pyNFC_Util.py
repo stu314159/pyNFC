@@ -18,7 +18,7 @@ class NFC_Halo_Data_Organizer(object):
         self.ngb_rank = ngb_rank
         self.halo_data = {}
 
-    def get_ngb_rank():
+    def get_ngb_rank(self):
         return self.ngb_rank
 
     def insert(self,gnn,spd):
@@ -87,41 +87,41 @@ class NFC_Halo_Data_Organizer(object):
 
 
 
-class NFC_Part_Communicator(object):
-    """
-     class designed to handle the communication tasks for an NFC_LBM_partition
-    """
-    def __init__(self,rank,size,comm,comm_list_gnn, comm_list_spd):
-        """
-          rank - which MPI process
-          size - number of MPI processes
-          comm - MPI communicator
-          comm_list_gnn - list of global node numbers
-          
-
-          Each partition needs to know:
-            a) the list of MPI ranks it needs to exchange halo data with;
-            b) for each exchange pair the # of data elements to be exchanged;
-            
-            Of course each process also has to manage the local/global node numbers
-            for which each data element is bound as well as the associated speed.
-
-            (for both incoming and outgoing data) as well as what order it will arrive in.
-            by convention: 
-
-                a) each partition will send data to neighboring partitions in order of 
-                   increasing global lattice point number; and
-                b) for lattice points receiving multiple speeds from the SAME neighbor partition,
-                   the data will be provided by increasing spd number.
-
-            how this is accomplished, and which classes accomplish this, is the design question
-            yet to be answered.
-          
-        """
-        self.rank = rank; self.size = size; self.comm = comm;lattice_type='D3Q15',
-        self.comm_list = comm_list;
-        self.lattice = lattice;
-        
+#class NFC_Part_Communicator(object):
+#    """
+#     class designed to handle the communication tasks for an NFC_LBM_partition
+#    """
+#    def __init__(self,rank,size,comm,comm_list_gnn, comm_list_spd):
+#        """
+#          rank - which MPI process
+#          size - number of MPI processes
+#          comm - MPI communicator
+#          comm_list_gnn - list of global node numbers
+#          
+#
+#          Each partition needs to know:
+#            a) the list of MPI ranks it needs to exchange halo data with;
+#            b) for each exchange pair the # of data elements to be exchanged;
+#            
+#            Of course each process also has to manage the local/global node numbers
+#            for which each data element is bound as well as the associated speed.
+#
+#            (for both incoming and outgoing data) as well as what order it will arrive in.
+#            by convention: 
+#
+#                a) each partition will send data to neighboring partitions in order of 
+#                   increasing global lattice point number; and
+#                b) for lattice points receiving multiple speeds from the SAME neighbor partition,
+#                   the data will be provided by increasing spd number.
+#
+#            how this is accomplished, and which classes accomplish this, is the design question
+#            yet to be answered.
+#          
+#        """
+#        self.rank = rank; self.size = size; self.comm = comm;lattice_type='D3Q15',
+#        self.comm_list = comm_list;
+#        self.lattice = lattice;
+#        
 
 
 

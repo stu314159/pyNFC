@@ -7,7 +7,6 @@ containing the integer of which partition each lattice point lives.
 
 """
 
-import numpy as np
 import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK

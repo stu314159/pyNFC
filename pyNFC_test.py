@@ -4,8 +4,6 @@
 """
 
 from mpi4py import MPI
-import numpy as np
-import math
 import time
 
 #from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
@@ -14,9 +12,7 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 import sys
 sys.path.insert(1,'.')
-from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
 import pyNFC
-import FluidChannel as fc
 # Information about the LBM run that produced the data - I should get this from params.lbm
 # Read data from params.lbm
 input_file_name = 'params.lbm'

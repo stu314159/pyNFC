@@ -160,6 +160,7 @@ class NFC_LBM_partition(object):
 
             # get microscopic densities
             f = fIn[lp,:]
+            ndType = 0
             # get node type
             if self.inl[lp] == 1:
                 ndType = 2
@@ -167,8 +168,8 @@ class NFC_LBM_partition(object):
                 ndType = 3
             elif self.snl[lp] == 1:
                 ndType = 1
-            else:
-                ndType = 0
+            
+                
              
             # process lattice point and get outlet value
             
@@ -314,7 +315,10 @@ class NFC_LBM_partition(object):
 
         # prepare arrays to hold the data
         ux = np.zeros([self.num_local_nodes],dtype=np.float32)
-        uz = rho = uy = np.zeros_like(ux)
+        uy = np.zeros([self.num_local_nodes],dtype=np.float32)
+        uz = np.zeros([self.num_local_nodes],dtype=np.float32)
+        rho = np.zeros([self.num_local_nodes],dtype=np.float32)
+    
 
         for lp in self.lnl_l: # this sucks.  basically requires that 
         # self.lnl_l goes from 0 to self.num_local_nodes...

@@ -44,7 +44,7 @@ dt = 0.002
 Cs = 0
 Restart_flag = 0
 
-numProcs = 8  #<--- for this version, I will need to know how many partitions I intend to create
+numProcs = 2  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
@@ -76,9 +76,9 @@ z = np.linspace(0.,Lz_p,Nz).astype(np.float32);
 numEl = Nx*Ny*Nz
 Y,Z,X = np.meshgrid(y,z,x);
 
-XX = np.reshape(X,numEl)
-YY = np.reshape(Y,numEl)
-ZZ = np.reshape(Z,numEl)
+XX = np.reshape(X,int(numEl))
+YY = np.reshape(Y,int(numEl))
+ZZ = np.reshape(Z,int(numEl))
 
 print 'There are %d nodes in the solid node list'%len(snl)
 print 'Writing those nodes to file'
