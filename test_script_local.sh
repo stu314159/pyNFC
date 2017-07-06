@@ -4,7 +4,7 @@
 python ./pyNFC_preprocess.py
 
 # invoke pyNFC
-aprun -n 6 ./pyNFC_test.py
+mpirun -np 6 ./pyNFC_test.py
 
 # post-process the results
-aprun -n 10 ./pyNFC_postprocess.py
+mpirun -np 10 ./pyNFC_postprocess.py
