@@ -14,10 +14,10 @@ import scipy
 import math
 
 # generate a suitable geometry:
-d_golf_ball = 0.0427 # meters
-aLx_p = 0.16 
-aLy_p = 0.16
-aLz_p = 0.2
+d_golf_ball = 0.5 # meters
+aLx_p = 1.0 
+aLy_p = 1.0
+aLz_p = 5.0
 aN_divs = 10
 
 # construct the basic sphere
@@ -33,18 +33,18 @@ sphereChannel.write_mat_file(geom_file_stub)
 
 # set simulation parameters (as used in genInput.py):
 geom_filename = geom_file_stub + '.mat'
-lattice_type = 'D3Q27' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
+lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 partition_style = 'metis' # [ '1D' | '3D' | 'metis']
-Num_ts = 5
+Num_ts = 30
 ts_rep_freq = 1
 Warmup_ts = 0
-plot_freq = 1
+plot_freq = 3
 Re = 10
-dt = 0.002
+dt = 0.01
 Cs = 0
 Restart_flag = 0
 
-numProcs = 2  #<--- for this version, I will need to know how many partitions I intend to create
+numProcs = 12  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
