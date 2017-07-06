@@ -12,6 +12,21 @@ from pymetis import part_graph #<-- requires that the PrgEnv-intel module be sel
 import numpy as np
 import scipy
 import math
+import argparse
+
+parser = argparse.ArgumentParser(prog='pyNFC_preprocess.py',
+                                 description='pre-processing script for pyNFC')
+
+parser.add_argument('lattice_type',type=str)
+parser.add_argument('partition_style',type=str)
+parser.add_argument('numProcs',type=int)
+# parse input arguments
+args = parser.parse_args()
+
+# assign to required variables
+lattice_type = args.lattice_type
+partition_style = args.partition_style
+numProcs = args.numProcs
 
 # generate a suitable geometry:
 d_golf_ball = 0.5 # meters
@@ -33,8 +48,8 @@ sphereChannel.write_mat_file(geom_file_stub)
 
 # set simulation parameters (as used in genInput.py):
 geom_filename = geom_file_stub + '.mat'
-lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
-partition_style = 'metis' # [ '1D' | '3D' | 'metis']
+#lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
+#partition_style = 'metis' # [ '1D' | '3D' | 'metis']
 Num_ts = 20
 ts_rep_freq = 1
 Warmup_ts = 0
@@ -44,7 +59,7 @@ dt = 0.01
 Cs = 0
 Restart_flag = 0
 
-numProcs = 6  #<--- for this version, I will need to know how many partitions I intend to create
+#numProcs = 6  #<--- for this version, I will need to know how many partitions I intend to create
 
 # --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
 # ---- this means, I will need to know the number of processes in advance, I guess ----- though
