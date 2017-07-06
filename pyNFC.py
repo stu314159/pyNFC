@@ -94,18 +94,18 @@ class NFC_LBM_partition(object):
         
         # process boundary lattice points
         tst_rank = 0;
-        if self.rank == tst_rank:
-            print "rank %d processing boundary nodes" % (tst_rank)   
+#        if self.rank == tst_rank:
+#            print "rank %d processing boundary nodes" % (tst_rank)   
         self.process_lattice_points(isEven,self.bnl_l)
 
         # extract halo data
-        if self.rank == tst_rank:
-            print "rank %d extracting halo data" % (tst_rank)
+#        if self.rank == tst_rank:
+#            print "rank %d extracting halo data" % (tst_rank)
         self.extract_halo_data(isEven)
 
         # initiate communication of halo data
-        if self.rank == tst_rank:
-            print "rank %d initiate send/recv of halo data" % (tst_rank)
+#        if self.rank == tst_rank:
+#            print "rank %d initiate send/recv of halo data" % (tst_rank)
         for ngb in range(self.num_ngb):
             ngb_rnk = self.ngb_list[ngb]
             self.out_requests[ngb] = self.comm.Isend([self.HDO_out_dict[ngb_rnk].buffer,
@@ -119,19 +119,19 @@ class NFC_LBM_partition(object):
 
         # process interior lattice points
         #print "rank %d processing %d nodes on the interior"%(self.rank, len(self.int_l))
-        if self.rank == tst_rank:
-            print "rank %d processing interior nodes" % (tst_rank)
+#        if self.rank == tst_rank:
+#            print "rank %d processing interior nodes" % (tst_rank)
         self.process_lattice_points(isEven,self.int_l)
 
         # be sure MPI communication is done
-        if self.rank == tst_rank:
-            print "rank %d waiting for MPI coms" % (tst_rank)
+#        if self.rank == tst_rank:
+#            print "rank %d waiting for MPI coms" % (tst_rank)
         MPI.Request.Waitall(self.in_requests,self.statuses)
 
 
         # load incoming data to appropriate array
-        if self.rank == tst_rank:
-            print "rank %d inserting boundary data" % (tst_rank)
+#        if self.rank == tst_rank:
+#            print "rank %d inserting boundary data" % (tst_rank)
         self.insert_boundary_data(isEven)
 
         # done.
