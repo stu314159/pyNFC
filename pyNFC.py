@@ -93,7 +93,7 @@ class NFC_LBM_partition(object):
         """
         
         # process boundary lattice points
-        tst_rank = 0;
+        #tst_rank = 0;
 #        if self.rank == tst_rank:
 #            print "rank %d processing boundary nodes" % (tst_rank)   
         self.process_lattice_points(isEven,self.bnl_l)
