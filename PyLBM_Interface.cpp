@@ -2,9 +2,19 @@
 
 
 PyLBM_Interface::PyLBM_Interface(const int numSpd) :
-numSpd(numSpd),fIn(NULL),fOut(NULL),u_bc(0),rho_bc(0),omega(0),nd_type(0)
+numSpd(numSpd),fData(numSpd),fIn(NULL),fOut(NULL),u_bc(0),rho_bc(0),omega(0),nd_type(0)
 {
-  
+  // create the lattice object
+  switch (numSpd)
+  {
+  case(15):
+	myLattice = new D3Q15Lattice(0,0,0); break;
+  case(19):
+	myLattice = new D3Q19Lattice(0,0,0); break;
+  case(27):
+	myLattice = new D3Q27Lattice(0,0,0);
+
+  }
 
 }
 
