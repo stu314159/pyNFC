@@ -32,11 +32,40 @@ void PyLBM_Interface::set_fIn(boost::python::object obj)
   void * buf = pybuf.buf;
   fIn = (float *)buf;
   PyBuffer_Release(&pybuf);
+
+  // initialize fData with incoming data
+  for(int spd=0;spd<numSpd;spd++)
+  {
+    fData.f[spd] = fIn[spd];
+  }
+}
+
+
+void PyLBM_Interface::get_fOut(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  fOut = (float *)buf;
+  PyBuffer_Release(&pybuf);
+
+  //load fOut with fData.fOut
+  for(int spd=0;spd<numSpd;spd++)
+  {
+    fOut[spd]=fData.fOut[spd];
+  }
+
 }
 
 int PyLBM_Interface::get_numSpd()
 {
   return numSpd;
+}
+
+void PyLBM_Interface::computeFout()
+{
+  myLattice->computeFout(fData);
 }
 
 
@@ -47,5 +76,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
     class_<PyLBM_Interface>("PyLBM_Interface",init<int>())
         .def("set_fIn",&PyLBM_Interface::set_fIn)
         .def("get_numSpd",&PyLBM_Interface::get_numSpd)
+        .def("get_fOut",&PyLBM_Interface::get_fOut)
+        .def("computeFout",&PyLBM_Interface::computeFout)
      ;
 }
