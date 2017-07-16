@@ -17,7 +17,8 @@
  *
  */
 
-#include <boost/python.hpp>
+
+
 
 class LBM_DataHandler
 {
@@ -25,8 +26,8 @@ public:
 	LBM_DataHandler(const int numSpd);
 	~LBM_DataHandler();
         int get_numSpd();
-        void set_fIn(boost::python::object obj);
-        void multFin(float mul);
+        /*void set_fIn(boost::python::object obj);
+        void multFin(float mul);*/
 	float ux;
 	float uy;
 	float uz;
