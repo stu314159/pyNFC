@@ -51,8 +51,10 @@ if rank == 0:
     time1 = time.time()
 
 for ts in range(Num_ts):
-    if rank==0:
-        print "executing time step %d" % ts
+    
+    if (((ts+1)%ts_rep_freq)==0):
+    	if rank==0:
+        	print "executing time step %d" % (ts+1)
     isEven = (ts%2 == 0)
     myPart.take_LBM_timestep(isEven)
 
