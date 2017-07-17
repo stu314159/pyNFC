@@ -88,6 +88,8 @@ class NFC_LBM_partition(object):
         self.myLB.set_bnlSZ(int(self.num_bn))
         self.myLB.set_inlSZ(int(self.num_in))
         self.myLB.set_interiorNL(self.int_l)
+        self.myLB.set_totalNodes(int(self.total_nodes))
+        
         
         
         
