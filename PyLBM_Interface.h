@@ -16,6 +16,9 @@ public:
   ~PyLBM_Interface();
   void set_fIn(boost::python::object obj);
   void get_fOut(boost::python::object obj);
+  void set_inl(boost::python::object obj);
+  void set_onl(boost::python::object obj);
+  void set_snl(boost::python::object obj);
   void set_ndType(const int nt);
   void set_Ubc(const float u);
   void set_rhoBC(const float rho);
@@ -30,6 +33,9 @@ public:
 private:
   float * fIn;
   float * fOut;
+  int * inl;
+  int * onl;
+  int * snl;
   int numSpd;
    
 

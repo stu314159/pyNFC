@@ -40,6 +40,32 @@ void PyLBM_Interface::set_fIn(boost::python::object obj)
   }
 }
 
+void PyLBM_Interface::set_inl(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  inl = (int *)buf;
+}
+
+void PyLBM_Interface::set_onl(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  onl = (int *)buf;
+}
+
+void PyLBM_Interface::set_snl(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  snl = (int *)buf;
+}
 
 void PyLBM_Interface::get_fOut(boost::python::object obj)
 {
@@ -108,5 +134,8 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("set_Ubc",&PyLBM_Interface::set_Ubc)
         .def("set_rhoBC",&PyLBM_Interface::set_rhoBC)
         .def("set_omega",&PyLBM_Interface::set_omega)
+        .def("set_inl",&PyLBM_Interface::set_inl)
+        .def("set_onl",&PyLBM_Interface::set_onl)
+        .def("set_snl",&PyLBM_Interface::set_snl)
      ;
 }
