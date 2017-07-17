@@ -49,6 +49,51 @@ void PyLBM_Interface::set_inl(boost::python::object obj)
   inl = (int *)buf;
 }
 
+void PyLBM_Interface::set_fEven(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  fEven = (float *)buf;
+}
+
+void PyLBM_Interface::set_fOdd(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  fOdd = (float *)buf;
+}
+
+void PyLBM_Interface::set_adjacency(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  adjacency = (int *)buf;
+}
+
+void PyLBM_Interface::set_boundaryNL(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  boundary_nl = (int *)buf;
+}
+
+void PyLBM_Interface::set_interiorNL(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  interior_nl = (int *)buf;
+}
+
 void PyLBM_Interface::set_onl(boost::python::object obj)
 {
   PyObject* pobj = obj.ptr();
@@ -148,5 +193,10 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("set_inl",&PyLBM_Interface::set_inl)
         .def("set_onl",&PyLBM_Interface::set_onl)
         .def("set_snl",&PyLBM_Interface::set_snl)
+        .def("set_fEven",&PyLBM_Interface::set_fEven)
+        .def("set_fOdd",&PyLBM_Interface::set_fOdd)
+        .def("set_adjacency",&PyLBM_Interface::set_adjacency)
+        .def("set_boundaryNL",&PyLBM_Interface::set_boundaryNL)
+        .def("set_interiorNL",&PyLBM_Interface::set_interiorNL)
      ;
 }
