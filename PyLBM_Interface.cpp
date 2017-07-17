@@ -99,9 +99,20 @@ void PyLBM_Interface::computeFout()
   myLattice->computeFout(fData);
 }
 
-void PyLBM_Interface::set_ndType(const int nt)
+void PyLBM_Interface::set_ndType(const int nd)
 {
-  fData.nodeType = nt;
+  fData.nodeType = 0;
+  if(snl[nd]==1)
+  {
+    fData.nodeType=1;
+  }else if(inl[nd]==1)
+  {
+    fData.nodeType=2;
+  }else if(onl[nd]==1)
+  {
+    fData.nodeType=3;
+  }
+  
 }
 
 void PyLBM_Interface::set_Ubc(const float u)
