@@ -19,6 +19,7 @@ public:
   void set_ndType(const int nt);
   void set_Ubc(const float u);
   void set_rhoBC(const float rho);
+  void set_omega(const float o);
   void computeFout();
   int get_numSpd();
   int get_ndType();
@@ -30,10 +31,7 @@ private:
   float * fIn;
   float * fOut;
   int numSpd;
-  float u_bc;
-  float rho_bc;
-  float omega;
-  int nd_type;
+   
 
 };
 

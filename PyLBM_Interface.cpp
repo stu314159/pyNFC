@@ -2,7 +2,7 @@
 
 
 PyLBM_Interface::PyLBM_Interface(const int numSpd) :
-numSpd(numSpd),fData(numSpd),fIn(NULL),fOut(NULL),u_bc(0),rho_bc(0),omega(0),nd_type(0)
+numSpd(numSpd),fData(numSpd),fIn(NULL),fOut(NULL)
 {
   // create the lattice object
   switch (numSpd)
@@ -65,7 +65,7 @@ int PyLBM_Interface::get_numSpd()
 
 int PyLBM_Interface::get_ndType()
 {
-  return nd_type;
+  return fData.nodeType;
 }
 
 void PyLBM_Interface::computeFout()
@@ -75,17 +75,22 @@ void PyLBM_Interface::computeFout()
 
 void PyLBM_Interface::set_ndType(const int nt)
 {
-  nd_type = nt;
+  fData.nodeType = nt;
 }
 
 void PyLBM_Interface::set_Ubc(const float u)
 {
-  u_bc = u;
+  fData.u_bc = u;
 }
 
 void PyLBM_Interface::set_rhoBC(const float rho)
 {
-  rho_bc = rho;
+  fData.rho_bc = rho;
+}
+
+void PyLBM_Interface::set_omega(const float o)
+{
+  fData.omega = o;
 }
 
 
@@ -102,5 +107,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("get_ndType",&PyLBM_Interface::get_ndType)
         .def("set_Ubc",&PyLBM_Interface::set_Ubc)
         .def("set_rhoBC",&PyLBM_Interface::set_rhoBC)
+        .def("set_omega",&PyLBM_Interface::set_omega)
      ;
 }

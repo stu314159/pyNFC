@@ -50,6 +50,7 @@ class NFC_LBM_partition(object):
         self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
         self.myLB.set_Ubc(self.u_bc)
         self.myLB.set_rhoBC(self.rho_lbm)
+        self.myLB.set_omega(self.omega)
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
@@ -189,7 +190,7 @@ class NFC_LBM_partition(object):
             #f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
 
             # stream to outlet value
-            self.stream(fOut,f_o,lp)
+            self.stream(fOut,f_o[:],lp)
 
            
     def stream(self,fOut,f,lp):
