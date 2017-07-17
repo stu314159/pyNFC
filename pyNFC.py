@@ -77,6 +77,12 @@ class NFC_LBM_partition(object):
         self.in_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
+        # pass pointers of node lists to myLB object
+        self.myLB.set_inl(self.inl)
+        self.myLB.set_onl(self.onl)
+        self.myLB.set_snl(self.snl)
+        
+        
 
         # mpi file writing variables
         self.vtk_dump_num = 0;
@@ -168,21 +174,23 @@ class NFC_LBM_partition(object):
             # get microscopic densities
             f = fIn[lp,:]
             f_o = np.array(range(self.numSpd),dtype=np.float32);
-            ndType = 0
-            # get node type
-            if self.inl[lp] == 1:
-                ndType = 2
-            elif self.onl[lp] == 1:
-                ndType = 3
-            elif self.snl[lp] == 1:
-                ndType = 1
+            
+            self.myLB.set_ndType(lp);
+#            ndType = 0
+#            # get node type
+#            if self.inl[lp] == 1:
+#                ndType = 2
+#            elif self.onl[lp] == 1:
+#                ndType = 3
+#            elif self.snl[lp] == 1:
+#                ndType = 1
             
                 
              
             # process lattice point and get outlet value
             # copy f through boost interace, compute fOut, get fOut back.
             self.myLB.set_fIn(f); #get the density distribution data
-            self.myLB.set_ndType(ndType) #set the node type
+#            self.myLB.set_ndType(ndType) #set the node type
             self.myLB.computeFout(); # compute fOut
             self.myLB.get_fOut(f_o) # get fOut from the LB interface
             
