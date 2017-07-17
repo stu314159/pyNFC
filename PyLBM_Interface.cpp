@@ -175,6 +175,15 @@ void PyLBM_Interface::set_omega(const float o)
   fData.omega = o;
 }
 
+void PyLBM_Interface::set_bnlSZ(int sz)
+{
+  bnl_sz = sz;
+}
+
+void PyLBM_Interface::set_inlSZ(int sz)
+{
+  inl_sz = sz;
+}
 
 using namespace boost::python;
 
@@ -198,5 +207,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("set_adjacency",&PyLBM_Interface::set_adjacency)
         .def("set_boundaryNL",&PyLBM_Interface::set_boundaryNL)
         .def("set_interiorNL",&PyLBM_Interface::set_interiorNL)
+        .def("set_bnlSZ",&PyLBM_Interface::set_bnlSZ)
+        .def("set_inlSZ",&PyLBM_Interface::set_inlSZ)
      ;
 }

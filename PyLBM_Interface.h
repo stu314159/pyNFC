@@ -20,6 +20,8 @@ public:
   void set_fOdd(boost::python::object obj);
   void set_adjacency(boost::python::object obj);
   void set_boundaryNL(boost::python::object obj);
+  void set_bnlSZ(int sz);
+  void set_inlSZ(int sz);
   void set_interiorNL(boost::python::object obj);
   void set_inl(boost::python::object obj);
   void set_onl(boost::python::object obj);
@@ -42,7 +44,9 @@ private:
   float * fOdd;
   int * adjacency;
   int * boundary_nl;
+  int bnl_sz; //boundary node list size
   int * interior_nl;
+  int inl_sz; // interior node list size
   int * inl;
   int * onl;
   int * snl;
