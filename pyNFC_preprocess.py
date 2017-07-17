@@ -29,21 +29,29 @@ partition_style = args.partition_style
 numProcs = args.numProcs
 
 # generate a suitable geometry:
-d_golf_ball = 0.5 # meters
-aLx_p = 1.0 
-aLy_p = 1.0
-aLz_p = 5.0
-aN_divs = 10
 
-# construct the basic sphere
-print 'Constructing the channel with smooth sphere'
-geom_file_stub = 'sphere'
-sphereB = fc.SphereObstruction(d_golf_ball/2., aLx_p/2., aLy_p/2., aLz_p/2.)
-sphereChannel = fc.FluidChannel(Lx_p = aLx_p,Ly_p = aLy_p, Lz_p = aLz_p,
-                                N_divs = aN_divs, obst = sphereB,
-                                wallList=['left','right','top','bottom'])
-sphereChannel.write_bc_vtk()
-sphereChannel.write_mat_file(geom_file_stub)
+#overall channel dimensions
+aLx_p = 6.4
+aLy_p = 3.0
+aLz_p = 14.0
+aNdivs = 11
+
+# wall mounted brick parameters
+x_c = 3.5;
+z_c = 3.2;
+W = 1.;
+H = W;
+L = W;
+
+myObst = fc.WallMountedBrick(x_c,z_c,L,W,H);
+
+myChan = fc.FluidChannel(Lx_p=aLx_p,Ly_p=aLy_p,Lz_p=aLz_p,obst=myObst,
+                         N_divs=aNdivs)                         
+
+# write the mat file
+geom_file_stub='wall_mounted_brick';
+myChan.write_mat_file(geom_file_stub);
+
 
 
 # set simulation parameters (as used in genInput.py):
@@ -53,9 +61,9 @@ geom_filename = geom_file_stub + '.mat'
 Num_ts = 2001
 ts_rep_freq = 100
 Warmup_ts = 0
-plot_freq = 500
-Re = 10
-dt = 0.01
+plot_freq = 200
+Re = 67
+dt = 0.0025
 Cs = 0
 Restart_flag = 0
 
@@ -217,8 +225,8 @@ print "creating %s partition for %d processes" % (partition_style, numProcs)
 lat.set_Partition(numParts= numProcs, style = partition_style)
 lat.compute_cutSize()
 print "cut size for %s partition = %g" % (partition_style, lat.get_cutSize())
-print "writing vtk file for %s partition" % partition_style
-partition_vtk_filename = "partition_%s.vtk" % partition_style
-lat.partition.write_vtk(partition_vtk_filename)
+#print "writing vtk file for %s partition" % partition_style
+#partition_vtk_filename = "partition_%s.vtk" % partition_style
+#lat.partition.write_vtk(partition_vtk_filename)
 print "writing %s partition to disk" % partition_style
 lat.partition.write_partition()
