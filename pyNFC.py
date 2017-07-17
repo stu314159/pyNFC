@@ -175,7 +175,7 @@ class NFC_LBM_partition(object):
             f = fIn[lp,:]
             f_o = np.array(range(self.numSpd),dtype=np.float32);
             
-            self.myLB.set_ndType(lp);
+            self.myLB.set_ndType(int(lp));
 #            ndType = 0
 #            # get node type
 #            if self.inl[lp] == 1:
