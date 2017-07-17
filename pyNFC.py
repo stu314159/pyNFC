@@ -85,6 +85,8 @@ class NFC_LBM_partition(object):
         self.myLB.set_fEven(self.fEven)
         self.myLB.set_fOdd(self.fOdd)
         self.myLB.set_boundaryNL(self.bnl_l)
+        self.myLB.set_bnlSZ(int(self.num_bn))
+        self.myLB.set_inlSZ(int(self.num_in))
         self.myLB.set_interiorNL(self.int_l)
         
         
@@ -446,7 +448,7 @@ class NFC_LBM_partition(object):
                                   np.array(self.hnl_l,dtype=np.int32))
 
         self.int_l = np.setxor1d(all_nodes,not_interior) # self.int_l = interior node list in local node numbers
-
+        self.num_in = self.int_l.size; # number of interior nodes
 
     def get_halo_nodes(self):
         """
@@ -484,6 +486,7 @@ class NFC_LBM_partition(object):
         for bn in self.boundary_nodes_g:
             self.bnl_l.append(self.global_to_local[bn])
         self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
+        self.num_bn = len(self.bnl)
         self.bnl_l = np.array(self.bnl_l,dtype=np.int32)
 
         """
