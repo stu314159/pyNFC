@@ -34,7 +34,7 @@ numProcs = args.numProcs
 aLx_p = 6.4
 aLy_p = 3.0
 aLz_p = 14.0
-aNdivs = 11
+aNdivs = 31
 
 # wall mounted brick parameters
 x_c = 3.5;
