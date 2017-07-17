@@ -240,6 +240,11 @@ class NFC_LBM_partition(object):
                 lSNL = self.global_to_local[gSNL]
                 self.snl[lSNL] = 1
         snl_f.close()
+        
+        self.inl = np.array(self.inl,dtype=np.int32)
+        self.onl = np.array(self.onl,dtype=np.int32)
+        self.snl = np.array(self.snl,dtype=np.int32)
+        
 
     def write_node_sorting(self):
         """
