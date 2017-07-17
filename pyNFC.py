@@ -486,7 +486,7 @@ class NFC_LBM_partition(object):
         for bn in self.boundary_nodes_g:
             self.bnl_l.append(self.global_to_local[bn])
         self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
-        self.num_bn = len(self.bnl)
+        self.num_bn = len(self.bnl_l)
         self.bnl_l = np.array(self.bnl_l,dtype=np.int32)
 
         """
