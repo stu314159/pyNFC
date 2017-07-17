@@ -465,6 +465,7 @@ class NFC_LBM_partition(object):
         for bn in self.boundary_nodes_g:
             self.bnl_l.append(self.global_to_local[bn])
         self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
+        self.bnl_l = np.array(self.bnl_l,dtype=np.int32)
 
         """
          now that I know how many halo nodes there are, I need to assign local node numbers to them.
