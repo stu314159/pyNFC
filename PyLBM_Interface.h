@@ -16,8 +16,10 @@ public:
   ~PyLBM_Interface();
   void set_fIn(boost::python::object obj);
   void get_fOut(boost::python::object obj);
+  void set_ndType(const int nt);
   void computeFout();
   int get_numSpd();
+  int get_ndType();
   LBM_DataHandler fData;
   Lattice * myLattice;
 

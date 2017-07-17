@@ -63,9 +63,19 @@ int PyLBM_Interface::get_numSpd()
   return numSpd;
 }
 
+int PyLBM_Interface::get_ndType()
+{
+  return nd_type;
+}
+
 void PyLBM_Interface::computeFout()
 {
   myLattice->computeFout(fData);
+}
+
+void PyLBM_Interface::set_ndType(const int nt)
+{
+  nd_type = nt;
 }
 
 
@@ -78,5 +88,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("get_numSpd",&PyLBM_Interface::get_numSpd)
         .def("get_fOut",&PyLBM_Interface::get_fOut)
         .def("computeFout",&PyLBM_Interface::computeFout)
+        .def("set_ndType",&PyLBM_Interface::set_ndType)
+        .def("get_ndType",&PyLBM_Interface::get_ndType)
      ;
 }
