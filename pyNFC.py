@@ -198,9 +198,11 @@ class NFC_LBM_partition(object):
             stream collided particle density distributions to neighbor lattice points
         """
 
-        for spd in range(self.numSpd):
-            tgtNd = self.adjacency[lp,spd]
-            fOut[tgtNd,spd] = f[spd]
+        #for spd in range(self.numSpd):
+        #    tgtNd = self.adjacency[lp,spd]
+        #    fOut[tgtNd,spd] = f[spd]
+        tgtNds = self.adjacency[lp,:]
+        fOut[tgtNds,range(self.numSpd)]=f[:]
 
 
     def initialize_node_lists(self):
