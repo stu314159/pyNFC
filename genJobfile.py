@@ -41,7 +41,7 @@ filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_test.py',
                'inl.lbm', 'onl.lbm', 'snl.lbm', 'params.lbm', 'parts.lbm',
                'pyPartition.py','pyNFC_preprocess.py','pyNFC_postprocess.py',
                'partition_suggestion.py','partition_compare.py',
-               'LBM_Interface.so']
+               'LBM_Interface.so','processNFC.py','hdf5Helper.py']
 
 
 

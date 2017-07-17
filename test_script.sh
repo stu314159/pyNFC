@@ -12,4 +12,5 @@ python ./pyNFC_preprocess.py $1 $2 $3
 aprun -n $3 ./pyNFC_test.py
 
 # post-process the results
-aprun -n 10 ./pyNFC_postprocess.py
+#aprun -n 10 ./pyNFC_postprocess.py
+python ./processNFC.py
