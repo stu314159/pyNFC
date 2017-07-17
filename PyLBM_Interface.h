@@ -14,8 +14,8 @@ class PyLBM_Interface
 public:
   PyLBM_Interface(const int numSpd);
   ~PyLBM_Interface();
-  void set_fIn(boost::python::object obj);
-  void get_fOut(boost::python::object obj);
+  void set_fIn(const float* fIn, const int nd);
+  //void get_fOut(boost::python::object obj);
   void set_fEven(boost::python::object obj);
   void set_fOdd(boost::python::object obj);
   void set_adjacency(boost::python::object obj);
@@ -31,7 +31,9 @@ public:
   void set_rhoBC(const float rho);
   void set_omega(const float o);
   void set_totalNodes(const int tn);
+  void process_nodeList(const bool isEven,const int nodeList);
   void computeFout();
+  void streamData(float * fOut,const int nd);
   int get_numSpd();
   int get_ndType();
   LBM_DataHandler fData;

@@ -119,7 +119,8 @@ class NFC_LBM_partition(object):
         #tst_rank = 0;
 #        if self.rank == tst_rank:
 #            print "rank %d processing boundary nodes" % (tst_rank)   
-        self.process_lattice_points(isEven,self.bnl_l)
+#        self.process_lattice_points(isEven,self.bnl_l)
+        self.myLB.process_nodeList(isEven,0);
 
         # extract halo data
 #        if self.rank == tst_rank:
@@ -144,7 +145,8 @@ class NFC_LBM_partition(object):
         #print "rank %d processing %d nodes on the interior"%(self.rank, len(self.int_l))
 #        if self.rank == tst_rank:
 #            print "rank %d processing interior nodes" % (tst_rank)
-        self.process_lattice_points(isEven,self.int_l)
+        #self.process_lattice_points(isEven,self.int_l)
+        self.myLB.process_nodeList(isEven,1)
 
         # be sure MPI communication is done
 #        if self.rank == tst_rank:
@@ -185,7 +187,7 @@ class NFC_LBM_partition(object):
             f = fIn[lp,:]
             f_o = np.array(range(self.numSpd),dtype=np.float32);
             
-            self.myLB.set_ndType(int(lp));
+           # self.myLB.set_ndType(int(lp));
 #            ndType = 0
 #            # get node type
 #            if self.inl[lp] == 1:
@@ -199,16 +201,16 @@ class NFC_LBM_partition(object):
              
             # process lattice point and get outlet value
             # copy f through boost interace, compute fOut, get fOut back.
-            self.myLB.set_fIn(f); #get the density distribution data
+            #self.myLB.set_fIn(f); #get the density distribution data
 #            self.myLB.set_ndType(ndType) #set the node type
-            self.myLB.computeFout(); # compute fOut
-            self.myLB.get_fOut(f_o) # get fOut from the LB interface
+            #self.myLB.computeFout(); # compute fOut
+            #self.myLB.get_fOut(f_o) # get fOut from the LB interface
             
             
             #f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
 
             # stream to outlet value
-            self.stream(fOut,f_o[:],lp)
+            #self.stream(fOut,f_o[:],lp)
 
            
     def stream(self,fOut,f,lp):

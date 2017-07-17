@@ -24,21 +24,41 @@ PyLBM_Interface::~PyLBM_Interface()
   
 }
 
-void PyLBM_Interface::set_fIn(boost::python::object obj)
+void PyLBM_Interface::set_fIn(const float * fIn, const int nd)
 {
-  PyObject* pobj = obj.ptr();
-  Py_buffer pybuf;
-  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-  void * buf = pybuf.buf;
-  fIn = (float *)buf;
-  PyBuffer_Release(&pybuf);
-
-  // initialize fData with incoming data
-  for(int spd=0;spd<numSpd;spd++)
+  for(int spd = 0; spd<numSpd; spd++)
   {
-    fData.f[spd] = fIn[spd];
+    fData.f[spd] = fIn[nd*numSpd+spd]; //keep an eye on how this data is organized
   }
+
 }
+
+void PyLBM_Interface::streamData(float * fOut, const int nd)
+{
+  int tgtNode;
+  for(int spd = 0; spd<numSpd; spd++)
+  {
+    tgtNode = adjacency[nd*numSpd+spd];
+    fOut[tgtNode*numSpd+spd] = fData.fOut[spd];
+  }
+
+}
+
+//void PyLBM_Interface::set_fIn(boost::python::object obj)
+//{
+//  PyObject* pobj = obj.ptr();
+//  Py_buffer pybuf;
+//  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+//  void * buf = pybuf.buf;
+//  fIn = (float *)buf;
+//  PyBuffer_Release(&pybuf);
+//
+//  // initialize fData with incoming data
+//  for(int spd=0;spd<numSpd;spd++)
+//  {
+//    fData.f[spd] = fIn[spd];
+//  }
+//}
 
 void PyLBM_Interface::set_inl(boost::python::object obj)
 {
@@ -112,22 +132,22 @@ void PyLBM_Interface::set_snl(boost::python::object obj)
   snl = (int *)buf;
 }
 
-void PyLBM_Interface::get_fOut(boost::python::object obj)
-{
-  PyObject* pobj = obj.ptr();
-  Py_buffer pybuf;
-  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-  void * buf = pybuf.buf;
-  fOut = (float *)buf;
-  PyBuffer_Release(&pybuf);
-
-  //load fOut with fData.fOut
-  for(int spd=0;spd<numSpd;spd++)
-  {
-    fOut[spd]=fData.fOut[spd];
-  }
-
-}
+//void PyLBM_Interface::get_fOut(boost::python::object obj)
+//{
+//  PyObject* pobj = obj.ptr();
+//  Py_buffer pybuf;
+//  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+//  void * buf = pybuf.buf;
+//  fOut = (float *)buf;
+//  PyBuffer_Release(&pybuf);
+//
+//  //load fOut with fData.fOut
+//  for(int spd=0;spd<numSpd;spd++)
+//  {
+//    fOut[spd]=fData.fOut[spd];
+//  }
+//
+//}
 
 int PyLBM_Interface::get_numSpd()
 {
@@ -190,14 +210,52 @@ void PyLBM_Interface::set_totalNodes(const int tn)
   totalNodes = tn;
 }
 
+void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
+{
+  if(isEven)
+  {
+   fIn = fEven; fOut = fOdd;
+  }else
+  {
+   fIn = fOdd; fOut = fEven;
+  }
+
+  //node list 0 is the boundary node list; node list 1 is the interior node list
+  int * ndList;
+  int ndList_len;
+  if(nodeListnum == 0)//boundary node list
+  {
+    ndList = boundary_nl; ndList_len = bnl_sz;
+  }else if(nodeListnum == 1)
+  {
+    ndList = interior_nl; ndList_len = inl_sz;
+  }
+
+  for(int ndI=0; ndI<ndList_len;ndI++)
+  {
+     // get the node number (for the local partition)
+     int nd = ndList[ndI];
+     // set the node type in fData
+     set_ndType(nd); 
+     // get the incoming data
+     set_fIn(fIn,nd);
+     // compute fOut
+     computeFout(); // passes fData to the appropriate lattice function and gets fOut
+     // stream data to fOut array
+     streamData(fOut,nd);
+
+  }
+
+
+
+}
+
 using namespace boost::python;
 
 BOOST_PYTHON_MODULE(LBM_Interface)
 {
     class_<PyLBM_Interface>("PyLBM_Interface",init<int>())
-        .def("set_fIn",&PyLBM_Interface::set_fIn)
         .def("get_numSpd",&PyLBM_Interface::get_numSpd)
-        .def("get_fOut",&PyLBM_Interface::get_fOut)
         .def("computeFout",&PyLBM_Interface::computeFout)
         .def("set_ndType",&PyLBM_Interface::set_ndType)
         .def("get_ndType",&PyLBM_Interface::get_ndType)
@@ -215,5 +273,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("set_bnlSZ",&PyLBM_Interface::set_bnlSZ)
         .def("set_inlSZ",&PyLBM_Interface::set_inlSZ)
         .def("set_totalNodes",&PyLBM_Interface::set_totalNodes)
+        .def("process_nodeList",&PyLBM_Interface::process_nodeList)
      ;
 }
