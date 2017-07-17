@@ -64,16 +64,26 @@ for i in range(nDumps):
   uz_fn = 'uz'+str(i)+'.b_dat'
 
   # Create numpy array from the binary data files
-  ux = np.fromfile(ux_fn,dtype=np.float32)
-  uy = np.fromfile(uy_fn,dtype=np.float32)
-  uz = np.fromfile(uz_fn,dtype=np.float32)
-  pressure = np.fromfile(rho_fn,dtype=np.float32)
+  ux_i = np.fromfile(ux_fn,dtype=np.float32)
+  uy_i = np.fromfile(uy_fn,dtype=np.float32)
+  uz_i = np.fromfile(uz_fn,dtype=np.float32)
+  pressure_i = np.fromfile(rho_fn,dtype=np.float32)
 
   # Convert to physical units
-  ux /= u_conv_fact
-  uy /= u_conv_fact
-  uz /= u_conv_fact
-  pressure /= p_conv_fact 
+  ux_i /= u_conv_fact
+  uy_i /= u_conv_fact
+  uz_i /= u_conv_fact
+  pressure_i /= p_conv_fact 
+  
+  order_map = np.fromfile('ordering.b_dat',dtype=np.int32).astype(np.int32)
+# re-order per order_map
+  ux = np.zeros_like(ux_i); uy = np.zeros_like(uy_i); uz = np.zeros_like(uz_i);
+  pressure = np.zeros_like(pressure_i)
+  ux[order_map] = ux_i
+  uy[order_map] = uy_i
+  uz[order_map] = uz_i
+  pressure[order_map] = pressure_i
+  
   velmag = np.sqrt(ux**2+uy**2+uz**2)
 
   # Create dimensions tuple for pressure reshape and XMF writer
