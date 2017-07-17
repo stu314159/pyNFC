@@ -85,7 +85,7 @@ class NFC_LBM_partition(object):
         self.myLB.set_fEven(self.fEven)
         self.myLB.set_fOdd(self.fOdd)
         self.myLB.set_boundaryNL(self.bnl_l)
-        self.myLB.set_interiorNL(self.inl_l)
+        self.myLB.set_interiorNL(self.int_l)
         
         
         
