@@ -17,6 +17,8 @@ public:
   void set_fIn(boost::python::object obj);
   void get_fOut(boost::python::object obj);
   void set_ndType(const int nt);
+  void set_Ubc(const float u);
+  void set_rhoBC(const float rho);
   void computeFout();
   int get_numSpd();
   int get_ndType();

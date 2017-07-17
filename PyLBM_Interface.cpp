@@ -78,6 +78,16 @@ void PyLBM_Interface::set_ndType(const int nt)
   nd_type = nt;
 }
 
+void PyLBM_Interface::set_Ubc(const float u)
+{
+  u_bc = u;
+}
+
+void PyLBM_Interface::set_rhoBC(const float rho)
+{
+  rho_bc = rho;
+}
+
 
 using namespace boost::python;
 
@@ -90,5 +100,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("computeFout",&PyLBM_Interface::computeFout)
         .def("set_ndType",&PyLBM_Interface::set_ndType)
         .def("get_ndType",&PyLBM_Interface::get_ndType)
+        .def("set_Ubc",&PyLBM_Interface::set_Ubc)
+        .def("set_rhoBC",&PyLBM_Interface::set_rhoBC)
      ;
 }
