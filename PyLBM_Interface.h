@@ -30,6 +30,7 @@ public:
   void set_Ubc(const float u);
   void set_rhoBC(const float rho);
   void set_omega(const float o);
+  void set_totalNodes(const int tn);
   void computeFout();
   int get_numSpd();
   int get_ndType();
@@ -51,6 +52,7 @@ private:
   int * onl;
   int * snl;
   int numSpd;
+  int totalNodes;
    
 
 };
