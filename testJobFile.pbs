@@ -1,0 +1,40 @@
+#!/bin/bash 
+#PBS -A USNAM37752431 
+#PBS -q standard 
+#PBS -l select=64:ncpus=32:mpiprocs=32 
+#PBS -l walltime=01:00:00 
+#PBS -l ccm=1 
+#PBS -N testJob 
+#PBS -j oe 
+#PBS -S /bin/bash 
+cd $WORKDIR
+JOBID=`echo $PBS_JOBID | cut -d '.' -f 1` 
+if [ ! -d $JOBID ]; then 
+  mkdir -p $JOBID 
+fi 
+cd $JOBID 
+cp $PBS_O_WORKDIR/FluidChannel.py . 
+cp $PBS_O_WORKDIR/pyLattice.py . 
+cp $PBS_O_WORKDIR/pyNFC.py . 
+cp $PBS_O_WORKDIR/pyNFC_test.py . 
+cp $PBS_O_WORKDIR/pyNFC_Util.py . 
+cp $PBS_O_WORKDIR/validate.py . 
+cp $PBS_O_WORKDIR/vtkHelper.py . 
+cp $PBS_O_WORKDIR/test_script.sh . 
+cp $PBS_O_WORKDIR/inl.lbm . 
+cp $PBS_O_WORKDIR/onl.lbm . 
+cp $PBS_O_WORKDIR/snl.lbm . 
+cp $PBS_O_WORKDIR/params.lbm . 
+cp $PBS_O_WORKDIR/parts.lbm . 
+cp $PBS_O_WORKDIR/pyPartition.py . 
+cp $PBS_O_WORKDIR/pyNFC_preprocess.py . 
+cp $PBS_O_WORKDIR/pyNFC_postprocess.py . 
+cp $PBS_O_WORKDIR/partition_suggestion.py . 
+cp $PBS_O_WORKDIR/partition_compare.py . 
+module swap PrgEnv-cray PrgEnv-intel
+module load costinit
+module load python
+module load numpy
+module load scipy
+module load mpi4py
+./test_script.sh D3Q15 3D 2048

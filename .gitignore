@@ -7,3 +7,4 @@
 *.lbm
 *.pyc
 *.b_dat
+*.so*
