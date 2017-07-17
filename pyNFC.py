@@ -48,6 +48,9 @@ class NFC_LBM_partition(object):
 
         self.numSpd = self.lattice.get_numSpd()
         self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
+        self.myLB.set_Ubc(self.u_bc)
+        self.myLB.set_rhoBC(self.rho_lbm)
+        
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
@@ -177,9 +180,11 @@ class NFC_LBM_partition(object):
              
             # process lattice point and get outlet value
             # copy f through boost interace, compute fOut, get fOut back.
-            self.myLB.set_fIn(f);
-            self.myLB.computeFout();
-            self.myLB.get_fOut(f_o)
+            self.myLB.set_fIn(f); #get the density distribution data
+            self.myLB.set_ndType(ndType) #set the node type
+            self.myLB.computeFout(); # compute fOut
+            self.myLB.get_fOut(f_o) # get fOut from the LB interface
+            
             
             #f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
 
