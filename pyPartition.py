@@ -11,6 +11,7 @@ import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
 from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+import numpy as np
 
 class Lattice(object):
     """
@@ -199,11 +200,15 @@ class Partitioner:
         """
          write the partition information to parts.lbm
         """
-        parts = open('parts.lbm','w')
-        for p in self.part_vert:
-            parts.write('%d \n'% p)
-
-        parts.close()
+        
+        np_pv = np.array(self.part_vert,dtype=np.int32);
+        fn = 'parts.lbm';
+        np_pv.astype('int32').tofile(fn)
+#        parts = open('parts.lbm','w')
+#        for p in self.part_vert:
+#            parts.write('%d \n'% p)
+#
+#        parts.close()
    
         
 
