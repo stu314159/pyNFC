@@ -10,6 +10,7 @@ from mpi4py import MPI
 
 import pyLattice as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
+import LBM_Interface as LB
 
 class NFC_LBM_partition(object):
     """
@@ -39,12 +40,14 @@ class NFC_LBM_partition(object):
         
         if lattice_type == 'D3Q15':
             self.lattice = pl.D3Q15Lattice(self.Nx, self.Ny, self.Nz)
+            
         elif lattice_type == 'D3Q19':
             self.lattice = pl.D3Q19Lattice(self.Nx, self.Ny, self.Nz)
         else:
             self.lattice = pl.D3Q27Lattice(self.Nx, self.Ny, self.Nz)
 
         self.numSpd = self.lattice.get_numSpd()
+        self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
         self.ey = np.array(self.lattice.get_ey(),dtype=np.int32);
@@ -160,6 +163,7 @@ class NFC_LBM_partition(object):
 
             # get microscopic densities
             f = fIn[lp,:]
+            f_o = np.array(range(self.numSpd),dtype=np.float32);
             ndType = 0
             # get node type
             if self.inl[lp] == 1:
@@ -172,8 +176,12 @@ class NFC_LBM_partition(object):
                 
              
             # process lattice point and get outlet value
+            # copy f through boost interace, compute fOut, get fOut back.
+            self.myLB.set_fIn(f);
+            self.myLB.computeFout();
+            self.myLB.get_fOut(f_o)
             
-            f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
+            #f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
 
             # stream to outlet value
             self.stream(fOut,f_o,lp)
