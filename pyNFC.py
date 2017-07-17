@@ -590,6 +590,7 @@ class NFC_LBM_partition(object):
 
         self.parts = np.fromfile('parts.lbm',dtype=np.int32).astype(np.int32)
         indx=0;
+        self.num_local_nodes = 0
         for p in self.parts:
             p_i = p
             self.part_sizes[p_i]+=1
