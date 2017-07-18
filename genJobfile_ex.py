@@ -74,7 +74,7 @@ jf.write('#PBS -N %s \n'%jobName)
 jf.write('#PBS -j oe \n')
 #jf.write('#PBS -V \n')
 jf.write('#PBS -S /bin/bash \n')
-
+jf.write('#PBS -V\n')
 
 # Execution block
 jf.write('cd $WORKDIR\n')
@@ -93,11 +93,11 @@ for s in filesToCopy:
 
 # invoke execution
 #jf.write('module swap PrgEnv-cray PrgEnv-intel\n')
-jf.write('module load costinit\n')
+#jf.write('module load costinit\n')
 #jf.write('module load python\n')
 #jf.write('module load numpy\n')
 #jf.write('module load scipy\n')
 #jf.write('module load mpi4py\n')
-jf.write('module load boost\n')
+#jf.write('module load boost\n')
 jf.write('./test_script.sh %s %s %d\n'%(latticeType,partitionType,mpi_procs))
 jf.close()
