@@ -1,13 +1,13 @@
 # location of the Python header files
 PYTHON_VERSION = 2.7
-PYTHON_INCLUDE = /app/COST/python/2.7.9/gnu/include/python$(PYTHON_VERSION)
-PYTHON_LIB=/app/COST/python/2.7.9/gnu/lib
+PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/p/home/sblair/anaconda2/lib
 BOOST_PYLIB = py27
  
 # location of the Boost Python include files and library
  
-BOOST_INC = /app/COST/boost/1.58.0/gnu/include
-BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
+BOOST_INC = /p/home/sblair/anaconda2/include
+BOOST_LIB = /p/home/sblair/anaconda2/lib
 
 # compile mesh classes
 TARGET = LBM_Interface
