@@ -38,7 +38,6 @@ executableName = 'pyNFC_test.py'
 
 filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_test.py',
                'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', 'test_script.sh',
-               'inl.lbm', 'onl.lbm', 'snl.lbm', 'params.lbm', 'parts.lbm',
                'pyPartition.py','pyNFC_preprocess.py','pyNFC_postprocess.py',
                'partition_suggestion.py','partition_compare.py',
                'LBM_Interface.so','processNFC.py','hdf5Helper.py']
@@ -98,6 +97,6 @@ jf.write('module swap PrgEnv-cray PrgEnv-intel\n')
 #jf.write('module load numpy\n')
 #jf.write('module load scipy\n')
 #jf.write('module load mpi4py\n')
-#jf.write('module load boost\n')
+jf.write('module load boost\n')
 jf.write('./test_script.sh %s %s %d\n'%(latticeType,partitionType,mpi_procs))
 jf.close()
