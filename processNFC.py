@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/p/home/sblair/anaconda/bin/python
 """
 Data processing script for binary data files.
 

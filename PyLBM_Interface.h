@@ -18,6 +18,11 @@ public:
   //void get_fOut(boost::python::object obj);
   void set_fEven(boost::python::object obj);
   void set_fOdd(boost::python::object obj);
+  void set_ux(boost::python::object obj);
+  void set_uy(boost::python::object obj);
+  void set_uz(boost::python::object obj);
+  void set_rho(boost::python::object obj);
+  void compute_local_data(const bool isEven);
   void set_adjacency(boost::python::object obj);
   void set_boundaryNL(boost::python::object obj);
   void set_bnlSZ(int sz);
@@ -55,6 +60,11 @@ private:
   int * snl;
   int numSpd;
   int totalNodes;
+
+  float * ux;
+  float * uy;
+  float * uz;
+  float * rho;
    
 
 };
