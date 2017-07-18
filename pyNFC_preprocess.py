@@ -34,7 +34,7 @@ numProcs = args.numProcs
 aLx_p = 6.4
 aLy_p = 3.0
 aLz_p = 14.0
-aNdivs = 11
+aNdivs = 21
 
 # wall mounted brick parameters
 x_c = 3.5;
@@ -58,11 +58,11 @@ myChan.write_mat_file(geom_file_stub);
 geom_filename = geom_file_stub + '.mat'
 #lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 #partition_style = 'metis' # [ '1D' | '3D' | 'metis']
-Num_ts = 51
-ts_rep_freq = 10
+Num_ts = 80001
+ts_rep_freq = 1000
 Warmup_ts = 0
-plot_freq = 25
-Re = 5
+plot_freq = 10000
+Re = 50
 dt = 0.005
 Cs = 0
 Restart_flag = 0
