@@ -360,15 +360,21 @@ class NFC_LBM_partition(object):
         uz = np.zeros([self.num_local_nodes],dtype=np.float32)
         rho = np.zeros([self.num_local_nodes],dtype=np.float32)
     
+        self.myLB.set_ux(ux);
+        self.myLB.set_uy(uy);
+        self.myLB.set_uz(uz);
+        self.myLB.set_rho(rho);
 
-        for lp in self.lnl_l: # this sucks.  basically requires that 
-        # self.lnl_l goes from 0 to self.num_local_nodes...
-            for spd in range(self.numSpd):
-                rho[lp]+=f[lp,spd];
-                ux[lp]+=self.ex[spd]*f[lp,spd];
-                uy[lp]+=self.ey[spd]*f[lp,spd];
-                uz[lp]+=self.ez[spd]*f[lp,spd];
-            ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
+        self.myLB.compute_local_data(isEven);
+
+        #for lp in self.lnl_l: # this sucks.  basically requires that 
+        ## self.lnl_l goes from 0 to self.num_local_nodes...
+        #    for spd in range(self.numSpd):
+        #        rho[lp]+=f[lp,spd];
+        #        ux[lp]+=self.ex[spd]*f[lp,spd];
+        #        uy[lp]+=self.ey[spd]*f[lp,spd];
+        #        uz[lp]+=self.ez[spd]*f[lp,spd];
+        #    ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
         ux[np.where(self.snl[:self.num_local_nodes]==1)] = 0.;
         uy[np.where(self.snl[:self.num_local_nodes]==1)]= 0.;
         uz[np.where(self.snl[:self.num_local_nodes]==1)] = 0.;
