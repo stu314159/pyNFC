@@ -59,10 +59,10 @@ geom_filename = geom_file_stub + '.mat'
 #lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 #partition_style = 'metis' # [ '1D' | '3D' | 'metis']
 
-Num_ts = 20001
+Num_ts = 2001
 ts_rep_freq = 50
 Warmup_ts = 0
-plot_freq = 2000
+plot_freq = 200
 Re = 50
 dt = 0.005
 Cs = 0
