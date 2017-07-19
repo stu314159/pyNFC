@@ -73,23 +73,23 @@ class NFC_Halo_Data_Organizer(object):
         """
           extract required data from fOut and place into buffer
         """
-        #for d in range(len(self.lnn_list)):
-        #    ln = self.lnn_list[d]; spd = self.spd_list[d];
-        #    self.buffer[d] = fOut[ln,spd]
+        for d in range(len(self.lnn_list)):
+            ln = self.lnn_list[d]; spd = self.spd_list[d];
+            self.buffer[d] = fOut[ln,spd]
         
         # give this a shot
-        self.buffer[:] = fOut[self.lnn_list[:],self.spd_list[:]]
+        #self.buffer[:] = fOut[self.lnn_list[:],self.spd_list[:]]
 
     def insert_boundary_data(self,f):
         """
            insert stream-in data into the appropriate boundary node/speed
         """
-        #for d in range(len(self.lnn_list)):
-        #    ln = self.lnn_list[d]; spd = self.spd_list[d];
-        #    f[ln,spd] = self.buffer[d]
+        for d in range(len(self.lnn_list)):
+            ln = self.lnn_list[d]; spd = self.spd_list[d];
+            f[ln,spd] = self.buffer[d]
         
         # give this a shot
-        f[self.lnn_list[:],self.spd_list[:]]
+        #f[self.lnn_list[:],self.spd_list[:]]
 
 
 
