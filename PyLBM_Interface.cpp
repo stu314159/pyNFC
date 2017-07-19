@@ -267,7 +267,7 @@ void PyLBM_Interface::compute_local_data(const bool isEven)
     nd = boundary_nl[ndId]; //find local node number
     f = fIn+(nd*numSpd); //calculate f ptr
     //compute macroscopic data using myLattice object
-    myLattice->computeMacroscopicData(ux_i,uy_i,uz_i,rho_i,f);
+    myLattice->computeMacroscopicData(rho_i,ux_i,uy_i,uz_i,f);
     // insert result into arrays
     ux[nd] = ux_i; uy[nd]=uy_i; uz[nd]=uz_i; rho[nd]=rho_i;
   }
