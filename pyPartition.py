@@ -201,14 +201,14 @@ class Partitioner:
          write the partition information to parts.lbm
         """
         
-        np_pv = np.array(self.part_vert,dtype=np.int32);
-        fn = 'parts.lbm';
-        np_pv.astype('int32').tofile(fn)
-#        parts = open('parts.lbm','w')
-#        for p in self.part_vert:
-#            parts.write('%d \n'% p)
-#
-#        parts.close()
+#        np_pv = np.array(self.part_vert,dtype=np.int32);
+#        fn = 'parts.lbm';
+#        np_pv.astype('int32').tofile(fn)
+        parts = open('parts.lbm','w')
+        for p in self.part_vert:
+            parts.write('%d \n'% p)
+
+        parts.close()
    
         
 

@@ -602,35 +602,35 @@ class NFC_LBM_partition(object):
            the local rank can calculate the necessary offset for file outputs
         """
 
-#        self.parts = np.empty([self.Nx*self.Ny*self.Nz],dtype=np.int32);
+        self.parts = np.empty([self.Nx*self.Ny*self.Nz],dtype=np.int32);
         self.part_sizes = np.zeros(self.size,dtype=np.int32); # so each process knows how many
         # lattice points are local to each partition -- particularly for offseting MPI write operations.
         self.local_to_global = {}; self.global_to_local = {};
-#        indx = 0;  #initialize the global counter
-#        self.num_local_nodes = 0
-#        with open('parts.lbm') as parts:
-#            for p in parts:
-#                p_i = np.int32(p); # convert to np.int32
-#                self.part_sizes[p_i]+= 1 # increment the counter for particular partition num_local_nodes
-#                self.parts[indx] = p_i # store in my local array (will need to use this repeatedly)
-#                if p_i == self.rank: # if this lp is assigned to the current rank:
-#                    self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
-#                    self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
-#                    self.num_local_nodes+=1
-#                indx+=1 # either way increment the global counter
-
-
-        self.parts = np.fromfile('parts.lbm',dtype=np.int32).astype(np.int32)
-        indx=0;
+        indx = 0;  #initialize the global counter
         self.num_local_nodes = 0
-        for p in self.parts:
-            p_i = p
-            self.part_sizes[p_i]+=1
-            if p_i == self.rank: # if this lp is assigned to the current rank:
-                self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
-                self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
-                self.num_local_nodes+=1
-            indx+=1 # either way increment the global counter
+        with open('parts.lbm') as parts:
+            for p in parts:
+                p_i = np.int32(p); # convert to np.int32
+                self.part_sizes[p_i]+= 1 # increment the counter for particular partition num_local_nodes
+                self.parts[indx] = p_i # store in my local array (will need to use this repeatedly)
+                if p_i == self.rank: # if this lp is assigned to the current rank:
+                    self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
+                    self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
+                    self.num_local_nodes+=1
+                indx+=1 # either way increment the global counter
+
+
+#        self.parts = np.fromfile('parts.lbm',dtype=np.int32).astype(np.int32)
+#        indx=0;
+#        self.num_local_nodes = 0
+#        for p in self.parts:
+#            p_i = np.int32(p) # convert to np.int32
+#           self.part_sizes[p_i]+=1
+#           if p_i == self.rank: # if this lp is assigned to the current rank:
+#               self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
+#              self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
+#                self.num_local_nodes+=1
+#            indx+=1 # either way increment the global counter
                 
             
         # save the cumsum of all partitions with rank lower than self.rank
