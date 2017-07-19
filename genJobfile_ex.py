@@ -38,6 +38,7 @@ executableName = 'pyNFC_test.py'
 
 filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_test.py',
                'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', 'test_script.sh',
+               'inl.lbm', 'onl.lbm', 'snl.lbm', 'params.lbm', 'parts.lbm',
                'pyPartition.py','pyNFC_preprocess.py','pyNFC_postprocess.py',
                'partition_suggestion.py','partition_compare.py',
                'LBM_Interface.so','processNFC.py','hdf5Helper.py']
@@ -54,7 +55,7 @@ mpi_procs = mpi_procs_per_node*nnodes
 jobfileName = "%s.pbs"%(jobfileName)
 #--------- more-or-less fixed code below -----------------
 
-proj_id = 'USNAM37752431'
+proj_id = 'DTRAA02280EA8'
 
 # open the file
 jf = open(jobfileName,'w')
@@ -73,7 +74,7 @@ jf.write('#PBS -N %s \n'%jobName)
 jf.write('#PBS -j oe \n')
 #jf.write('#PBS -V \n')
 jf.write('#PBS -S /bin/bash \n')
-
+jf.write('#PBS -V\n')
 
 # Execution block
 jf.write('cd $WORKDIR\n')
@@ -91,12 +92,12 @@ for s in filesToCopy:
 #jf.write('cd $JOBDIR \n')  #<--- this was an error
 
 # invoke execution
-jf.write('module swap PrgEnv-cray PrgEnv-intel\n')
+#jf.write('module swap PrgEnv-cray PrgEnv-intel\n')
 #jf.write('module load costinit\n')
 #jf.write('module load python\n')
 #jf.write('module load numpy\n')
 #jf.write('module load scipy\n')
 #jf.write('module load mpi4py\n')
-jf.write('module load boost\n')
+#jf.write('module load boost\n')
 jf.write('./test_script.sh %s %s %d\n'%(latticeType,partitionType,mpi_procs))
 jf.close()

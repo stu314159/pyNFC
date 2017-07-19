@@ -6,7 +6,8 @@
 # number of partitions  (positive integer)
 
 # pre-process
-python ./pyNFC_preprocess.py $1 $2 $3
+PYTHON_EXE=/p/home/sblair/anaconda2/bin/python
+$PYTHON_EXE ./pyNFC_preprocess.py $1 $2 $3
 
 # invoke pyNFC
 aprun -n $3 ./pyNFC_test.py

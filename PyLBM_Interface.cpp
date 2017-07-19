@@ -87,6 +87,42 @@ void PyLBM_Interface::set_fOdd(boost::python::object obj)
   fOdd = (float *)buf;
 }
 
+void PyLBM_Interface::set_ux(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  ux = (float *)buf;
+}
+
+void PyLBM_Interface::set_uy(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  uy = (float *)buf;
+}
+
+void PyLBM_Interface::set_uz(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  uz = (float *)buf;
+}
+
+void PyLBM_Interface::set_rho(boost::python::object obj)
+{
+  PyObject* pobj = obj.ptr();
+  Py_buffer pybuf;
+  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+  void * buf = pybuf.buf;
+  rho = (float *)buf;
+}
+
 void PyLBM_Interface::set_adjacency(boost::python::object obj)
 {
   PyObject* pobj = obj.ptr();
@@ -210,6 +246,45 @@ void PyLBM_Interface::set_totalNodes(const int tn)
   totalNodes = tn;
 }
 
+void PyLBM_Interface::compute_local_data(const bool isEven)
+{
+  // get pointer to data
+  float * fIn;
+  if(isEven)
+  {
+    fIn = fEven;
+  }else
+  {
+    fIn = fOdd;
+  }
+  // declare local iteration variables
+  float ux_i, uy_i, uz_i,rho_i;
+  float * f;
+  int nd;
+  //iterate through the boundary nodes
+  for(int ndId = 0; ndId<bnl_sz; ndId++)
+  {
+    nd = boundary_nl[ndId]; //find local node number
+    f = fIn+(nd*numSpd); //calculate f ptr
+    //compute macroscopic data using myLattice object
+    myLattice->computeMacroscopicData(ux_i,uy_i,uz_i,rho_i,f);
+    // insert result into arrays
+    ux[nd] = ux_i; uy[nd]=uy_i; uz[nd]=uz_i; rho[nd]=rho_i;
+  }
+
+  //iterate through the interior nodes
+  for(int ndId = 0; ndId<inl_sz; ndId++)
+  {
+    nd = interior_nl[ndId]; //find local node number
+    f = fIn+(nd*numSpd); //calculate f ptr
+    //compute macroscopic data using myLattice object
+    myLattice->computeMacroscopicData(ux_i,uy_i,uz_i,rho_i,f);
+    // insert result into arrays
+    ux[nd] = ux_i; uy[nd]=uy_i; uz[nd]=uz_i; rho[nd]=rho_i;
+  }
+
+}
+
 void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 {
   if(isEven)
@@ -274,5 +349,10 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         .def("set_inlSZ",&PyLBM_Interface::set_inlSZ)
         .def("set_totalNodes",&PyLBM_Interface::set_totalNodes)
         .def("process_nodeList",&PyLBM_Interface::process_nodeList)
+        .def("set_ux",&PyLBM_Interface::set_ux)
+        .def("set_uy",&PyLBM_Interface::set_uy)
+        .def("set_uz",&PyLBM_Interface::set_uz)
+        .def("set_rho",&PyLBM_Interface::set_rho)
+        .def("compute_local_data",&PyLBM_Interface::compute_local_data)
      ;
 }

@@ -6,8 +6,8 @@ BOOST_PYLIB = py27
  
 # location of the Boost Python include files and library
  
-BOOST_INC = /app/COST/boost/1.58.0/gnu/include
-BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
+BOOST_INC = /app/unsupported/COST/boost/1.58.0/gnu/include
+BOOST_LIB = /app/unsupported/COST/boost/1.58.0/gnu/lib
 
 # compile mesh classes
 TARGET = LBM_Interface
