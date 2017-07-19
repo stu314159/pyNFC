@@ -9,7 +9,7 @@
 python ./pyNFC_preprocess.py $1 $2 $3
 
 # invoke pyNFC
-mpirun -n $3 ./pyNFC_test.py
+mpirun -np $3 ./pyNFC_test.py
 
 # post-process the results
-mpirun -n 10 ./pyNFC_postprocess.py
+python ./processNFC.py

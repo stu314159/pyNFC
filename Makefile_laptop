@@ -17,12 +17,14 @@ EXT=cpp
 MPI_CC=g++
 MPI_FLAGS= -std=c++11 -O3 -Wall -fPIC
 
-SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp  
-OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler.o
+SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
+	LBM_HaloData.cpp
+OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler.o \
+	LBM_HaloData.o
 	 
 
 $(FILE).so: $(FILE).o $(OBJECTS)
-	g++ -std=c++11 -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L/home/stu/anaconda2/lib/python$(PYTHON_VERSION)/config -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
+	g++ -std=c++11 -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
  
 $(FILE).o: $(FILE).cpp
 	g++ -std=c++11 -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -fPIC -c $(FILE).$(EXT)
