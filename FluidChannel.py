@@ -818,9 +818,9 @@ class FluidChannel:
    
         Y,Z,X = np.meshgrid(y,z,x);
     
-        self.x = np.reshape(X,self.nnodes)
-        self.y = np.reshape(Y,self.nnodes)
-        self.z = np.reshape(Z,self.nnodes)
+        self.x = np.reshape(X,int(self.nnodes))
+        self.y = np.reshape(Y,int(self.nnodes))
+        self.z = np.reshape(Z,int(self.nnodes))
 
         # get fluid properties from the included fluid library
         self.rho_p, self.nu_p = fluid_properties(fluid)
