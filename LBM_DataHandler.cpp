@@ -31,39 +31,7 @@ LBM_DataHandler::~LBM_DataHandler()
 
 int LBM_DataHandler::get_numSpd()
 {
-  return numSpd;
-}
-
-/*
-void LBM_DataHandler::set_fIn(boost::python::object obj)
-{
-  PyObject* pobj = obj.ptr();
-  Py_buffer pybuf;
-  PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-  void * buf = pybuf.buf;
-  f = (float *)buf;
-  PyBuffer_Release(&pybuf);
+	return numSpd;
 }
 
 
-void LBM_DataHandler::multFin(float mult)
-{
-   for(int i=0;i<numSpd;i++)
-   {
-      f[i]=mult*f[i];
-   }
-}
-
-
-
-using namespace boost::python;
-
-BOOST_PYTHON_MODULE(LDH)
-{
-    class_<LBM_DataHandler>("LBM_DataHandler",init<int>())
-        .def("get_numSpd",&LBM_DataHandler::get_numSpd)
-        .def("set_fIn",&LBM_DataHandler::set_fIn)
-        .def("multFin",&LBM_DataHandler::multFin)
-    ;
-}
-*/

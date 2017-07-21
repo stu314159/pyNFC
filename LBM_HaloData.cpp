@@ -16,19 +16,19 @@ LBM_HaloData::~LBM_HaloData()
 
 void LBM_HaloData::extractHaloData(const float * f)
 {
-  for(int hIdx=0;hIdx<numData;hIdx++)
-  {
-     data_buf[hIdx] = f[local_nn[hIdx]*numSpd+spd[hIdx]];     
-  }
+	for(int hIdx=0;hIdx<numData;hIdx++)
+	{
+		data_buf[hIdx] = f[local_nn[hIdx]*numSpd+spd[hIdx]];
+	}
 
 
 }
 
 void LBM_HaloData::distributeHaloData(float * f)
 {
-  for(int hIdx=0;hIdx<numData;hIdx++)
-  {
-    f[local_nn[hIdx]*numSpd+spd[hIdx]] = data_buf[hIdx];
-  }
+	for(int hIdx=0;hIdx<numData;hIdx++)
+	{
+		f[local_nn[hIdx]*numSpd+spd[hIdx]] = data_buf[hIdx];
+	}
 
 }
