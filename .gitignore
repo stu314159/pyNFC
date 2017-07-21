@@ -11,3 +11,6 @@
 *.h5
 *.xmf
 *.pbs
+*.cproject
+*.project
+*.settings/
