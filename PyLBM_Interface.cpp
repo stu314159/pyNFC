@@ -328,5 +328,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_uz",&PyLBM_Interface::set_uz)
         		.def("set_rho",&PyLBM_Interface::set_rho)
         		.def("compute_local_data",&PyLBM_Interface::compute_local_data)
+        		.def("registerNeighbor",&PyLBM_Interface::registerNeighbor)
         		;
 }
