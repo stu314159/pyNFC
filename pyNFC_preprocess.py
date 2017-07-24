@@ -34,7 +34,7 @@ numProcs = args.numProcs
 aLx_p = 6.4
 aLy_p = 3.0
 aLz_p = 14.0
-aNdivs = 21
+aNdivs = 11
 
 # wall mounted brick parameters
 x_c = 3.5;
@@ -59,12 +59,12 @@ geom_filename = geom_file_stub + '.mat'
 #lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 #partition_style = 'metis' # [ '1D' | '3D' | 'metis']
 
-Num_ts = 2001
+Num_ts = 201
 ts_rep_freq = 50
 Warmup_ts = 0
-plot_freq = 200
+plot_freq = 20
 Re = 50
-dt = 0.005
+dt = 0.02
 Cs = 0
 Restart_flag = 0
 
