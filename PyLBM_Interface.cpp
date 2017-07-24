@@ -355,6 +355,38 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 
 }
 
+
+void PyLBM_Interface::extract_halo_data(bool isEven)
+{
+	float * f;
+	if (isEven)
+	{
+		f = fOdd;
+	}else
+	{
+		f = fEven;
+	}
+	myHalo_out.extractHaloData(f);
+
+
+}
+
+void PyLBM_Interface::insert_boundary_data(bool isEven)
+{
+	float * f;
+	if (isEven)
+	{
+		f = fOdd;
+	}else
+	{
+		f = fEven;
+	}
+
+	myHalo_in.distributeHaloData(f);
+
+
+}
+
 using namespace boost::python;
 
 BOOST_PYTHON_MODULE(LBM_Interface)
@@ -387,5 +419,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("registerNeighbor",&PyLBM_Interface::registerNeighbor)
         		.def("getHaloOutPointers",&PyLBM_Interface::getHaloOutPointers)
         		.def("getHaloInPointers",&PyLBM_Interface::getHaloInPointers)
+        		.def("extract_halo_data",&PyLBM_Interface::extract_halo_data)
+        		.def("insert_boundary_data",&PyLBM_Interface::insert_boundary_data)
         		;
 }

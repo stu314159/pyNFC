@@ -49,6 +49,8 @@ public:
 			boost::python::object spd, boost::python::object data, int ngb);
 	void getHaloOutPointers(boost::python::object lnd_num,
 			boost::python::object spd, boost::python::object data, int ngb);
+	void extract_halo_data(bool isEven);
+	void insert_boundary_data(bool isEven);
 	LBM_DataHandler fData;
 	Lattice * myLattice;
 

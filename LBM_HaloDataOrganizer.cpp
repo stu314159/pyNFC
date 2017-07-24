@@ -29,3 +29,21 @@ void LBM_HaloDataOrganizer::initialize_ngb_pointers(const int ngbNum, int * nd_n
 	HaloData[ngbNum].set_spd(spd);
 	HaloData[ngbNum].set_data(data);
 }
+
+void LBM_HaloDataOrganizer::extractHaloData(const float * f)
+{
+	// iterate through the keys of HaloData and call the extractHaloData on each value
+	for(std::map<int,LBM_HaloData>::iterator iter = HaloData.begin(); iter != HaloData.end(); iter++)
+	{
+		iter->second.extractHaloData(f);
+	}
+
+}
+
+void LBM_HaloDataOrganizer::distributeHaloData(float * f)
+{
+	for(std::map<int,LBM_HaloData>::iterator iter = HaloData.begin(); iter != HaloData.end(); iter++)
+	{
+		iter->second.distributeHaloData(f);
+	}
+}

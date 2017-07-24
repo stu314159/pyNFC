@@ -18,6 +18,8 @@ public:
 	~LBM_HaloDataOrganizer();
 	void insert_ngb(const int ngbNum,const int numData, const int numSpd);
 	void initialize_ngb_pointers(const int ngbNum, int * nd_num, int * spd, float * data);
+	void extractHaloData(const float * f);
+	void distributeHaloData(float * f);
 
 
 private:

@@ -125,7 +125,8 @@ class NFC_LBM_partition(object):
         # extract halo data
 #        if self.rank == tst_rank:
 #            print "rank %d extracting halo data" % (tst_rank)
-        self.extract_halo_data(isEven)
+        #self.extract_halo_data(isEven)
+        self.myLB.extract_halo_data(isEven)
 
         # initiate communication of halo data
 #        if self.rank == tst_rank:
@@ -157,7 +158,8 @@ class NFC_LBM_partition(object):
         # load incoming data to appropriate array
 #        if self.rank == tst_rank:
 #            print "rank %d inserting boundary data" % (tst_rank)
-        self.insert_boundary_data(isEven)
+        #self.insert_boundary_data(isEven)
+        self.myLB.insert_boundary_data(isEven)
 
         # done.
         
