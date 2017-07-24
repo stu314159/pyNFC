@@ -24,6 +24,11 @@ PyLBM_Interface::~PyLBM_Interface()
 
 }
 
+void PyLBM_Interface::registerNeighbor(const int ngbNum,const int numData)
+{
+	myHalo.insert(ngbNum,numData,numSpd);
+}
+
 void PyLBM_Interface::set_fIn(const float * fIn, const int nd)
 {
 	for(int spd = 0; spd<numSpd; spd++)

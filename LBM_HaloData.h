@@ -5,12 +5,17 @@ class LBM_HaloData
 {
 public:
 
-	LBM_HaloData(const int numData, const int numSpd);
+	LBM_HaloData(int numData, int numSpd);
+	LBM_HaloData();
 	~LBM_HaloData();
+	LBM_HaloData(const LBM_HaloData& hd); // copy constructor
+	LBM_HaloData& operator=(const LBM_HaloData& hd)=default; //compiler generate shallow copy
 	void set_numData(const int nd){numData = nd;};
 	void set_local_nn(int* nn){local_nn = nn;};
 	void set_spd(int * s){spd = s;};
 	void set_data(float * db){data_buf = db;};
+	int get_numData(){return numData;};
+	int get_numSpd(){return numSpd;};
 	void extractHaloData(const float * f);
 	void distributeHaloData(float * f);
 
@@ -22,7 +27,7 @@ private:
 	float * data_buf; // pointer to array of data
 
 	int numData; // number of data items.
-	const int numSpd; // number of speeds for the associated LBM lattice (needed for dist)
+	int numSpd; // number of speeds for the associated LBM lattice (needed for dist)
 };
 
 

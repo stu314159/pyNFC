@@ -17,4 +17,7 @@ LBM_HaloDataOrganizer::~LBM_HaloDataOrganizer()
 }
 
 
-
+void LBM_HaloDataOrganizer::insert(const int ngbNum,const int numData, const int numSpd)
+{
+	HaloData[ngbNum]=LBM_HaloData(numData,numSpd);
+}

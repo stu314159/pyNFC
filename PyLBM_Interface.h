@@ -6,6 +6,8 @@
 #include "D3Q19Lattice.h"
 #include "D3Q27Lattice.h"
 #include "LBM_DataHandler.h"
+#include "LBM_HaloData.h"
+#include "LBM_HaloDataOrganizer.h"
 
 #include <boost/python.hpp>
 #include <cstdlib>
@@ -42,8 +44,11 @@ public:
 	void streamData(float * fOut,const int nd);
 	int get_numSpd();
 	int get_ndType();
+	void registerNeighbor(const int ngbNumber,const int numData);
 	LBM_DataHandler fData;
 	Lattice * myLattice;
+
+	LBM_HaloDataOrganizer myHalo;
 
 
 private:
