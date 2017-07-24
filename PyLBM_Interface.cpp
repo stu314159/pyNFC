@@ -26,7 +26,8 @@ PyLBM_Interface::~PyLBM_Interface()
 
 void PyLBM_Interface::registerNeighbor(const int ngbNum,const int numData)
 {
-	myHalo.insert_ngb(ngbNum,numData,numSpd);
+	myHalo_in.insert_ngb(ngbNum,numData,numSpd);
+	myHalo_out.insert_ngb(ngbNum,numData,numSpd);
 }
 
 void PyLBM_Interface::set_fIn(const float * fIn, const int nd)
@@ -156,6 +157,61 @@ void PyLBM_Interface::set_snl(boost::python::object obj)
 	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
 	void * buf = pybuf.buf;
 	snl = (int *)buf;
+}
+
+void PyLBM_Interface::getHaloInPointers(boost::python::object nd,
+		boost::python::object spd, boost::python::object data, int ngb)
+{
+	PyObject * pobj1 = nd.ptr();
+	PyObject * pobj2 = spd.ptr();
+	PyObject * pobj3 = data.ptr();
+
+	Py_buffer pybuf1;
+	Py_buffer pybuf2;
+	Py_buffer pybuf3;
+
+	PyObject_GetBuffer(pobj1,&pybuf1,PyBUF_SIMPLE);
+	PyObject_GetBuffer(pobj2,&pybuf2,PyBUF_SIMPLE);
+	PyObject_GetBuffer(pobj3,&pybuf3,PyBUF_SIMPLE);
+
+	void * buf1 = pybuf1.buf;
+	void * buf2 = pybuf2.buf;
+	void * buf3 = pybuf3.buf;
+
+	int * lnd_list = (int *) buf1;
+	int * spd_list = (int *) buf2;
+	float * dt = (float *) buf3;
+
+	myHalo_in.initialize_ngb_pointers(ngb,lnd_list,spd_list,dt);
+
+
+}
+
+void PyLBM_Interface::getHaloOutPointers(boost::python::object nd,
+		boost::python::object spd, boost::python::object data,int ngb)
+{
+	PyObject * pobj1 = nd.ptr();
+		PyObject * pobj2 = spd.ptr();
+		PyObject * pobj3 = data.ptr();
+
+		Py_buffer pybuf1;
+		Py_buffer pybuf2;
+		Py_buffer pybuf3;
+
+		PyObject_GetBuffer(pobj1,&pybuf1,PyBUF_SIMPLE);
+		PyObject_GetBuffer(pobj2,&pybuf2,PyBUF_SIMPLE);
+		PyObject_GetBuffer(pobj3,&pybuf3,PyBUF_SIMPLE);
+
+		void * buf1 = pybuf1.buf;
+		void * buf2 = pybuf2.buf;
+		void * buf3 = pybuf3.buf;
+
+		int * lnd_list = (int *) buf1;
+		int * spd_list = (int *) buf2;
+		float * dt = (float *) buf3;
+
+		myHalo_out.initialize_ngb_pointers(ngb,lnd_list,spd_list,dt);
+
 }
 
 
@@ -329,5 +385,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_rho",&PyLBM_Interface::set_rho)
         		.def("compute_local_data",&PyLBM_Interface::compute_local_data)
         		.def("registerNeighbor",&PyLBM_Interface::registerNeighbor)
+        		.def("getHaloOutPointers",&PyLBM_Interface::getHaloOutPointers)
+        		.def("getHaloInPointers",&PyLBM_Interface::getHaloInPointers)
         		;
 }

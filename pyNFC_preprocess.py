@@ -8,7 +8,7 @@
 
 import FluidChannel as fc
 import pyPartition as pp
-from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+#from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
 import numpy as np
 import scipy
 import math

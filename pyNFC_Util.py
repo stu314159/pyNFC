@@ -44,6 +44,8 @@ class NFC_Halo_Data_Organizer(object):
             for v in values:
                 self.gnn_list.append(k)
                 self.spd_list.append(v)
+                
+        self.spd_array = np.array(self.spd_list,dtype=np.int32)
 
               
 
@@ -54,6 +56,8 @@ class NFC_Halo_Data_Organizer(object):
         self.lnn_list = []
         for g in self.gnn_list: # preserve order?
             self.lnn_list.append(global_to_local[g]) #preserve order?
+            
+        self.lnn_array = np.array(self.lnn_list,dtype=np.int32)
 
     def count_data_members(self):
         """

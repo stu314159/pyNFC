@@ -559,6 +559,19 @@ class NFC_LBM_partition(object):
 
         self.ngb_list = ngb_list[:] # make this a data member
         self.num_ngb = len(self.ngb_list)
+        
+        # register and initialize neighbors in PyLBM_Interface object
+        for ngb in self.ngb_list:
+            numData = self.HDO_out_dict[ngb].count_data_members()
+            self.myLB.registerNeighbor(ngb,numData)
+            # get pointers to incoming halo data
+            self.myLB.getHaloInPointers(self.HDO_in_dict[ngb].lnn_array,
+                                        self.HDO_in_dict[ngb].spd_array,
+                                        self.HDO_in_dict[ngb].buffer,ngb)
+            # get pointers to outgoing halo data
+            self.myLB.getHaloOutPointers(self.HDO_out_dict[ngb].lnn_array,
+                                        self.HDO_out_dict[ngb].spd_array,
+                                        self.HDO_out_dict[ngb].buffer,ngb)
             
        
     def extract_halo_data(self,isEven):

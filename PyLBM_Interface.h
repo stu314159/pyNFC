@@ -45,10 +45,15 @@ public:
 	int get_numSpd();
 	int get_ndType();
 	void registerNeighbor(const int ngbNumber,const int numData);
+	void getHaloInPointers(boost::python::object lnd_num,
+			boost::python::object spd, boost::python::object data, int ngb);
+	void getHaloOutPointers(boost::python::object lnd_num,
+			boost::python::object spd, boost::python::object data, int ngb);
 	LBM_DataHandler fData;
 	Lattice * myLattice;
 
-	LBM_HaloDataOrganizer myHalo;
+	LBM_HaloDataOrganizer myHalo_in;
+	LBM_HaloDataOrganizer myHalo_out;
 
 
 private:
