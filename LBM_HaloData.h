@@ -11,6 +11,7 @@ public:
 	LBM_HaloData(const LBM_HaloData& hd); // copy constructor
 	LBM_HaloData& operator=(const LBM_HaloData& hd)=default; //compiler generate shallow copy
 	void set_numData(const int nd){numData = nd;};
+	void set_numSpd(const int s){numSpd=s;};
 	void set_local_nn(int* nn){local_nn = nn;};
 	void set_spd(int * s){spd = s;};
 	void set_data(float * db){data_buf = db;};
