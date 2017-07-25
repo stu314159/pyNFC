@@ -15,7 +15,11 @@ FILE=PyLBM_Interface
 EXT=cpp
 
 MPI_CC=CC
-MPI_FLAGS= -std=c++11 -fast -acc -ta=tesla:cc35 -fPIC
+ifeq ($(PE_ENV),PGI)
+	MPI_FLAGS= -std=c++11 -fast -acc -ta=tesla:cc35 -fPIC
+else
+	MPI_FLAGS=-O3 -hacc -hlist=m
+endif
 MY_LIBS= -lboost_python-$(BOOST_PYLIB) -lpython$(PYTHON_VERSION)
 
 SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
