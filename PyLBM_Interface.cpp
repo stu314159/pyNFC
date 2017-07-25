@@ -30,7 +30,7 @@ void PyLBM_Interface::registerNeighbor(const int ngbNum,const int numData)
 	myHalo_out.insert_ngb(ngbNum,numData,numSpd);
 }
 
-void PyLBM_Interface::set_fIn(const float * fIn, const int nd)
+void PyLBM_Interface::set_fIn(const float * fIn, const int nd, LBM_DataHandler& fData)
 {
 	for(int spd = 0; spd<numSpd; spd++)
 	{
@@ -39,7 +39,7 @@ void PyLBM_Interface::set_fIn(const float * fIn, const int nd)
 
 }
 
-void PyLBM_Interface::streamData(float * fOut, const int nd)
+void PyLBM_Interface::streamData(float * fOut, const int nd,LBM_DataHandler& fData)
 {
 	int tgtNode;
 	for(int spd = 0; spd<numSpd; spd++)
@@ -225,12 +225,12 @@ int PyLBM_Interface::get_ndType()
 	return fData.nodeType;
 }
 
-void PyLBM_Interface::computeFout()
+void PyLBM_Interface::computeFout(LBM_DataHandler & fData)
 {
 	myLattice->computeFout(fData);
 }
 
-void PyLBM_Interface::set_ndType(const int nd)
+void PyLBM_Interface::set_ndType(const int nd, LBM_DataHandler& fData)
 {
 	fData.nodeType = 0;
 	if(snl[nd]==1)
@@ -335,24 +335,26 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 	{
 		ndList = interior_nl; ndList_len = inl_sz;
 	}
-
+#pragma omp parallel for
 	for(int ndI=0; ndI<ndList_len;ndI++)
 	{
-		// get the node number (for the local partition)
+		LBM_DataHandler fData_l(numSpd);
+                fData_l.u_bc = fData.u_bc;
+                fData_l.rho_bc = fData.rho_bc;
+                fData_l.omega = fData.omega;
+                // get the node number (for the local partition)
 		int nd = ndList[ndI];
 		// set the node type in fData
-		set_ndType(nd);
+		set_ndType(nd,fData_l);
 		// get the incoming data
-		set_fIn(fIn,nd);
+		set_fIn(fIn,nd,fData_l);
 		// compute fOut
-		computeFout(); // passes fData to the appropriate lattice function and gets fOut
+		computeFout(fData_l); // passes fData to the appropriate lattice function and gets fOut
 		// stream data to fOut array
-		streamData(fOut,nd);
+		streamData(fOut,nd,fData_l);
 
 	}
-
-
-
+  
 }
 
 

@@ -25,7 +25,8 @@ BOOST_LIB = /usr/lib/x86_64-linux-gnu
 # for compilation on SHEPARD/CONRAD with PGI or CRAY compilers
 ifeq ($(PE_ENV),PGI)
 	MPI_CC=CC
-	MPI_FLAGS= -std=c++11 -fast -acc -ta=tesla:cc35 -fPIC
+	MPI_FLAGS= -std=c++11 -fast -acc -ta=tesla:cc35 -fPIC \
+	-mp=nonuma -Minfo
 	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
 	BOOST_INC = /app/COST/boost/1.58.0/gnu/include

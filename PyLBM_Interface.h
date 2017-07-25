@@ -11,13 +11,14 @@
 
 #include <boost/python.hpp>
 #include <cstdlib>
+#include <omp.h>
 
 class PyLBM_Interface
 {
 public:
 	PyLBM_Interface(const int numSpd);
 	~PyLBM_Interface();
-	void set_fIn(const float* fIn, const int nd);
+	void set_fIn(const float* fIn, const int nd,LBM_DataHandler& f);
 	//void get_fOut(boost::python::object obj);
 	void set_fEven(boost::python::object obj);
 	void set_fOdd(boost::python::object obj);
@@ -34,14 +35,14 @@ public:
 	void set_inl(boost::python::object obj);
 	void set_onl(boost::python::object obj);
 	void set_snl(boost::python::object obj);
-	void set_ndType(const int nt);
+	void set_ndType(const int nt,LBM_DataHandler& f);
 	void set_Ubc(const float u);
 	void set_rhoBC(const float rho);
 	void set_omega(const float o);
 	void set_totalNodes(const int tn);
 	void process_nodeList(const bool isEven,const int nodeList);
-	void computeFout();
-	void streamData(float * fOut,const int nd);
+	void computeFout(LBM_DataHandler& f);
+	void streamData(float * fOut,const int nd,LBM_DataHandler& f);
 	int get_numSpd();
 	int get_ndType();
 	void registerNeighbor(const int ngbNumber,const int numData);
