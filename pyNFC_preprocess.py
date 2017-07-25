@@ -64,7 +64,7 @@ ts_rep_freq = 50
 Warmup_ts = 0
 plot_freq = 20
 Re = 25
-dt = 0.02
+dt = 0.01
 Cs = 0
 Restart_flag = 0
 
