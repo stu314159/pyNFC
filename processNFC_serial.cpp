@@ -27,7 +27,7 @@ int main(int argc, char**argv){
   int Nx, Ny, Nz, restartFlag;
   double Lx_p, Ly_p, Lz_p, t_conv_fact, l_conv_fact, p_conv_fact;
   
-  std::cout << "opening params.lbm" << std::endl;
+  
   std::ifstream input;
   input.open("params.lbm",std::ifstream::in);
   input >> latticeType >> Num_ts >> ts_rep_freq >> warmup_ts >> plot_freq;
@@ -36,10 +36,10 @@ int main(int argc, char**argv){
   input >> Lx_p >> Ly_p >> Lz_p >> t_conv_fact >> l_conv_fact >> p_conv_fact;
   input.close();
   
-  std::cout << "done with params.lbm" << std::endl;
+  
 
   std::cout << Nx << " " << Ny << " " << Nz << std::endl;
-  std::cout << "l_conv_fact = " << l_conv_fact << std::endl;
+  
   double u_conv_fact = t_conv_fact / l_conv_fact;
   int nDumps = (Num_ts - warmup_ts)/plot_freq + 1;
 
