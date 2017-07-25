@@ -46,6 +46,18 @@ int main(int argc, char**argv){
   int tot = Nx * Ny * Nz;
   int xdims[3] = {Nz,Ny,Nx}; 
 
+  int * order = new int[tot];
+  // read ordering data
+  std::ifstream order_f;
+  order_f.open("ordering.b_dat",std::ifstream::in|std::ios::binary);
+  order_f.read((char*)order,tot*4);
+  order_f.close();
+
+  float * pi = new float[tot];
+  float * xi = new float[tot];
+  float * yi = new float[tot];
+  float * zi = new float[tot];
+
   std::string end = ".b_dat";
   std::stringstream s;
   std::string res;
@@ -98,13 +110,22 @@ int main(int argc, char**argv){
     s.str("");
     s.clear();
 
+    // re-order the data
+    for(int i=0;i<tot;i++)
+    {
+      xi[order[i]] = x_dat[i];
+      yi[order[i]] = y_dat[i];
+      zi[order[i]] = z_dat[i];
+      pi[order[i]] = p_dat[i];
+    }
+
 
     for(int i = 0; i < tot; i++){
-      v_dat[i] = sqrt((x_dat[i]*x_dat[i])+(y_dat[i]*y_dat[i])+(z_dat[i]*z_dat[i])); 
+      v_dat[i] = sqrt((xi[i]*xi[i])+(yi[i]*yi[i])+(zi[i]*zi[i])); 
     }
   
     std::cout << "Processing data dump #" << d << std::endl;
-    writeH5(p_dat,x_dat,y_dat,z_dat,v_dat,"out.h5",xdims,d);
+    writeH5(pi,xi,yi,zi,v_dat,"out.h5",xdims,d);
     writeXdmf(xdims,"data.xmf",d);
   }
  
@@ -113,6 +134,12 @@ int main(int argc, char**argv){
   delete [] y_dat;
   delete [] z_dat;
   delete [] v_dat;
+
+  delete [] order;
+  delete [] xi;
+  delete [] yi;
+  delete [] zi;
+  delete [] pi;
 
   return 0;
 }
