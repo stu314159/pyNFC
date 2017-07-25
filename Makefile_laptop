@@ -14,8 +14,8 @@ TARGET = LBM_Interface
 FILE=PyLBM_Interface
 EXT=cpp
 
-MPI_CC=g++
-MPI_FLAGS= -std=c++11 -O3 -Wall -fPIC
+CC=pgc++
+CC_FLAGS= -fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
 
 SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
 	LBM_HaloData.cpp LBM_HaloDataOrganizer.cpp
@@ -24,13 +24,13 @@ OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler
 	 
 
 $(FILE).so: $(FILE).o $(OBJECTS)
-	g++ -std=c++11 -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
+	$(CC) $(CC_FLAGS) -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
  
 $(FILE).o: $(FILE).cpp
-	g++ -std=c++11 -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -fPIC -c $(FILE).$(EXT)
+	$(CC) $(CC_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $(FILE).$(EXT)
 
 %.o:%.cpp
-	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $^
+	$(CC) $(CC_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $^
 
 clean:
 	rm -f *.o *.so $(TARGET) *~
