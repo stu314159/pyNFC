@@ -34,7 +34,7 @@ endif
 
 ifeq ($(PE_ENV),CRAY)
 	MPI_CC=CC
-	MPI_FLAGS=-O3 -hacc -hlist=m
+	MPI_FLAGS=-O3 -hacc -hlist=m -fPIC -h std=c++11
 	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
 	BOOST_INC = /app/COST/boost/1.58.0/gnu/include
