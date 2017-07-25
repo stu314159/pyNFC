@@ -34,7 +34,7 @@ numProcs = args.numProcs
 aLx_p = 6.4
 aLy_p = 3.0
 aLz_p = 14.0
-aNdivs = 11
+aNdivs = 21
 
 # wall mounted brick parameters
 x_c = 3.5;
@@ -63,7 +63,7 @@ Num_ts = 201
 ts_rep_freq = 50
 Warmup_ts = 0
 plot_freq = 20
-Re = 50
+Re = 25
 dt = 0.02
 Cs = 0
 Restart_flag = 0
