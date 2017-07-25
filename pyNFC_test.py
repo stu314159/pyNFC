@@ -1,4 +1,3 @@
-##!/usr/bin/env python
 #!/p/home/sblair/anaconda2/bin/python
 """
  testing implementation of pyNFC
