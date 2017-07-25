@@ -13,9 +13,20 @@ ux_fn = 'ux%d.b_dat'%dump_num
 uy_fn = 'uy%d.b_dat'%dump_num
 uz_fn = 'uz%d.b_dat'%dump_num
 
-ux = np.fromfile(ux_fn, dtype=np.float32)
-uy = np.fromfile(uy_fn, dtype=np.float32)
-uz = np.fromfile(uz_fn, dtype=np.float32)
+ux_i = np.fromfile(ux_fn, dtype=np.float32)
+uy_i = np.fromfile(uy_fn, dtype=np.float32)
+uz_i = np.fromfile(uz_fn, dtype=np.float32)
+
+order_map = np.fromfile('ordering.b_dat',dtype=np.int32).astype(np.int32)
+ux = np.zeros_like(ux_i)
+uy = np.zeros_like(uy_i)
+uz = np.zeros_like(uz_i)
+
+ux[order_map] = ux_i
+uy[order_map] = uy_i
+uz[order_map] = uz_i
+
+
 
 umag_tst = np.sqrt(ux**2+uy**2+uz**2)
 
