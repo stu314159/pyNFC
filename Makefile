@@ -14,11 +14,31 @@ TARGET = LBM_Interface
 FILE=PyLBM_Interface
 EXT=cpp
 
-MPI_CC=CC
+# varibles that work on local laptopt
+MPI_CC=pgc++
+MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
+PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/home/stu/anaconda2/lib
+BOOST_INC = /usr/include
+BOOST_LIB = /usr/lib/x86_64-linux-gnu
+
+# for compilation on SHEPARD/CONRAD with PGI or CRAY compilers
 ifeq ($(PE_ENV),PGI)
+	MPI_CC=CC
 	MPI_FLAGS= -std=c++11 -fast -acc -ta=tesla:cc35 -fPIC
-else
+	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
+	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+	BOOST_INC = /app/COST/boost/1.58.0/gnu/include
+	BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
+endif
+
+ifeq ($(PE_ENV),CRAY)
+	MPI_CC=CC
 	MPI_FLAGS=-O3 -hacc -hlist=m
+	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
+	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+	BOOST_INC = /app/COST/boost/1.58.0/gnu/include
+	BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
 endif
 MY_LIBS= -lboost_python-$(BOOST_PYLIB) -lpython$(PYTHON_VERSION)
 
