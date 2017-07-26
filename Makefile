@@ -25,22 +25,41 @@ BOOST_LIB = /usr/lib/x86_64-linux-gnu
 # for compilation on SHEPARD/CONRAD with PGI or CRAY compilers
 ifeq ($(PE_ENV),PGI)
 	MPI_CC=CC
-	MPI_FLAGS= -std=c++11 -fast -acc -ta=tesla:cc35 -fPIC \
+	MPI_FLAGS= -std=c++11 -fast -fPIC \
 	-mp=nonuma -Minfo
 	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
-	BOOST_INC = /app/COST/boost/1.58.0/gnu/include
-	BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
+	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
+	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
 endif
 
 ifeq ($(PE_ENV),CRAY)
 	MPI_CC=CC
-	MPI_FLAGS=-O3 -hacc -hlist=m -fPIC -h std=c++11
-	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
+	MPI_FLAGS=-O3 -h omp  -hlist=m -fPIC -h std=c++11
+	PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
-	BOOST_INC = /app/COST/boost/1.58.0/gnu/include
-	BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
+	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
+	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
 endif
+
+ifeq ($(PE_ENV),INTEL)
+	MPI_CC=CC
+	MPI_FLAGS=-O3 -std=c++11 -xHost -openmp -fPIC
+	PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
+	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
+	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
+endif
+
+ifeq ($(PE_ENV),GNU)
+	MPI_CC=CC
+	MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
+	PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
+	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
+	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
+endif
+
 MY_LIBS= -lboost_python-$(BOOST_PYLIB) -lpython$(PYTHON_VERSION)
 
 SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
