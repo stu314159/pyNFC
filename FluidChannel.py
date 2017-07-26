@@ -179,7 +179,9 @@ class TwinJet(EmptyChannel):
     
     def get_obstList(self,X,Y,Z):
         
-        x = np.array(X); y = np.array(Y); z = np.array(Z);
+       #x = np.array(X); 
+        y = np.array(Y); 
+        z = np.array(Z);
         obst_l = np.where(z < self.L)
         obst_h = np.where(z > 0.2)
         obst = np.intersect1d(obst_l[:],obst_h[:])
@@ -328,11 +330,11 @@ class ConeScourPit(EmptyChannel):
         """
        
         x_c_cone = self.x_c
-	z_c_cone = self.z_c
+        z_c_cone = self.z_c
         y_c_cone = 0
         x_s = 2.25*2*self.cyl_rad
         rad_cone = x_s + self.cyl_rad
-	h_cone = rad_cone*0.57735
+        h_cone = rad_cone*0.57735
 
         floor_part = np.array(np.where(Y < h_cone)).flatten()
 
@@ -853,6 +855,17 @@ class FluidChannel:
 
         self.obst_list = np.setxor1d(self.obst_list[:],
             np.intersect1d(self.obst_list[:],self.solid_list[:]))
+            
+        
+        self.ndType = np.zeros((self.nnodes,),dtype=np.int32)
+        # node types:
+        # regular fluid node: 0
+        # solid node: 1
+        # velocity zm (inlet) node: 2
+        # pressure zp (outlet) node: 3
+        self.ndType[np.union1d(self.obst_list,self.solid_list)] = 1
+        self.ndType[self.inlet_list] = 2
+        self.ndType[self.outlet_list] = 3
        
     def write_mat_file(self, geom_filename):
         """
@@ -868,9 +881,10 @@ class FluidChannel:
         mat_dict['Ny_divs'] = self.N_divs
         mat_dict['rho_p'] = self.rho_p
         mat_dict['nu_p'] = self.nu_p
-        mat_dict['snl'] = list(np.union1d(self.obst_list[:],self.solid_list[:]))
-        mat_dict['inl'] = list(self.inlet_list[:])
-        mat_dict['onl'] = list(self.outlet_list[:])
+#        mat_dict['snl'] = list(np.union1d(self.obst_list[:],self.solid_list[:]))
+#        mat_dict['inl'] = list(self.inlet_list[:])
+#        mat_dict['onl'] = list(self.outlet_list[:])
+        mat_dict['ndType'] = list(self.ndType[:])
 
         scipy.io.savemat(geom_filename,mat_dict)
 

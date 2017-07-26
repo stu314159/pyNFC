@@ -78,9 +78,10 @@ class NFC_LBM_partition(object):
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
         # pass pointers of node lists to myLB object
-        self.myLB.set_inl(self.inl)
-        self.myLB.set_onl(self.onl)
-        self.myLB.set_snl(self.snl)
+#        self.myLB.set_inl(self.inl)
+#        self.myLB.set_onl(self.onl)
+#        self.myLB.set_snl(self.snl)
+        self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
         self.myLB.set_adjacency(self.adjacency)
         self.myLB.set_fEven(self.fEven)
         self.myLB.set_fOdd(self.fOdd)
@@ -232,40 +233,50 @@ class NFC_LBM_partition(object):
          load pre-processor data into inl, onl and snl lists
         """
         
-        inl_filename = "inl.lbm"; 
+#        inl_filename = "inl.lbm"; 
+#        
+#        inl_f = open(inl_filename,'r');
+#        numINL = int(inl_f.readline());
+#        for i in range(numINL):
+#            gIN = int(inl_f.readline());
+#            if gIN in self.global_to_local:
+#               lIN = self.global_to_local[gIN]
+#               self.inl[lIN] = 1
+#        inl_f.close()
+#
+#        onl_filename = "onl.lbm";
+#        onl_f = open(onl_filename,'r');
+#        numONL = int(onl_f.readline());
+#        for i in range(numONL):
+#            gOUT = int(onl_f.readline());
+#            if gOUT in self.global_to_local:
+#                lOUT = self.global_to_local[gOUT]
+#                self.onl[lOUT] = 1
+#        onl_f.close()
+#
+#        snl_filename = "snl.lbm";
+#        snl_f = open(snl_filename,'r');
+#        numSNL = int(snl_f.readline());
+#        for i in range(numSNL):
+#            gSNL = int(snl_f.readline());
+#            if gSNL in self.global_to_local:
+#                lSNL = self.global_to_local[gSNL]
+#                self.snl[lSNL] = 1
+#        snl_f.close()
+#        
+#        self.inl = np.array(self.inl,dtype=np.int32)
+#        self.onl = np.array(self.onl,dtype=np.int32)
+#        self.snl = np.array(self.snl,dtype=np.int32)
         
-        inl_f = open(inl_filename,'r');
-        numINL = int(inl_f.readline());
-        for i in range(numINL):
-            gIN = int(inl_f.readline());
-            if gIN in self.global_to_local:
-               lIN = self.global_to_local[gIN]
-               self.inl[lIN] = 1
-        inl_f.close()
-
-        onl_filename = "onl.lbm";
-        onl_f = open(onl_filename,'r');
-        numONL = int(onl_f.readline());
-        for i in range(numONL):
-            gOUT = int(onl_f.readline());
-            if gOUT in self.global_to_local:
-                lOUT = self.global_to_local[gOUT]
-                self.onl[lOUT] = 1
-        onl_f.close()
-
-        snl_filename = "snl.lbm";
-        snl_f = open(snl_filename,'r');
-        numSNL = int(snl_f.readline());
-        for i in range(numSNL):
-            gSNL = int(snl_f.readline());
-            if gSNL in self.global_to_local:
-                lSNL = self.global_to_local[gSNL]
-                self.snl[lSNL] = 1
-        snl_f.close()
-        
-        self.inl = np.array(self.inl,dtype=np.int32)
-        self.onl = np.array(self.onl,dtype=np.int32)
-        self.snl = np.array(self.snl,dtype=np.int32)
+        ndType_filename = "ndType.lbm";
+        ndl_f = open(ndType_filename,'r');
+        numNt = int(self.Nx*self.Ny*self.Nz)
+        for i in range(numNt): # iterate through all members of the ndType file
+            gNt = int(ndl_f.readline()); # get the node type for the global node number
+            if i in self.global_to_local: # check if this global node number is in my partition
+                lNd = self.global_to_local[i] #if it is, get the local node number
+                self.ndT[lNd] = gNt # set the ndT list to the indicated number
+        ndl_f.close()
         
 
     def write_node_sorting(self):
@@ -377,10 +388,10 @@ class NFC_LBM_partition(object):
         #        uy[lp]+=self.ey[spd]*f[lp,spd];
         #        uz[lp]+=self.ez[spd]*f[lp,spd];
         #    ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
-        ux[np.where(self.snl[:self.num_local_nodes]==1)] = 0.;
-        uy[np.where(self.snl[:self.num_local_nodes]==1)]= 0.;
-        uz[np.where(self.snl[:self.num_local_nodes]==1)] = 0.;
-        uz[np.where(self.inl[:self.num_local_nodes]==1)] = self.u_bc # set boundary condition
+        ux[np.where(self.ndT[:self.num_local_nodes]==1)] = 0.;
+        uy[np.where(self.ndT[:self.num_local_nodes]==1)]= 0.;
+        uz[np.where(self.ndT[:self.num_local_nodes]==1)] = 0.;
+        uz[np.where(self.ndT[:self.num_local_nodes]==2)] = self.u_bc # set boundary condition
         
                 
             
@@ -684,9 +695,10 @@ class NFC_LBM_partition(object):
         # some thought/testing should be done regarding the shape of this data array.
         self.fEven = np.empty([self.total_nodes , self.numSpd],dtype=np.float32)
         self.fOdd = np.empty_like(self.fEven)
-        self.snl = np.zeros([self.total_nodes],dtype=np.int32);
-        self.inl = np.zeros([self.total_nodes],dtype=np.int32);
-        self.onl = np.zeros([self.total_nodes],dtype=np.int32);
+#        self.snl = np.zeros([self.total_nodes],dtype=np.int32);
+#        self.inl = np.zeros([self.total_nodes],dtype=np.int32);
+#        self.onl = np.zeros([self.total_nodes],dtype=np.int32);
+        self.ndT = np.zeros([self.total_nodes],dtype=np.int32);
 
     def initialize_data_arrays(self):
         """

@@ -35,6 +35,7 @@ public:
 	void set_inl(boost::python::object obj);
 	void set_onl(boost::python::object obj);
 	void set_snl(boost::python::object obj);
+	void set_ndT(boost::python::object obj);
 	void set_ndType(const int nt,LBM_DataHandler& f);
 	void set_Ubc(const float u);
 	void set_rhoBC(const float rho);
@@ -72,6 +73,7 @@ private:
 	int * inl;
 	int * onl;
 	int * snl;
+	int * ndT;
 	int numSpd;
 	int totalNodes;
 

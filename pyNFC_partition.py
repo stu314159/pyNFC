@@ -38,9 +38,10 @@ Lo = float(geom_input['Lo'])
 Ny_divs = int(geom_input['Ny_divs'])
 rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
-snl = list((geom_input['snl']).flatten())
-inl = list((geom_input['inl']).flatten()) # must be inlet on Z-min
-onl = list((geom_input['onl']).flatten()) # must be outlet on Z-max
+#snl = list((geom_input['snl']).flatten())
+#inl = list((geom_input['inl']).flatten()) # must be inlet on Z-min
+#onl = list((geom_input['onl']).flatten()) # must be outlet on Z-max
+ndType = list((geom_input['ndType']).flatten())
 
 
 Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
@@ -59,38 +60,45 @@ XX = np.reshape(X,int(numEl))
 YY = np.reshape(Y,int(numEl))
 ZZ = np.reshape(Z,int(numEl))
 
-print 'There are %d nodes in the solid node list'%len(snl)
-print 'Writing those nodes to file'
-# now write this obstList to file.
-obstFilename = 'snl.lbm'
-obstFile = open(obstFilename,'w')
-obstFile.write('%i \n'%len(snl))
-for i in range(len(snl)):
-    nd = int(snl[i]); nd=nd;# make snl node numbers 0-based
-    obstFile.write('%i \n'% nd) 
-obstFile.close()
+#print 'There are %d nodes in the solid node list'%len(snl)
+#print 'Writing those nodes to file'
+## now write this obstList to file.
+#obstFilename = 'snl.lbm'
+#obstFile = open(obstFilename,'w')
+#obstFile.write('%i \n'%len(snl))
+#for i in range(len(snl)):
+#    nd = int(snl[i]); nd=nd;# make snl node numbers 0-based
+#    obstFile.write('%i \n'% nd) 
+#obstFile.close()
+#
+#print 'There are %d nodes in the inlet node list'%len(inl)
+#print 'Writing those nodes to file'
+#inletFileName = 'inl.lbm'
+#inletFile = open(inletFileName,'w')
+#inletFile.write('%i \n'%len(inl))
+#for i in range(len(inl)):
+#    nd = int(inl[i]); nd = nd;#make inl node numbers 0-based
+#    inletFile.write('%i \n'% nd) 
+#inletFile.close()
+#
+#print 'There are %d nodes in the outlet node list'%len(onl)
+#print 'Writing those nodes to file'
+#outletFileName = 'onl.lbm'
+#outletFile = open(outletFileName,'w')
+#outletFile.write('%i \n'%len(onl))
+#for i in range(len(onl)):
+#    nd = int(onl[i]); nd = nd;#make onl node numbers 0-based
+#    outletFile.write('%i \n'% nd) 
+#outletFile.close()
 
-print 'There are %d nodes in the inlet node list'%len(inl)
-print 'Writing those nodes to file'
-inletFileName = 'inl.lbm'
-inletFile = open(inletFileName,'w')
-inletFile.write('%i \n'%len(inl))
-for i in range(len(inl)):
-    nd = int(inl[i]); nd = nd;#make inl node numbers 0-based
-    inletFile.write('%i \n'% nd) 
-inletFile.close()
-
-print 'There are %d nodes in the outlet node list'%len(onl)
-print 'Writing those nodes to file'
-outletFileName = 'onl.lbm'
-outletFile = open(outletFileName,'w')
-outletFile.write('%i \n'%len(onl))
-for i in range(len(onl)):
-    nd = int(onl[i]); nd = nd;#make onl node numbers 0-based
-    outletFile.write('%i \n'% nd) 
-outletFile.close()
-
-
+print 'There are %d nodes listed in ndType'%len(ndType)
+print 'Writing those to file'
+ndTypeFileName = 'ndType.lbm'
+ndTypeFile = open(ndTypeFileName,'w')
+for i in range(len(ndType)):
+    nT = int(ndType[i]);
+    ndTypeFile.write('%i \n'%nT)
+ndTypeFile.close()
 
 if lattice_type == 'D3Q15':
    lat = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))

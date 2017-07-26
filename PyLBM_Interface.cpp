@@ -159,6 +159,15 @@ void PyLBM_Interface::set_snl(boost::python::object obj)
 	snl = (int *)buf;
 }
 
+void PyLBM_Interface::set_ndT(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void * buf = pybuf.buf;
+	ndT = (int *)buf;
+}
+
 void PyLBM_Interface::getHaloInPointers(boost::python::object nd,
 		boost::python::object spd, boost::python::object data, int ngb)
 {
@@ -232,17 +241,18 @@ void PyLBM_Interface::computeFout(LBM_DataHandler & fData)
 
 void PyLBM_Interface::set_ndType(const int nd, LBM_DataHandler& fData)
 {
-	fData.nodeType = 0;
-	if(snl[nd]==1)
-	{
-		fData.nodeType=1;
-	}else if(inl[nd]==1)
-	{
-		fData.nodeType=2;
-	}else if(onl[nd]==1)
-	{
-		fData.nodeType=3;
-	}
+//	fData.nodeType = 0;
+//	if(snl[nd]==1)
+//	{
+//		fData.nodeType=1;
+//	}else if(inl[nd]==1)
+//	{
+//		fData.nodeType=2;
+//	}else if(onl[nd]==1)
+//	{
+//		fData.nodeType=3;
+//	}
+	fData.nodeType = ndT[nd];
 
 }
 
@@ -404,6 +414,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_inl",&PyLBM_Interface::set_inl)
         		.def("set_onl",&PyLBM_Interface::set_onl)
         		.def("set_snl",&PyLBM_Interface::set_snl)
+        		.def("set_ndT",&PyLBM_Interface::set_ndT)
         		.def("set_fEven",&PyLBM_Interface::set_fEven)
         		.def("set_fOdd",&PyLBM_Interface::set_fOdd)
         		.def("set_adjacency",&PyLBM_Interface::set_adjacency)
