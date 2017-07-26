@@ -11,7 +11,7 @@ import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
 from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
-import numpy as np
+#import numpy as np
 
 class Lattice(object):
     """

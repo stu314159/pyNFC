@@ -10,11 +10,11 @@ Try to see why one might be better than the other.
 """
 
 import math
-import argparse
+#import argparse
 import numpy as np
 from pymetis import part_graph
-from vtkHelper import saveScalarStructuredGridVTK_binary
-from vtkHelper import saveVelocityAndPressureVTK_binary
+#from vtkHelper import saveScalarStructuredGridVTK_binary
+#from vtkHelper import saveVelocityAndPressureVTK_binary
 from vtkHelper import saveStructuredPointsVTK_ascii
 
 from partition_suggestion import part_advisor
@@ -50,7 +50,7 @@ def set_geometric_partition(Nx,Ny,Nz,px,py,pz):
     """
     partList = []
     bx = Nx/px; by = Ny/py; bz = Nz/pz # block x,y and z minimum sizes
-    part = 0
+    #part = 0
     zmin = 0
     for z in range(pz):
         zmax = zmin + bz-1
@@ -103,7 +103,7 @@ def count_cuts(adj,vert_part):
         my_part = vert_part[i]
         ngbs = adj[i]
         for n in ngbs:
-            ngb_part = vert_part[n]
+            #ngb_part = vert_part[n]
             if (vert_part[n]!= my_part):
                 min_vert = min(i,n)
                 max_vert = max(i,n)
