@@ -26,7 +26,7 @@ fi
 
 export OMP_NUM_THREADS=$4
 # invoke pyNFC
-aprun -n $3 -d $4 ./pyNFC_test.py
+aprun -n $3 -d $4 ./pyNFC_run.py
 
 # post-process the results
 #aprun -n 10 ./pyNFC_postprocess.py
