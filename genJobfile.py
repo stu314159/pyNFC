@@ -41,7 +41,7 @@ executableName = 'pyNFC_test.py'
 filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_test.py',
                'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', 'test_script.sh',
                'pyPartition.py','pyNFC_preprocess.py','pyNFC_postprocess.py',
-               'partition_suggestion.py','partition_compare.py',
+               'partition_suggestion.py','partition_compare.py','processNFC_serial',
                'LBM_Interface.so','processNFC.py','hdf5Helper.py']
 
 
