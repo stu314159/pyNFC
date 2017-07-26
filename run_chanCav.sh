@@ -10,12 +10,6 @@
 # 6 - pre-process
 
 
-
-
-
-if [ "$6" = "1" ]; then
-python ./channel_cavity_geom.py $1
-
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=ChanCavityTest.mat
 
@@ -28,11 +22,20 @@ dt=0.005
 Cs=0
 Restart_flag=0
 
+
+# must re-process if you change:
+# N_divs, partition methodology, or the number of partitions.
+# if the lattice type changes, you do not have to re-do pre-processing,
+# but the resulting partitions may not be the same as what would have
+# been picked with new lattice type
+if [ "$6" = "1" ]; then
+python ./channel_cavity_geom.py $1
+
 if [ "$3" = "metis" ]; then
   module swap PrgEnv-gnu PrgEnv-intel
 fi
-python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 \
-$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
+python ./pyNFC_partition.py $MAT_FILE $2 $3 $4
+
 
 if [ "$3" = "metis" ]; then
   module swap PrgEnv-intel PrgEnv-gnu
@@ -41,6 +44,10 @@ fi
 else
 echo "pre-processing skipped, commencing time steps"
 fi
+
+# basically, pyNFC_preprocess.py just writes params.lbm now.
+python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 \
+$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
 
 export OMP_NUM_THREADS=$5
 aprun -n $4 -d $5  ./pyNFC_run.py
