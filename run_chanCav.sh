@@ -14,16 +14,16 @@
 
 
 if [ "$6" = "1" ]; then
-python ./wmb_geom.py $1
+python ./channel_cavity_geom.py $1
 
 # saves mat file named ChanCavityTest.mat
-MAT_FILE=wall_mounted_brick.mat
+MAT_FILE=ChanCavityTest.mat
 
-Num_ts=50001
-ts_rep_freq=50
+Num_ts=5001
+ts_rep_freq=100
 Warmup_ts=0
 plot_freq=500
-Re=25
+Re=100
 dt=0.005
 Cs=0
 Restart_flag=0
