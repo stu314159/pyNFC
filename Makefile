@@ -16,7 +16,8 @@ EXT=cpp
 
 # varibles that work on local laptopt
 MPI_CC=pgc++
-MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
+##MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
+MPI_FLAGS=-fast -fPIC -std=c++11 -mp=nonuma -Minfo
 PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
 PYTHON_LIB=/home/stu/anaconda2/lib
 BOOST_INC = /usr/include

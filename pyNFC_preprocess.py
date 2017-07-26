@@ -6,67 +6,50 @@
 
 """
 
-import FluidChannel as fc
+#import FluidChannel as fc
 import pyPartition as pp
 #from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
 import numpy as np
-import scipy
+import scipy.io
 import math
 import argparse
 
 parser = argparse.ArgumentParser(prog='pyNFC_preprocess.py',
                                  description='pre-processing script for pyNFC')
 
+parser.add_argument('geom_filename',type=str)
 parser.add_argument('lattice_type',type=str)
 parser.add_argument('partition_style',type=str)
 parser.add_argument('numProcs',type=int)
+parser.add_argument('Num_ts',type=int)
+parser.add_argument('ts_rep_freq',type=int)
+parser.add_argument('Warmup_ts',type=int)
+parser.add_argument('plot_freq',type=int)
+parser.add_argument('Re',type=float)
+parser.add_argument('dt',type=float)
+parser.add_argument('Cs',type=float)
+parser.add_argument('Restart_flag',type=int)
 # parse input arguments
 args = parser.parse_args()
 
 # assign to required variables
+geom_filename = args.geom_filename
 lattice_type = args.lattice_type
 partition_style = args.partition_style
 numProcs = args.numProcs
 
-# generate a suitable geometry:
 
-#overall channel dimensions
-aLx_p = 6.4
-aLy_p = 3.0
-aLz_p = 14.0
-aNdivs = 11
-
-# wall mounted brick parameters
-x_c = 3.5;
-z_c = 3.2;
-W = 1.;
-H = W;
-L = W;
-
-myObst = fc.WallMountedBrick(x_c,z_c,L,W,H);
-
-myChan = fc.FluidChannel(Lx_p=aLx_p,Ly_p=aLy_p,Lz_p=aLz_p,obst=myObst,
-                         N_divs=aNdivs)                         
-
-# write the mat file
-geom_file_stub='wall_mounted_brick';
-myChan.write_mat_file(geom_file_stub);
-
-
-
-# set simulation parameters (as used in genInput.py):
-geom_filename = geom_file_stub + '.mat'
 #lattice_type = 'D3Q15' # [ 'D3Q15' | 'D3Q19' | 'D3Q27' ]
 #partition_style = 'metis' # [ '1D' | '3D' | 'metis']
 
-Num_ts = 2001
-ts_rep_freq = 50
-Warmup_ts = 0
-plot_freq = 200
-Re = 25
-dt = 0.01
-Cs = 0
-Restart_flag = 0
+Num_ts = args.Num_ts
+ts_rep_freq = args.ts_rep_freq
+Warmup_ts = args.Warmup_ts
+plot_freq = args.plot_freq
+Re = args.Re
+dt = args.dt
+Cs = args.Cs
+Restart_flag = args.Restart_flag
 
 #numProcs = 6  #<--- for this version, I will need to know how many partitions I intend to create
 
