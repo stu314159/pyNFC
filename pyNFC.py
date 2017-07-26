@@ -78,9 +78,7 @@ class NFC_LBM_partition(object):
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
         # pass pointers of node lists to myLB object
-#        self.myLB.set_inl(self.inl)
-#        self.myLB.set_onl(self.onl)
-#        self.myLB.set_snl(self.snl)
+#    
         self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
         self.myLB.set_adjacency(self.adjacency)
         self.myLB.set_fEven(self.fEven)
@@ -92,8 +90,6 @@ class NFC_LBM_partition(object):
         self.myLB.set_totalNodes(int(self.total_nodes))
         
         
-        
-        
 
         # mpi file writing variables
         self.vtk_dump_num = 0;
@@ -103,12 +99,6 @@ class NFC_LBM_partition(object):
         self.vtk_suffix = '.b_dat'
 
 
-       
-        
-        #self.report_statistics() # say something about yourself
-        # comment out when you are done visualizing the partitions 
-        #self.write_partition_vtk() # visualize each partition interior, boundary and halo
-
 
     def take_LBM_timestep(self,isEven):
         """
@@ -117,21 +107,15 @@ class NFC_LBM_partition(object):
         """
         
         # process boundary lattice points
-        #tst_rank = 0;
-#        if self.rank == tst_rank:
-#            print "rank %d processing boundary nodes" % (tst_rank)   
-#        self.process_lattice_points(isEven,self.bnl_l)
+ 
         self.myLB.process_nodeList(isEven,0);
 
         # extract halo data
-#        if self.rank == tst_rank:
-#            print "rank %d extracting halo data" % (tst_rank)
-        #self.extract_halo_data(isEven)
+
         self.myLB.extract_halo_data(isEven)
 
         # initiate communication of halo data
-#        if self.rank == tst_rank:
-#            print "rank %d initiate send/recv of halo data" % (tst_rank)
+
         for ngb in range(self.num_ngb):
             ngb_rnk = self.ngb_list[ngb]
             self.out_requests[ngb] = self.comm.Isend([self.HDO_out_dict[ngb_rnk].buffer,
@@ -144,76 +128,22 @@ class NFC_LBM_partition(object):
         
 
         # process interior lattice points
-        #print "rank %d processing %d nodes on the interior"%(self.rank, len(self.int_l))
-#        if self.rank == tst_rank:
-#            print "rank %d processing interior nodes" % (tst_rank)
-        #self.process_lattice_points(isEven,self.int_l)
+  
         self.myLB.process_nodeList(isEven,1)
 
         # be sure MPI communication is done
-#        if self.rank == tst_rank:
-#            print "rank %d waiting for MPI coms" % (tst_rank)
+
         MPI.Request.Waitall(self.in_requests,self.statuses)
 
 
         # load incoming data to appropriate array
-#        if self.rank == tst_rank:
-#            print "rank %d inserting boundary data" % (tst_rank)
-        #self.insert_boundary_data(isEven)
+
         self.myLB.insert_boundary_data(isEven)
 
         # done.
         
 
-    def process_lattice_points(self,isEven,lp_list):
-        """
-          carry out the LBM process for a list of lattice points
-          isEven - boolean to indicate if this is an even time step or odd time step
-          lp_list - list of lattice points to be processed (e.g. interior lattice points or boundary lattice points)
-
-        """
-
-        # point fIn and fOut to the right data arrays
-        if isEven:
-            fIn = self.fEven; fOut = self.fOdd
-        else:
-            fIn = self.fOdd; fOut = self.fEven
-
-        # initially, implement exactly as you would for C/C++
-        # goal: be sure to get the correct answer; worry about performance later
-
-        
-        for lp in lp_list:
-        
-
-            # get microscopic densities
-            f = fIn[lp,:]
-            f_o = np.array(range(self.numSpd),dtype=np.float32);
-            
-           # self.myLB.set_ndType(int(lp));
-#            ndType = 0
-#            # get node type
-#            if self.inl[lp] == 1:
-#                ndType = 2
-#            elif self.onl[lp] == 1:
-#                ndType = 3
-#            elif self.snl[lp] == 1:
-#                ndType = 1
-            
-                
-             
-            # process lattice point and get outlet value
-            # copy f through boost interace, compute fOut, get fOut back.
-            #self.myLB.set_fIn(f); #get the density distribution data
-#            self.myLB.set_ndType(ndType) #set the node type
-            #self.myLB.computeFout(); # compute fOut
-            #self.myLB.get_fOut(f_o) # get fOut from the LB interface
-            
-            
-            #f_o = self.lattice.compute_fOut(f,ndType,self.omega,self.Cs,self.u_bc,self.rho_lbm)
-
-            # stream to outlet value
-            #self.stream(fOut,f_o[:],lp)
+   
 
            
     def stream(self,fOut,f,lp):
@@ -233,40 +163,7 @@ class NFC_LBM_partition(object):
          load pre-processor data into inl, onl and snl lists
         """
         
-#        inl_filename = "inl.lbm"; 
-#        
-#        inl_f = open(inl_filename,'r');
-#        numINL = int(inl_f.readline());
-#        for i in range(numINL):
-#            gIN = int(inl_f.readline());
-#            if gIN in self.global_to_local:
-#               lIN = self.global_to_local[gIN]
-#               self.inl[lIN] = 1
-#        inl_f.close()
-#
-#        onl_filename = "onl.lbm";
-#        onl_f = open(onl_filename,'r');
-#        numONL = int(onl_f.readline());
-#        for i in range(numONL):
-#            gOUT = int(onl_f.readline());
-#            if gOUT in self.global_to_local:
-#                lOUT = self.global_to_local[gOUT]
-#                self.onl[lOUT] = 1
-#        onl_f.close()
-#
-#        snl_filename = "snl.lbm";
-#        snl_f = open(snl_filename,'r');
-#        numSNL = int(snl_f.readline());
-#        for i in range(numSNL):
-#            gSNL = int(snl_f.readline());
-#            if gSNL in self.global_to_local:
-#                lSNL = self.global_to_local[gSNL]
-#                self.snl[lSNL] = 1
-#        snl_f.close()
-#        
-#        self.inl = np.array(self.inl,dtype=np.int32)
-#        self.onl = np.array(self.onl,dtype=np.int32)
-#        self.snl = np.array(self.snl,dtype=np.int32)
+
         
         ndType_filename = "ndType.lbm";
         ndl_f = open(ndType_filename,'r');
@@ -314,13 +211,10 @@ class NFC_LBM_partition(object):
 
         """
 
-#        if self.rank == 0:
-#            print "computing local macroscopic data"
+
 
         ux, uy, uz, rho = self.compute_local_data(isEven);
 
-#        if self.rank == 0:
-#            print "writing data"
 
         # self.offset_bytes is the number of bytes offset
 
@@ -380,14 +274,7 @@ class NFC_LBM_partition(object):
 
         self.myLB.compute_local_data(isEven);
 
-        #for lp in self.lnl_l: # this sucks.  basically requires that 
-        ## self.lnl_l goes from 0 to self.num_local_nodes...
-        #    for spd in range(self.numSpd):
-        #        rho[lp]+=f[lp,spd];
-        #        ux[lp]+=self.ex[spd]*f[lp,spd];
-        #        uy[lp]+=self.ey[spd]*f[lp,spd];
-        #        uz[lp]+=self.ez[spd]*f[lp,spd];
-        #    ux[lp]/=rho[lp]; uy[lp]/=rho[lp]; uz[lp]/=rho[lp]
+       
         ux[np.where(self.ndT[:self.num_local_nodes]==1)] = 0.;
         uy[np.where(self.ndT[:self.num_local_nodes]==1)]= 0.;
         uz[np.where(self.ndT[:self.num_local_nodes]==1)] = 0.;

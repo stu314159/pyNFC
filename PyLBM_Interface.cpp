@@ -51,14 +51,6 @@ void PyLBM_Interface::streamData(float * fOut, const int nd,LBM_DataHandler& fDa
 }
 
 
-void PyLBM_Interface::set_inl(boost::python::object obj)
-{
-	PyObject* pobj = obj.ptr();
-	Py_buffer pybuf;
-	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-	void * buf = pybuf.buf;
-	inl = (int *)buf;
-}
 
 void PyLBM_Interface::set_fEven(boost::python::object obj)
 {
@@ -141,23 +133,6 @@ void PyLBM_Interface::set_interiorNL(boost::python::object obj)
 	interior_nl = (int *)buf;
 }
 
-void PyLBM_Interface::set_onl(boost::python::object obj)
-{
-	PyObject* pobj = obj.ptr();
-	Py_buffer pybuf;
-	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-	void * buf = pybuf.buf;
-	onl = (int *)buf;
-}
-
-void PyLBM_Interface::set_snl(boost::python::object obj)
-{
-	PyObject* pobj = obj.ptr();
-	Py_buffer pybuf;
-	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-	void * buf = pybuf.buf;
-	snl = (int *)buf;
-}
 
 void PyLBM_Interface::set_ndT(boost::python::object obj)
 {
@@ -241,17 +216,7 @@ void PyLBM_Interface::computeFout(LBM_DataHandler & fData)
 
 void PyLBM_Interface::set_ndType(const int nd, LBM_DataHandler& fData)
 {
-//	fData.nodeType = 0;
-//	if(snl[nd]==1)
-//	{
-//		fData.nodeType=1;
-//	}else if(inl[nd]==1)
-//	{
-//		fData.nodeType=2;
-//	}else if(onl[nd]==1)
-//	{
-//		fData.nodeType=3;
-//	}
+
 	fData.nodeType = ndT[nd];
 
 }
@@ -411,9 +376,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_Ubc",&PyLBM_Interface::set_Ubc)
         		.def("set_rhoBC",&PyLBM_Interface::set_rhoBC)
         		.def("set_omega",&PyLBM_Interface::set_omega)
-        		.def("set_inl",&PyLBM_Interface::set_inl)
-        		.def("set_onl",&PyLBM_Interface::set_onl)
-        		.def("set_snl",&PyLBM_Interface::set_snl)
         		.def("set_ndT",&PyLBM_Interface::set_ndT)
         		.def("set_fEven",&PyLBM_Interface::set_fEven)
         		.def("set_fOdd",&PyLBM_Interface::set_fOdd)

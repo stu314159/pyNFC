@@ -881,9 +881,7 @@ class FluidChannel:
         mat_dict['Ny_divs'] = self.N_divs
         mat_dict['rho_p'] = self.rho_p
         mat_dict['nu_p'] = self.nu_p
-#        mat_dict['snl'] = list(np.union1d(self.obst_list[:],self.solid_list[:]))
-#        mat_dict['inl'] = list(self.inlet_list[:])
-#        mat_dict['onl'] = list(self.outlet_list[:])
+
         mat_dict['ndType'] = list(self.ndType[:])
 
         scipy.io.savemat(geom_filename,mat_dict)
