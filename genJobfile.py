@@ -13,6 +13,7 @@ parser.add_argument('jobName',type=str)
 parser.add_argument('nnodes',type=int)
 parser.add_argument('ppn',type=int)
 parser.add_argument('mpi_procs_per_node',type=int)
+parser.add_argument('ompthreads_per_node',type=int)
 parser.add_argument('runtimeNumHours',type=int)
 parser.add_argument('queue',type=str)
 parser.add_argument('latticeType',type=str)
@@ -29,6 +30,7 @@ jobName = args.jobName
 nnodes = args.nnodes
 ppn = args.ppn
 mpi_procs_per_node = args.mpi_procs_per_node
+ompthreads_per_node=args.ompthreads_per_node
 runtimeNumHours = args.runtimeNumHours
 queue = args.queue
 latticeType = args.latticeType
@@ -63,8 +65,8 @@ jf = open(jobfileName,'w')
 jf.write('#!/bin/bash \n') # the shell
 jf.write('#PBS -A %s \n'%proj_id) # project identifier
 jf.write('#PBS -q %s \n'%queue) # specify queue
-jf.write('#PBS -l select=%d:ncpus=%d:mpiprocs=%d \n'% \
-         (nnodes,ppn,mpi_procs_per_node))
+jf.write('#PBS -l select=%d:ncpus=%d:mpiprocs=%d:ompthreads=%d \n'% \
+         (nnodes,ppn,mpi_procs_per_node,ompthreads_per_node))
 jf.write('#PBS -l walltime=%s \n'%walltime)
 jf.write('#PBS -l ccm=1 \n') # specify cluster compatibility mode.  Why wouldn't you?
 
@@ -91,12 +93,12 @@ for s in filesToCopy:
 #jf.write('cd $JOBDIR \n')  #<--- this was an error
 
 # invoke execution
-jf.write('module swap PrgEnv-cray PrgEnv-intel\n')
+jf.write('module swap PrgEnv-cray PrgEnv-gnu\n') #let's just plan on using GNU for now
 jf.write('module load costinit\n')
 jf.write('module load python\n')
 jf.write('module load numpy\n')
 jf.write('module load scipy\n')
 jf.write('module load mpi4py\n')
 jf.write('module load boost\n')
-jf.write('./test_script.sh %s %s %d\n'%(latticeType,partitionType,mpi_procs))
+jf.write('./test_script.sh %s %s %d %d\n'%(latticeType,partitionType,mpi_procs,ompthreads_per_node))
 jf.close()
