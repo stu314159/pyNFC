@@ -28,6 +28,7 @@ class NFC_LBM_partition(object):
 
           rho_lbm - scaled density for outlet boundary condition
           u_bc - scaled velocity for inlet boundary condition
+          dynamics - 1 = LBGK | 2 = RBGK | 3 = MRT
           omega - relaxation constant for LBM collisions
           Cs - parameter for turbulence model
         """
@@ -35,8 +36,10 @@ class NFC_LBM_partition(object):
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz; # all partitions need to know the global domain structure
 
         # LBM simulation parameters
+
         self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
         self.dynamics = dynamics;
+
         
         
         if lattice_type == 'D3Q15':
