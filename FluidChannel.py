@@ -786,6 +786,136 @@ def fluid_properties(fluid_str):
        print " '%s' " % keys
      raise KeyError('invalid fluid specified')
 
+class LidDrivenCavity:
+    def __init__(self,Lx_p = 1.,
+                      Ly_p = 1., Lz_p = 1.,
+                      fluid='water',
+                      N_divs=11) :
+      """
+      class constructor - lid driven cavity.
+      All surfaces xm,xp,ym,zm,zp are solid except
+      the "lid" (yp) which is a moving surface
+      (node type 5)
+      """
+      self.Lx_p = Lx_p
+      self.Ly_p = Ly_p
+      self.Lz_p = Lz_p
+      self.N_divs = N_divs
+      self.fluid = fluid
+      
+      # generate the geometry
+      Lo = Ly_p # by convention (for now)
+      self.Lo = Lo
+      self.Ny = math.ceil((N_divs-1)*(Ly_p/Lo))+1
+      self.Nx = math.ceil((N_divs-1)*(Lx_p/Lo))+1
+      self.Nz = math.ceil((N_divs-1)*(Lz_p/Lo))+1
+      self.nnodes = self.Nx*self.Ny*self.Nz
+      print "Creating channel with %g lattice points." % self.nnodes
+      x = np.linspace(0.,Lx_p,self.Nx).astype(np.float32);
+      y = np.linspace(0.,Ly_p,self.Ny).astype(np.float32);
+      z = np.linspace(0.,Lz_p,self.Nz).astype(np.float32);
+   
+      Y,Z,X = np.meshgrid(y,z,x);
+    
+      self.x = np.reshape(X,int(self.nnodes))
+      self.y = np.reshape(Y,int(self.nnodes))
+      self.z = np.reshape(Z,int(self.nnodes))
+      self.dx = x[1]-x[0]
+      # get fluid properties from the included fluid library
+      self.rho_p, self.nu_p = fluid_properties(fluid)
+      self.set_cavity_walls()
+      self.ndType = np.zeros((self.nnodes,),dtype=np.int32)
+      self.ndType[self.solid_list]=1
+      self.ndType[self.lid_list]=5
+      
+       # must have geometry set first
+    def set_cavity_walls(self,walls=['left','right','bottom','west','east']): 
+        """
+         set up to 5 walls as solid walls for the simulation
+        """
+        solid_list_a = np.empty(0).flatten()
+        solid_list_b = np.empty(0).flatten()
+        solid_list_c = np.empty(0).flatten()
+        solid_list_d = np.empty(0).flatten()
+        solid_list_e = np.empty(0).flatten()
+
+        for w in walls:
+            if w=='right':
+                solid_list_a = np.array(np.where((self.x==0.))).flatten()
+            elif w=='left':
+                solid_list_b = np.array(np.where((self.x > (self.Lx_p-self.dx/2.)))).flatten()
+            elif w=='west':
+                solid_list_d = np.array(np.where((self.z == 0.))).flatten()
+            elif w=='bottom':
+                solid_list_c = np.array(np.where((self.y == 0.))).flatten()
+            elif w=='east':
+                solid_list_e = np.array(np.where((self.z > (self.Lz_p - self.dx/2.)))).flatten()
+
+        solid_list = np.array(np.union1d(solid_list_a,solid_list_b)); 
+        solid_list = np.array(np.union1d(solid_list,solid_list_c));
+        solid_list = np.array(np.union1d(solid_list,solid_list_e));
+        self.solid_list = np.array(np.union1d(solid_list,solid_list_d))
+        
+        self.lid_list = np.array(np.where((self.y > (self.Ly_p-self.dx/2.)))).flatten()
+#        self.lid_list = np.setxor1d(self.lid_list[:],
+#            np.intersect1d(self.lid_list[:],self.solid_list[:]))
+        
+        
+    def write_mat_file(self, geom_filename):
+        """
+          generate the mat file to interface with genInput.py.  Needs to save
+          Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, and ndType.
+          note that the snl and obst_list need to be combined into one list 
+        """
+        mat_dict = {}
+        mat_dict['Lx_p'] = self.Lx_p
+        mat_dict['Ly_p'] = self.Ly_p
+        mat_dict['Lz_p'] = self.Lz_p
+        mat_dict['Lo'] = self.Lo
+        mat_dict['Ny_divs'] = self.N_divs
+        mat_dict['rho_p'] = self.rho_p
+        mat_dict['nu_p'] = self.nu_p
+
+        mat_dict['ndType'] = list(self.ndType[:])
+
+        scipy.io.savemat(geom_filename,mat_dict)
+        
+    def write_bc_vtk(self):
+        """
+         write node lists to properly formatted VTK files
+        """
+        print "Creating boundary condition arrays"
+        # perhaps at some other time this class should be extended
+        # to allow obstacles within the lid-driven cavity
+#        obst_array = np.zeros(self.nnodes)
+#        obst_array[list(self.obst_list)] = 100.
+#
+#        #print type(self.inlet_list)
+#        inlet_array = np.zeros(self.nnodes)
+#        inlet_array[list(self.inlet_list)] = 200.
+#
+#        outlet_array = np.zeros(self.nnodes)
+#        outlet_array[list(self.outlet_list)] = 300.
+        print "length of lid_list = %d \n"%(len(list(self.lid_list)))
+        lid_array = np.zeros(self.nnodes)
+        lid_array[list(self.lid_list)] = 700.
+
+        solid_array = np.zeros(self.nnodes)
+        solid_array[list(self.solid_list)] = 500.
+        
+        dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
+        origin = [0., 0., 0.]
+        dx = self.x[1] - self.x[0]
+        spacing = [dx, dx, dx] #uniform lattice
+        
+        print "Writing boundary conditions to VTK files"
+        #writeVTK(inlet_array,'inlet','inlet.vtk',dims,origin,spacing)
+        #writeVTK(outlet_array,'outlet','outlet.vtk',dims,origin,spacing)
+        #writeVTK(obst_array,'obst','obst.vtk',dims,origin,spacing)
+        writeVTK(lid_array,'lid','lid.vtk',dims,origin,spacing)
+        writeVTK(solid_array,'solid','solid.vtk',dims,origin,spacing)
+                         
+
 class FluidChannel:
     def __init__(self,Lx_p=1.,
         Ly_p=1.,
@@ -823,6 +953,8 @@ class FluidChannel:
         self.x = np.reshape(X,int(self.nnodes))
         self.y = np.reshape(Y,int(self.nnodes))
         self.z = np.reshape(Z,int(self.nnodes))
+        
+        self.dx = self.x[1]-self.x[0]
 
         # get fluid properties from the included fluid library
         self.rho_p, self.nu_p = fluid_properties(fluid)
@@ -870,7 +1002,7 @@ class FluidChannel:
     def write_mat_file(self, geom_filename):
         """
           generate the mat file to interface with genInput.py.  Needs to save
-          Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, snl, inl and onl.
+          Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, and ndType.
           note that the snl and obst_list need to be combined into one list 
         """
         mat_dict = {}
@@ -932,9 +1064,9 @@ class FluidChannel:
             if w=='right':
                 solid_list_a = np.array(np.where((self.x==0.))).flatten()
             elif w=='left':
-                solid_list_b = np.array(np.where((self.x == self.Lx_p))).flatten()
+                solid_list_b = np.array(np.where((self.x > (self.Lx_p-self.dx/2.)))).flatten()
             elif w=='top':
-                solid_list_d = np.array(np.where((self.y == self.Ly_p))).flatten()
+                solid_list_d = np.array(np.where((self.y > (self.Ly_p-self.dx/2.)))).flatten()
             elif w=='bottom':
                 solid_list_c = np.array(np.where((self.y == 0.))).flatten()
 
