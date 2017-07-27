@@ -24,5 +24,5 @@ aLz_p = 1.120 - 0.914 #meters
 ld_cav = fc.LidDrivenCavity(Lx_p = aLx_p,Ly_p = aLy_p,
                             Lz_p = aLz_p,N_divs = aN_divs)
                             
-ld_cav.write_bc_vtk()
+#ld_cav.write_bc_vtk()
 ld_cav.write_mat_file('LDC_geom_test')

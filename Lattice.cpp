@@ -133,6 +133,18 @@ void Lattice::relax(LBM_DataHandler& f)
 
 }
 
+void Lattice::set_Vz_micro(LBM_DataHandler & f)
+{
+	for(int spd = 0; spd<numSpd; spd++)
+	{
+		// push microscopic BCs towards desired value
+		f.f[spd]+=3.*f.rho*w[spd]*(ez[spd]*(f.u_bc - f.uz) +
+				ex[spd]*(0. - f.ux) + ey[spd]*(0.-f.uy));
+	}
+	// update macro BCs so Equilibrium will be calculated as desired.
+	f.ux = 0.; f.uy = 0.; f.uz = f.u_bc;
+}
+
 void Lattice::computeFout(LBM_DataHandler& f)
 {
 	// node type 1: just bounce back
@@ -154,6 +166,10 @@ void Lattice::computeFout(LBM_DataHandler& f)
 	{
 		set_outlet_bc_macro(f);
 	}
+	if(f.nodeType==5)
+	{
+		set_Vz_micro(f); // this type of BC should be set prior to computing equilibrium
+	}
 
 	// compute equilibrium
 	computeEquilibrium(f);
@@ -167,6 +183,7 @@ void Lattice::computeFout(LBM_DataHandler& f)
 	{
 		set_outlet_bc_micro(f);
 	}
+
 
 	// get (flattened) second-order moment of particle density distribution
 	compute_piFlat(f);
