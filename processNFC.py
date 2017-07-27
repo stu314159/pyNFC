@@ -21,6 +21,7 @@ input_file_name = 'params.lbm'
 input_data = open(input_file_name,'r')
 
 latticeType = str(input_data.readline())
+dyamics = int(input_data.readline())
 Num_ts = int(input_data.readline())
 ts_rep_freq = int(input_data.readline())
 Warmup_ts = int(input_data.readline())
