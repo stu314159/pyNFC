@@ -242,6 +242,11 @@ void PyLBM_Interface::set_dynamics(const int d)
 
 }
 
+void PyLBM_Interface::set_dynamics(const int d)
+{
+	fData.dynamics = d;
+}
+
 void PyLBM_Interface::set_bnlSZ(int sz)
 {
 	bnl_sz = sz;
