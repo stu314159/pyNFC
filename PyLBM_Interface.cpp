@@ -1,4 +1,5 @@
 #include "PyLBM_Interface.h"
+#include <iostream>
 
 
 PyLBM_Interface::PyLBM_Interface(const int numSpd) :
@@ -235,6 +236,11 @@ void PyLBM_Interface::set_omega(const float o)
 {
 	fData.omega = o;
 }
+void PyLBM_Interface::set_dynamics(const int d)
+{
+	fData.dynamics = d;
+
+}
 
 void PyLBM_Interface::set_bnlSZ(int sz)
 {
@@ -317,6 +323,7 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
                 fData_l.u_bc = fData.u_bc;
                 fData_l.rho_bc = fData.rho_bc;
                 fData_l.omega = fData.omega;
+                fData_l.dynamics = fData.dynamics;
                 // get the node number (for the local partition)
 		int nd = ndList[ndI];
 		// set the node type in fData
@@ -396,5 +403,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("getHaloInPointers",&PyLBM_Interface::getHaloInPointers)
         		.def("extract_halo_data",&PyLBM_Interface::extract_halo_data)
         		.def("insert_boundary_data",&PyLBM_Interface::insert_boundary_data)
+        		.def("set_dynamics",&PyLBM_Interface::set_dynamics)
         		;
 }
