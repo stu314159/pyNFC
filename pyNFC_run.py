@@ -42,8 +42,9 @@ input_data.close()
 #print "process %d of %d says hello!" % (rank, size)
 
 # each process initialize their partition:
-myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,
-                                 dynamics,omega,Cs,lattice_type)
+
+myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,dynamics,omega,Cs,lattice_type)
+
 myPart.write_node_sorting() # should this be done in the constructor?
 
 # do some time stepping

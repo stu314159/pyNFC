@@ -36,8 +36,10 @@ class NFC_LBM_partition(object):
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz; # all partitions need to know the global domain structure
 
         # LBM simulation parameters
-        self.rho_lbm = rho_lbm; self.u_bc = u_bc; 
-        self.dynamics =dynamics; self.omega = omega; self.Cs = Cs
+
+        self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
+        self.dynamics = dynamics;
+
         
         
         if lattice_type == 'D3Q15':
@@ -53,6 +55,7 @@ class NFC_LBM_partition(object):
         self.myLB.set_Ubc(self.u_bc)
         self.myLB.set_rhoBC(self.rho_lbm)
         self.myLB.set_omega(self.omega)
+        self.myLB.set_dynamics(self.dynamics)
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
