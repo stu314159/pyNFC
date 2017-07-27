@@ -21,7 +21,7 @@ Warmup_ts=0
 plot_freq=50
 Re=25
 dt=0.01
-Cs=0
+Cs=0.1
 Restart_flag=0
 
 # must re-process if you change:

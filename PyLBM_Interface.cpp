@@ -324,12 +324,13 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 #pragma omp parallel for
 	for(int ndI=0; ndI<ndList_len;ndI++)
 	{
-		LBM_DataHandler fData_l(numSpd);
-                fData_l.u_bc = fData.u_bc;
-                fData_l.rho_bc = fData.rho_bc;
-                fData_l.omega = fData.omega;
-                fData_l.dynamics = fData.dynamics;
-                // get the node number (for the local partition)
+		LBM_DataHandler fData_l(numSpd); // a copy constructor would be cleaner here.
+		fData_l.u_bc = fData.u_bc;
+		fData_l.rho_bc = fData.rho_bc;
+		fData_l.omega = fData.omega;
+		fData_l.dynamics = fData.dynamics;
+		fData_l.Cs = fData.Cs;
+		// get the node number (for the local partition)
 		int nd = ndList[ndI];
 		// set the node type in fData
 		set_ndType(nd,fData_l);
@@ -341,7 +342,7 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		streamData(fOut,nd,fData_l);
 
 	}
-  
+
 }
 
 

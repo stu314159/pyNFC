@@ -1,6 +1,7 @@
 #include "Lattice.h"
 #include <cstdlib>
 #include <iostream> //<-- used for debugging
+#include <cmath> //<-- used for turbulence model sqrt calc
 
 Lattice::Lattice(const int Nx, const int Ny, const int Nz):
 Nx(Nx), Ny(Ny), Nz(Nz), numSpd(0),
@@ -145,6 +146,37 @@ void Lattice::set_Vz_micro(LBM_DataHandler & f)
 	f.ux = 0.; f.uy = 0.; f.uz = f.u_bc;
 }
 
+void Lattice::computeStrainTensor(LBM_DataHandler & f)
+{
+  // here we take advantage of the fact that f.S is initialized to zero
+	float e[3];
+	const int nDim = 3;
+	for(int spd = 0; spd<numSpd; spd++)
+	{
+		e[0] = ex[spd]; e[1] = ey[spd]; e[2] = ez[spd];
+		for(int i = 0; i<nDim; i++)
+		{
+			for(int j=0; j<nDim; j++)
+			{
+				f.S[i*nDim+j]+=e[i]*e[j]*(f.f[spd] - f.fEq[spd]);
+			}
+		}
+	}
+}
+
+void Lattice::applyTurbulenceModel(LBM_DataHandler & f)
+{
+	float nu, nu_e;
+	nu = ((1./f.omega) - 0.5)/3.0;
+	float P;
+	P = sqrt(f.S[0]*f.S[0]+f.S[4]*f.S[4]+f.S[8]*f.S[8] +
+			2.*(f.S[1]*f.S[1]+f.S[2]*f.S[2] + f.S[5]*f.S[5]));
+	P*=f.Cs; P = sqrt(P+nu*nu) - nu;
+	nu_e = P/6.;
+	f.omega = 1./(3.*(nu+nu_e)+0.5);
+
+}
+
 void Lattice::computeFout(LBM_DataHandler& f)
 {
 	// compute macroscopic velocity and pressure
@@ -182,6 +214,13 @@ void Lattice::computeFout(LBM_DataHandler& f)
 		break;
 	}
 
+
+	// if Cs>0, apply turbulence model here to adjust f.omega
+	if(f.Cs > 0)
+	{
+		computeStrainTensor(f);
+		applyTurbulenceModel(f);
+	}
 
 	// get (flattened) second-order moment of particle density distribution
 

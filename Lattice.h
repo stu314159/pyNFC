@@ -37,6 +37,8 @@ class Lattice{
     void regularize(LBM_DataHandler& f);
     void relax(LBM_DataHandler& f);
     void set_Vz_micro(LBM_DataHandler& f);
+    void computeStrainTensor(LBM_DataHandler & f);
+    void applyTurbulenceModel(LBM_DataHandler &f);
 
     virtual void set_inlet_bc_micro(LBM_DataHandler& f) = 0;
     virtual void set_inlet_bc_macro(LBM_DataHandler& f) = 0;
