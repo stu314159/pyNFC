@@ -56,6 +56,7 @@ class NFC_LBM_partition(object):
         self.myLB.set_rhoBC(self.rho_lbm)
         self.myLB.set_omega(self.omega)
         self.myLB.set_dynamics(self.dynamics)
+        self.myLB.set_Cs(self.Cs)
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);

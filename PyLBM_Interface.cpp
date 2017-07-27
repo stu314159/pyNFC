@@ -242,6 +242,10 @@ void PyLBM_Interface::set_dynamics(const int d)
 
 }
 
+void PyLBM_Interface::set_Cs(const float cs)
+{
+	fData.Cs = cs;
+}
 
 void PyLBM_Interface::set_bnlSZ(int sz)
 {
@@ -405,5 +409,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("extract_halo_data",&PyLBM_Interface::extract_halo_data)
         		.def("insert_boundary_data",&PyLBM_Interface::insert_boundary_data)
         		.def("set_dynamics",&PyLBM_Interface::set_dynamics)
+        		.def("set_Cs",&PyLBM_Interface::set_Cs)
         		;
 }

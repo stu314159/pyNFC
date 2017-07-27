@@ -11,7 +11,7 @@
 
 
 LBM_DataHandler::LBM_DataHandler(const int numSpd) :
-ux(0),uy(0),uz(0),rho(0),u_bc(0),rho_bc(0),nodeType(0),dynamics(2),omega(0),
+ux(0),uy(0),uz(0),rho(0),u_bc(0),rho_bc(0),nodeType(0),dynamics(2),omega(0), Cs(0),
 
 piFlat{0,0,0,0,0,0,0,0,0},S{0,0,0,0,0,0,0,0,0},numSpd(numSpd)
 {

@@ -37,6 +37,7 @@ public:
 	int nodeType;
 	int dynamics;
 	float omega;
+	float Cs;
 	float * f; // dangerous, but publicly available
 	float * fEq;
 	float * fOut;
