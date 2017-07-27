@@ -41,6 +41,7 @@ public:
 	float * fEq;
 	float * fOut;
 	float piFlat[9];
+	float S[9];
 
 
 private:
