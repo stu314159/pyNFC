@@ -147,9 +147,6 @@ void Lattice::set_Vz_micro(LBM_DataHandler & f)
 
 void Lattice::computeFout(LBM_DataHandler& f)
 {
-	// node type 1: just bounce back
-	// node type 0, 2, and 3 continue with the following steps:
-
 	// compute macroscopic velocity and pressure
 	computeMacroscopicData(f);
 	if(f.nodeType==1)
@@ -158,30 +155,31 @@ void Lattice::computeFout(LBM_DataHandler& f)
 	}
 
 	// node type 2 and 3 apply macroscopic boundary conditions
-	if(f.nodeType==2) //inlet node
+	switch (f.nodeType)
 	{
+	case 2:
 		set_inlet_bc_macro(f);
-	}
-	if(f.nodeType==3) // outlet node
-	{
+		break;
+	case 3:
 		set_outlet_bc_macro(f);
+		break;
+	case 5:
+		set_Vz_micro(f);
+		break;
 	}
-	if(f.nodeType==5)
-	{
-		set_Vz_micro(f); // this type of BC should be set prior to computing equilibrium
-	}
+
 
 	// compute equilibrium
 	computeEquilibrium(f);
 
-	// node type 2 and 3 apply microscopic boundary conditions and regularization
-	if(f.nodeType==2)
+	switch(f.nodeType)
 	{
+	case 2:
 		set_inlet_bc_micro(f);
-	}
-	if(f.nodeType==3)
-	{
+		break;
+	case 3:
 		set_outlet_bc_micro(f);
+		break;
 	}
 
 
