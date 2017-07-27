@@ -236,6 +236,11 @@ void PyLBM_Interface::set_omega(const float o)
 	fData.omega = o;
 }
 
+void PyLBM_Interface::set_dynamics(const int d)
+{
+	fData.dynamics = d;
+}
+
 void PyLBM_Interface::set_bnlSZ(int sz)
 {
 	bnl_sz = sz;
@@ -396,5 +401,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("getHaloInPointers",&PyLBM_Interface::getHaloInPointers)
         		.def("extract_halo_data",&PyLBM_Interface::extract_halo_data)
         		.def("insert_boundary_data",&PyLBM_Interface::insert_boundary_data)
+        		.def("set_dynamics",&PyLBM_Interface::set_dynamics)
         		;
 }

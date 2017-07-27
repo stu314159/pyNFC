@@ -38,6 +38,7 @@ public:
 	void set_Ubc(const float u);
 	void set_rhoBC(const float rho);
 	void set_omega(const float o);
+	void set_dynamics(const int d);
 	void set_totalNodes(const int tn);
 	void process_nodeList(const bool isEven,const int nodeList);
 	void computeFout(LBM_DataHandler& f);

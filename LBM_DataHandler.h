@@ -35,6 +35,7 @@ public:
 	float u_bc;
 	float rho_bc;
 	int nodeType;
+	int dynamics;
 	float omega;
 	float * f; // dangerous, but publicly available
 	float * fEq;
