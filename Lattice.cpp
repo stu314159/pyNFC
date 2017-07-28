@@ -143,6 +143,7 @@ void Lattice::relaxMRT(LBM_DataHandler& f)
 		{
 			f.fOut[spd]+=f.omegaMRT[spd*numSpd+j]*(f.f[spd]-f.fEq[spd]);
 		}
+		f.fOut[spd] = f.f[spd] + f.fOut[spd];//<-- remember the minus sine in omegaMRT
 	}
 }
 
