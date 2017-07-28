@@ -35,11 +35,15 @@ public:
 	float u_bc;
 	float rho_bc;
 	int nodeType;
+	int dynamics;
 	float omega;
+	float Cs;
 	float * f; // dangerous, but publicly available
 	float * fEq;
 	float * fOut;
 	float piFlat[9];
+	float S[9];
+	float * omegaMRT;
 
 
 private:

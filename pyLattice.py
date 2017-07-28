@@ -6,6 +6,7 @@ class module for the Lattice class to be used with pyNFC
 """
 import numpy as np
 
+
 class Lattice(object):
     """
        define the layout and adjacency of the LBM lattice
@@ -246,9 +247,36 @@ class D3Q15Lattice(Lattice):
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9., \
 	             1./72.,1./72.,1./72.,1./72., \
 	             1./72.,1./72.,1./72.,1./72.]
+        self.M = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			-2,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,
+			16,-4,-4,-4,-4,-4,-4,1,1,1,1,1,1,1,1,
+			0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,
+			0,-4,4,0,0,0,0,1,-1,1,-1,1,-1,1,-1,
+			0,0,0,1,-1,0,0,1,1,-1,-1,1,1,-1,-1,
+			0,0,0,-4,4,0,0,1,1,-1,-1,1,1,-1,-1,
+			0,0,0,0,0,1,-1,1,1,1,1,-1,-1,-1,-1,
+			0,0,0,0,0,-4,4,1,1,1,1,-1,-1,-1,-1,
+			0,2,2,-1,-1,-1,-1,0,0,0,0,0,0,0,0,
+			0,0,0,1,1,-1,-1,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,1,-1,-1,1,1,-1,-1,1,
+			0,0,0,0,0,0,0,1,1,-1,-1,-1,-1,1,1,
+			0,0,0,0,0,0,0,1,-1,1,-1,-1,1,-1,1,
+			0,0,0,0,0,0,0,1,-1,-1,1,-1,1,1,-1], dtype=np.float32).reshape((15,15));
+   
+        # s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = omega; s11 = omega;
+        # D'Humieres et al Phil. Trans. R. Soc. Lond A (2002) v360, 437-451
+        # S = diag([0 s1 s2 0 s4 0 s4 0 s4 s9 s9 s11 s11 s11 s14])
 	    
         self.create_Qflat();
 
+    def constructOmegaMRT(self,omega):
+        s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = omega; s11 = omega;
+        S = np.diag([0., s1, s2, 0., s4, 0., s4, 0., s4, s9, s9, 
+                     s11, s11, s11, s14]).astype(np.float32);
+        nMinv = -1.*np.linalg.inv(self.M);
+        self.omegaMRT = np.matmul(nMinv,np.matmul(S,self.M));
+        
+    
     def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
         """
           compute macroscopic density for velocity inlet

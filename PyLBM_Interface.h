@@ -38,6 +38,9 @@ public:
 	void set_Ubc(const float u);
 	void set_rhoBC(const float rho);
 	void set_omega(const float o);
+	void set_dynamics(const int d);
+	void set_Cs(const float cs);
+	void set_omegaMRT(boost::python::object obj);
 	void set_totalNodes(const int tn);
 	void process_nodeList(const bool isEven,const int nodeList);
 	void computeFout(LBM_DataHandler& f);
@@ -70,6 +73,7 @@ private:
 	int inl_sz; // interior node list size
 
 	int * ndT;
+	float u_bc;
 	int numSpd;
 	int totalNodes;
 
@@ -77,6 +81,8 @@ private:
 	float * uy;
 	float * uz;
 	float * rho;
+
+
 
 
 };

@@ -18,6 +18,7 @@ import pyNFC
 input_file_name = 'params.lbm'
 input_data = open(input_file_name,'r')
 lattice_type = str(input_data.readline().rstrip()) # perhaps I can actually use this as intended now
+dynamics = int(input_data.readline())
 Num_ts = int(input_data.readline())
 ts_rep_freq = int(input_data.readline())
 Warmup_ts = int(input_data.readline())
@@ -41,7 +42,9 @@ input_data.close()
 #print "process %d of %d says hello!" % (rank, size)
 
 # each process initialize their partition:
-myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,omega,Cs,lattice_type)
+
+myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,dynamics,omega,Cs,lattice_type)
+
 myPart.write_node_sorting() # should this be done in the constructor?
 
 # do some time stepping

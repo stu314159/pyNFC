@@ -1,6 +1,7 @@
 #include "Lattice.h"
 #include <cstdlib>
 #include <iostream> //<-- used for debugging
+#include <cmath> //<-- used for turbulence model sqrt calc
 
 Lattice::Lattice(const int Nx, const int Ny, const int Nz):
 Nx(Nx), Ny(Ny), Nz(Nz), numSpd(0),
@@ -18,15 +19,16 @@ Lattice::~Lattice()
 
 void Lattice::bounceBack(LBM_DataHandler& f)
 {
-	float fTmp[numSpd];
+	//float fTmp[numSpd];
 	for(int spd=0;spd<numSpd;spd++)
 	{
-		fTmp[spd]=f.f[bbSpd[spd]];
+		//fTmp[spd]=f.f[bbSpd[spd]];
+		f.fOut[spd] = f.f[bbSpd[spd]];
 	}
-	for(int spd=0;spd<numSpd;spd++)
-	{
-		f.f[spd]=fTmp[spd];
-	}
+//	for(int spd=0;spd<numSpd;spd++)
+//	{
+//		f.f[spd]=fTmp[spd];
+//	}
 
 }
 void Lattice::computeMacroscopicData(float& rho, float& ux, float& uy, float& uz, const float* f)
@@ -56,6 +58,14 @@ void Lattice::computeMacroscopicData(LBM_DataHandler& f)
 	}
 	ux/=rho; uy/=rho; uz/=rho;
 	f.rho = rho; f.ux = ux; f.uy = uy; f.uz = uz;
+	switch (f.nodeType)
+	{
+	case 1:
+		f.ux = 0.; f.uy = 0.; f.uz = 0.;
+		break;
+	case 2:
+		f.uz = f.u_bc;
+	}
 
 }
 
@@ -133,44 +143,125 @@ void Lattice::relax(LBM_DataHandler& f)
 
 }
 
+void Lattice::relaxMRT(LBM_DataHandler& f)
+{
+	for(int spd=0;spd<numSpd;spd++)
+	{
+		f.fOut[spd] = 0.;
+		for(int j=0;j<numSpd;j++)
+		{
+			f.fOut[spd]+=f.omegaMRT[spd*numSpd+j]*(f.f[j]-f.fEq[j]);
+		}
+		f.fOut[spd] = f.f[spd] + f.fOut[spd];//<-- remember the minus sine in omegaMRT
+	}
+}
+
+void Lattice::set_Vz_micro(LBM_DataHandler & f)
+{
+	for(int spd = 0; spd<numSpd; spd++)
+	{
+		// push microscopic BCs towards desired value
+		f.f[spd]+=3.*f.rho*w[spd]*(ez[spd]*(f.u_bc - f.uz) +
+				ex[spd]*(0. - f.ux) + ey[spd]*(0.-f.uy));
+	}
+	// update macro BCs so Equilibrium will be calculated as desired.
+	f.ux = 0.; f.uy = 0.; f.uz = f.u_bc;
+}
+
+void Lattice::computeStrainTensor(LBM_DataHandler & f)
+{
+  // here we take advantage of the fact that f.S is initialized to zero
+	float e[3];
+	const int nDim = 3;
+	for(int spd = 0; spd<numSpd; spd++)
+	{
+		e[0] = ex[spd]; e[1] = ey[spd]; e[2] = ez[spd];
+		for(int i = 0; i<nDim; i++)
+		{
+			for(int j=0; j<nDim; j++)
+			{
+				f.S[i*nDim+j]+=e[i]*e[j]*(f.f[spd] - f.fEq[spd]);
+			}
+		}
+	}
+}
+
+void Lattice::applyTurbulenceModel(LBM_DataHandler & f)
+{
+	float nu, nu_e;
+	nu = ((1./f.omega) - 0.5)/3.0;
+	float P;
+	P = sqrt(f.S[0]*f.S[0]+f.S[4]*f.S[4]+f.S[8]*f.S[8] +
+			2.*(f.S[1]*f.S[1]+f.S[2]*f.S[2] + f.S[5]*f.S[5]));
+	P*=f.Cs; P = sqrt(P+nu*nu) - nu;
+	nu_e = P/6.;
+	f.omega = 1./(3.*(nu+nu_e)+0.5);
+
+}
+
 void Lattice::computeFout(LBM_DataHandler& f)
 {
-	// node type 1: just bounce back
-	// node type 0, 2, and 3 continue with the following steps:
-
 	// compute macroscopic velocity and pressure
 	computeMacroscopicData(f);
-	if(f.nodeType==1)
+	if(f.nodeType==1) // solid node
 	{
 		f.ux = 0.; f.uy = 0.; f.uz = 0; // solid nodes, zero velocity
+		bounceBack(f);
+		return;
 	}
 
 	// node type 2 and 3 apply macroscopic boundary conditions
-	if(f.nodeType==2) //inlet node
+	switch (f.nodeType)
 	{
+	case 2:
 		set_inlet_bc_macro(f);
-	}
-	if(f.nodeType==3) // outlet node
-	{
+		break;
+	case 3:
 		set_outlet_bc_macro(f);
+		break;
+	case 5:
+		set_Vz_micro(f);
+		break;
 	}
+
 
 	// compute equilibrium
 	computeEquilibrium(f);
 
-	// node type 2 and 3 apply microscopic boundary conditions and regularization
-	if(f.nodeType==2)
+	switch(f.nodeType)
 	{
+	case 2:
 		set_inlet_bc_micro(f);
-	}
-	if(f.nodeType==3)
-	{
+		break;
+	case 3:
 		set_outlet_bc_micro(f);
+		break;
+	}
+
+
+	// if Cs>0, apply turbulence model here to adjust f.omega
+	if(f.Cs > 0)
+	{
+		computeStrainTensor(f);
+		applyTurbulenceModel(f);
 	}
 
 	// get (flattened) second-order moment of particle density distribution
-	compute_piFlat(f);
-	regularize(f);
-	relax(f);
+
+	switch(f.dynamics)
+	{
+	case 1:
+		relax(f); break;
+
+	case 2:
+		compute_piFlat(f);
+		regularize(f);
+		relax(f);
+		break;
+	case 3:
+		relaxMRT(f);
+
+	}
+
 
 }

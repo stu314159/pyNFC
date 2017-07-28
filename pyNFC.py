@@ -17,7 +17,7 @@ class NFC_LBM_partition(object):
     each partition has:
          
     """
-    def __init__(self,rank,size,comm,Nx,Ny,Nz,rho_lbm,u_bc,omega,Cs,lattice_type='D3Q15',):
+    def __init__(self,rank,size,comm,Nx,Ny,Nz,rho_lbm,u_bc,dynamics,omega,Cs,lattice_type='D3Q15',):
         """
           rank - MPI rank for this partition
           size - MPI size for MPI COMM WORLD
@@ -28,6 +28,7 @@ class NFC_LBM_partition(object):
 
           rho_lbm - scaled density for outlet boundary condition
           u_bc - scaled velocity for inlet boundary condition
+          dynamics - 1 = LBGK | 2 = RBGK | 3 = MRT
           omega - relaxation constant for LBM collisions
           Cs - parameter for turbulence model
         """
@@ -35,7 +36,10 @@ class NFC_LBM_partition(object):
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz; # all partitions need to know the global domain structure
 
         # LBM simulation parameters
+
         self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
+        self.dynamics = dynamics;
+
         
         
         if lattice_type == 'D3Q15':
@@ -51,6 +55,13 @@ class NFC_LBM_partition(object):
         self.myLB.set_Ubc(self.u_bc)
         self.myLB.set_rhoBC(self.rho_lbm)
         self.myLB.set_omega(self.omega)
+        self.myLB.set_dynamics(self.dynamics)
+        self.myLB.set_Cs(self.Cs)
+        
+        # if dynamics == 3, construct lattice.omegaMRT and pass its pointer to myLB
+        if self.dynamics == 3:
+            self.lattice.constructOmegaMRT(self.omega);
+            self.myLB.set_omegaMRT(self.lattice.omegaMRT); # pass the MRT operator pointer to myLB
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
