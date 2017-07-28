@@ -61,6 +61,7 @@ class NFC_LBM_partition(object):
         # if dynamics == 3, construct lattice.omegaMRT and pass its pointer to myLB
         if self.dynamics == 3:
             self.lattice.constructOmegaMRT(self.omega);
+            self.myLB.set_omegaMRT(self.lattice.omegaMRT); # pass the MRT operator pointer to myLB
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);

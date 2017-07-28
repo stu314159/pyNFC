@@ -134,6 +134,18 @@ void Lattice::relax(LBM_DataHandler& f)
 
 }
 
+void Lattice::relaxMRT(LBM_DataHandler& f)
+{
+	for(int spd=0;spd<numSpd;spd++)
+	{
+		f.fOut[spd] = 0.;
+		for(int j=0;j<numSpd;j++)
+		{
+			f.fOut[spd]+=f.omegaMRT[spd*numSpd+j]*(f.f[spd]-f.fEq[spd]);
+		}
+	}
+}
+
 void Lattice::set_Vz_micro(LBM_DataHandler & f)
 {
 	for(int spd = 0; spd<numSpd; spd++)
@@ -234,6 +246,8 @@ void Lattice::computeFout(LBM_DataHandler& f)
 		regularize(f);
 		relax(f);
 		break;
+	case 3:
+		relaxMRT(f);
 
 	}
 

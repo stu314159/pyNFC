@@ -107,6 +107,15 @@ void PyLBM_Interface::set_rho(boost::python::object obj)
 	rho = (float *)buf;
 }
 
+void PyLBM_Interface::set_omegaMRT(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void * buf = pybuf.buf;
+	fData.omegaMRT = (float *)buf;
+}
+
 void PyLBM_Interface::set_adjacency(boost::python::object obj)
 {
 	PyObject* pobj = obj.ptr();
@@ -330,6 +339,7 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		fData_l.omega = fData.omega;
 		fData_l.dynamics = fData.dynamics;
 		fData_l.Cs = fData.Cs;
+		fData_l.omegaMRT = fData.omegaMRT;
 		// get the node number (for the local partition)
 		int nd = ndList[ndI];
 		// set the node type in fData
@@ -411,5 +421,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("insert_boundary_data",&PyLBM_Interface::insert_boundary_data)
         		.def("set_dynamics",&PyLBM_Interface::set_dynamics)
         		.def("set_Cs",&PyLBM_Interface::set_Cs)
+        		.def("set_omegaMRT",&PyLBM_Interface::set_omegaMRT)
         		;
 }
