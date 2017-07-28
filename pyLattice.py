@@ -274,7 +274,7 @@ class D3Q15Lattice(Lattice):
         S = np.diag([0., s1, s2, 0., s4, 0., s4, 0., s4, s9, s9, 
                      s11, s11, s11, s14]).astype(np.float32);
         nMinv = -1.*np.linalg.inv(self.M);
-        self.omegaMRT = np.matmul(nMinv,np.matmul(S,self.M));
+        self.omegaMRT = np.dot(nMinv,np.dot(S,self.M));
         
     
     def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
