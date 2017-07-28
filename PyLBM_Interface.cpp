@@ -234,6 +234,7 @@ void PyLBM_Interface::set_ndType(const int nd, LBM_DataHandler& fData)
 void PyLBM_Interface::set_Ubc(const float u)
 {
 	fData.u_bc = u;
+	u_bc = u;
 }
 
 void PyLBM_Interface::set_rhoBC(const float rho)
@@ -286,6 +287,7 @@ void PyLBM_Interface::compute_local_data(const bool isEven)
 	float ux_i, uy_i, uz_i,rho_i;
 	float * f;
 	int nd;
+	int ndType;
 	//iterate through the boundary nodes
 	for(int ndId = 0; ndId<bnl_sz; ndId++)
 	{
@@ -295,6 +297,19 @@ void PyLBM_Interface::compute_local_data(const bool isEven)
 		myLattice->computeMacroscopicData(rho_i,ux_i,uy_i,uz_i,f);
 		// insert result into arrays
 		ux[nd] = ux_i; uy[nd]=uy_i; uz[nd]=uz_i; rho[nd]=rho_i;
+		ndType = ndT[nd];
+		switch (ndType)
+		{
+		case 1:
+			ux[nd] = 0; uy[nd] = 0; uz[nd] = 0;
+			break;
+		case 2:
+			ux[nd] = 0; uy[nd] = 0; uz[nd] = u_bc;
+			break;
+		case 5:
+			ux[nd] = 0; uy[nd] = 0; uz[nd] = u_bc;
+		}
+
 	}
 
 	//iterate through the interior nodes

@@ -73,6 +73,7 @@ private:
 	int inl_sz; // interior node list size
 
 	int * ndT;
+	float u_bc;
 	int numSpd;
 	int totalNodes;
 
