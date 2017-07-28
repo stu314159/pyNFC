@@ -1,14 +1,19 @@
 # pyNFC
-Python implementation of Numeric Fluid Channel
+Python implementation of Numeric Fluid Channel.  
 
-The goal of this project is to serve as a prototype for planned improvements to the 
-Numeric Fluid Channel code residing in nfc2.  
+Distributed parallel with mpi4py.  Calculations mainly done by C++-based LBM library coupled with Python code through Boost.Python.  OpenMP provides some acceleration and may be used in conjunction with MPI.  
 
-Current status: working and tested thoroughly for D3Q15 lattice type with metis
-partitioning.  Uses Boost.Python to achieve significant performance improvments
-over Python, Numpy, and mpi4py alone.  Scalability is under evaluation and appears
-to be quite good.  Single node performance (with 32 MPI processes) is slightly better
-than NFCpp on a single node with OpenMP acceleration.
+Dependencies: 
+(Required)
+1. NumPy
+2. SciPy
+3. MPI4Py
+4. Boost.Python
 
-Working now to more formally validate D3Q19 and D3Q27 lattice structures as well as
-evaluate pro/con of metis partitions.
+(Optional)
+5. h5py
+6. pymetis
+
+Allows for LBM simulation of fluid flows.  Bulk dynamics include: LBGK, RBGK, and MRT.  Lattice Options: D3Q15, D3Q19, and D3Q27 (as of now, no MRT for D3Q27).  Single parameter turbulence model implemented for LBGK and RBGK.  Regularized velocity and pressure boundary conditions implemented for all lattices on the west (Z-min) and east (Z-max) boundaries respectively.  Boundary conditions also included for a simple moving boundary (only in the z-direction) and, of course, solid boundaries.
+
+The code is still under active development so things will change quickly.  
