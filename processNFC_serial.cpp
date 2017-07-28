@@ -22,6 +22,7 @@ int main(int argc, char**argv){
   
   int size, rank;
   std::string latticeType;
+  int dynamics;
   int Num_ts, ts_rep_freq, warmup_ts, plot_freq;
   double Cs, rho_lbm, u_lbm, omega;
   int Nx, Ny, Nz, restartFlag;
@@ -30,7 +31,7 @@ int main(int argc, char**argv){
   
   std::ifstream input;
   input.open("params.lbm",std::ifstream::in);
-  input >> latticeType >> Num_ts >> ts_rep_freq >> warmup_ts >> plot_freq;
+  input >> latticeType >> dynamics >> Num_ts >> ts_rep_freq >> warmup_ts >> plot_freq;
   input >> Cs >> rho_lbm >> u_lbm >> omega;
   input >> Nx >> Ny >> Nz >> restartFlag;
   input >> Lx_p >> Ly_p >> Lz_p >> t_conv_fact >> l_conv_fact >> p_conv_fact;

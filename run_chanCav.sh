@@ -14,12 +14,12 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=ChanCavityTest.mat
 
-Num_ts=5001
-ts_rep_freq=100
+Num_ts=150001
+ts_rep_freq=1000
 Warmup_ts=0
-plot_freq=500
-Re=100
-dt=0.005
+plot_freq=10000
+Re=500
+dt=0.0002
 Cs=0
 Restart_flag=0
 
