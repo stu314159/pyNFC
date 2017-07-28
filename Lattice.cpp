@@ -19,15 +19,16 @@ Lattice::~Lattice()
 
 void Lattice::bounceBack(LBM_DataHandler& f)
 {
-	float fTmp[numSpd];
+	//float fTmp[numSpd];
 	for(int spd=0;spd<numSpd;spd++)
 	{
-		fTmp[spd]=f.f[bbSpd[spd]];
+		//fTmp[spd]=f.f[bbSpd[spd]];
+		f.fOut[spd] = f.f[bbSpd[spd]];
 	}
-	for(int spd=0;spd<numSpd;spd++)
-	{
-		f.f[spd]=fTmp[spd];
-	}
+//	for(int spd=0;spd<numSpd;spd++)
+//	{
+//		f.f[spd]=fTmp[spd];
+//	}
 
 }
 void Lattice::computeMacroscopicData(float& rho, float& ux, float& uy, float& uz, const float* f)
@@ -57,6 +58,14 @@ void Lattice::computeMacroscopicData(LBM_DataHandler& f)
 	}
 	ux/=rho; uy/=rho; uz/=rho;
 	f.rho = rho; f.ux = ux; f.uy = uy; f.uz = uz;
+	switch (f.nodeType)
+	{
+	case 1:
+		f.ux = 0.; f.uy = 0.; f.uz = 0.;
+		break;
+	case 2:
+		f.uz = f.u_bc;
+	}
 
 }
 
@@ -194,9 +203,11 @@ void Lattice::computeFout(LBM_DataHandler& f)
 {
 	// compute macroscopic velocity and pressure
 	computeMacroscopicData(f);
-	if(f.nodeType==1)
+	if(f.nodeType==1) // solid node
 	{
 		f.ux = 0.; f.uy = 0.; f.uz = 0; // solid nodes, zero velocity
+		bounceBack(f);
+		return;
 	}
 
 	// node type 2 and 3 apply macroscopic boundary conditions
