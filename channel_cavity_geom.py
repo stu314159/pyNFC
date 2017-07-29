@@ -1,3 +1,8 @@
+#!/p/home/sblair/anaconda2/bin/python
+
+import sys
+sys.path.insert(1,'.')
+
 import FluidChannel as fc
 import argparse
 

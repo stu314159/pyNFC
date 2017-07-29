@@ -1,9 +1,13 @@
+#!/p/home/sblair/anaconda2/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jul 26 14:23:52 2017
 
 @author: stu
 """
+
+import sys
+sys.path.insert(1,'.')
 
 import pyPartition as pp
 #from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected

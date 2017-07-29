@@ -1,3 +1,5 @@
+#!/p/home/sblair/anaconda2/bin/python
+
 #pyNFC_preprocess.py
 """
    pre-processing steps for pyNFC code.  Basic geometry definition
