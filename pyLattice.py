@@ -154,6 +154,8 @@ class Lattice(object):
 
         return omega_t 
 
+    def set_omega(self,omega):
+        self.omega = omega
     def relax(self,fIn,fEq,omega):
         """
            execute LBM relaxation
@@ -266,17 +268,25 @@ class D3Q15Lattice(Lattice):
         # s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = omega; s11 = omega;
         # D'Humieres et al Phil. Trans. R. Soc. Lond A (2002) v360, 437-451
         # S = diag([0 s1 s2 0 s4 0 s4 0 s4 s9 s9 s11 s11 s11 s14])
-	    
+        
+       
         self.create_Qflat();
 
     def constructOmegaMRT(self,omega):
-        s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = omega; s11 = omega;
-        S = np.diag([0., s1, s2, 0., s4, 0., s4, 0., s4, s9, s9, 
-                     s11, s11, s11, s14]).astype(np.float32);
-        nMinv = -1.*np.linalg.inv(self.M);
-        self.omegaMRT = np.dot(nMinv,np.dot(S,self.M));
         
-    
+        nMinv = -1.*np.linalg.inv(self.M);
+        self.omegaMRT = np.dot(nMinv,np.dot(self.S,self.M));
+        
+    def buildS(self):
+        s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = self.omega; 
+        s11 = self.omega;
+        self.S = np.diag([0., s1, s2, 0., s4, 0., s4, 0., s4, s9, s9, 
+                     s11, s11, s11, s14]).astype(np.float32);
+        
+    def set_omega(self,omega):
+        self.omega = omega;
+        self.buildS()
+        
     def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
         """
           compute macroscopic density for velocity inlet
@@ -376,14 +386,23 @@ class D3Q19Lattice(Lattice):
 			0, 0, 0, 0, 0, 0, 0, 1, -1, 1, -1, -1, 1, -1, 1, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, 0, 0, 0, 0, 1, -1, 1, -1,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, -1, -1, -1, -1, 1, 1],dtype=np.float32).reshape((19,19))
+   
+        
+                     
+    def buildS(self):
+        s1 = 1.19; s2 = 1.4; s4 = 1.2; s9 = self.omega; s13 = self.omega; 
+        s16=1.98; s10=1.4
+        self.S = np.diag([0.,s1,s2,0.,s4,0.,s4,0.,s4,s9,s10,s9,
+                     s10,s13,s13,s13,s16,s16,s16]).astype(np.float32);
 
     def constructOmegaMRT(self,omega):
-        s1 = 1.19; s2 = 1.4; s4 = 1.2; s9 = omega; s13 = omega; s16=1.98; s10=1.4
-        S = np.diag([0.,s1,s2,0.,s4,0.,s4,0.,s4,s9,s10,s9,
-                     s10,s13,s13,s13,s16,s16,s16]).astype(np.float32);
         nMinv = -1.*np.linalg.inv(self.M);
-        self.omegaMRT = np.dot(nMinv,np.dot(S,self.M));    
+        self.omegaMRT = np.dot(nMinv,np.dot(self.S,self.M));    
     
+    def set_omega(self,omega):
+        self.omega = omega;
+        self.buildS()
+        
     def set_inlet_velocity_bc_macro(self,f,uz):
         """
           compute macroscopic density for velocity inlet bc using
@@ -492,6 +511,9 @@ class D3Q27Lattice(Lattice):
         f[sp] += f[bbSp] - fEq[bbSp];
 
 
+    def set_omega(self,omega):
+        self.omega = omega;
+        
     def bounceBack_outletBoundary_micro(self,f,fEq):
         """
           input:

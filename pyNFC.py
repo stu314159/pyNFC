@@ -50,6 +50,7 @@ class NFC_LBM_partition(object):
         else:
             self.lattice = pl.D3Q27Lattice(self.Nx, self.Ny, self.Nz)
 
+        self.lattice.set_omega(omega)        
         self.numSpd = self.lattice.get_numSpd()
         self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
         self.myLB.set_Ubc(self.u_bc)
