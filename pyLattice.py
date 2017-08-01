@@ -265,9 +265,6 @@ class D3Q15Lattice(Lattice):
 			0,0,0,0,0,0,0,1,-1,1,-1,-1,1,-1,1,
 			0,0,0,0,0,0,0,1,-1,-1,1,-1,1,1,-1], dtype=np.float32).reshape((15,15));
    
-        # s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = omega; s11 = omega;
-        # D'Humieres et al Phil. Trans. R. Soc. Lond A (2002) v360, 437-451
-        # S = diag([0 s1 s2 0 s4 0 s4 0 s4 s9 s9 s11 s11 s11 s14])
         
        
         self.create_Qflat();
@@ -278,6 +275,8 @@ class D3Q15Lattice(Lattice):
         self.omegaMRT = np.dot(nMinv,np.dot(self.S,self.M));
         
     def buildS(self):
+        
+        # D'Humieres et al Phil. Trans. R. Soc. Lond A (2002) v360, 437-451
         s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = self.omega; 
         s11 = self.omega;
         self.S = np.diag([0., s1, s2, 0., s4, 0., s4, 0., s4, s9, s9, 
@@ -408,7 +407,6 @@ class D3Q19Lattice(Lattice):
           compute macroscopic density for velocity inlet bc using
           Regularized BC methods
         """
-        #rho = (1./(1.-uz))*(2.0*(f6+f13+f14+f17+f18)+(f0+f1+f2+f3+f4+f7+f8+f9+f10));
         rho = (1./(1.-uz))*(2.*(f[6]+f[13]+f[14]+f[17]+f[18])+(f[0]+f[1]+f[2]+f[3]+f[4]+f[7]+f[8]+f[9]+f[10]))
         return rho
 
@@ -540,7 +538,4 @@ if __name__=="__main__":
       put testing code here
     """
 
-#from sympy import *
-#
-#f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f13 = symbols("f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14")
-#print "f0 + f1 = " + str(f0 + f1)
+

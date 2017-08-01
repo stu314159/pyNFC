@@ -268,11 +268,7 @@ class NFC_LBM_partition(object):
         """
           compute ux, uy, uz and rho for output at requested data dump intervals
         """
-        if isEven:
-            f = self.fEven;
-        else:
-            f = self.fOdd;
-
+       
         # prepare arrays to hold the data
         ux = np.zeros([self.num_local_nodes],dtype=np.float32)
         uy = np.zeros([self.num_local_nodes],dtype=np.float32)
@@ -544,19 +540,6 @@ class NFC_LBM_partition(object):
                     self.num_local_nodes+=1
                 indx+=1 # either way increment the global counter
 
-
-#        self.parts = np.fromfile('parts.lbm',dtype=np.int32).astype(np.int32)
-#        indx=0;
-#        self.num_local_nodes = 0
-#        for p in self.parts:
-#            p_i = np.int32(p) # convert to np.int32
-#           self.part_sizes[p_i]+=1
-#           if p_i == self.rank: # if this lp is assigned to the current rank:
-#               self.local_to_global[self.num_local_nodes] = indx; # put into local-to-global dictionary
-#              self.global_to_local[indx] = self.num_local_nodes; # put in global-to-localbml dictionary
-#                self.num_local_nodes+=1
-#            indx+=1 # either way increment the global counter
-                
             
         # save the cumsum of all partitions with rank lower than self.rank
         # to use in offsetting MPI write operations.
@@ -594,9 +577,6 @@ class NFC_LBM_partition(object):
         # some thought/testing should be done regarding the shape of this data array.
         self.fEven = np.empty([self.total_nodes , self.numSpd],dtype=np.float32)
         self.fOdd = np.empty_like(self.fEven)
-#        self.snl = np.zeros([self.total_nodes],dtype=np.int32);
-#        self.inl = np.zeros([self.total_nodes],dtype=np.int32);
-#        self.onl = np.zeros([self.total_nodes],dtype=np.int32);
         self.ndT = np.zeros([self.total_nodes],dtype=np.int32);
 
     def initialize_data_arrays(self):
