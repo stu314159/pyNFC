@@ -464,20 +464,21 @@ class D3Q27Lattice(Lattice):
     """
     def __init__(self,Nx,Ny,Nz):
         super(D3Q27Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]; self.ex = np.array(self.ex,dtype=np.float32)
-        self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]; self.ey = np.array(self.ey,dtype=np.float32)
-        self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]; self.ez = np.array(self.ez,dtype=np.float32)
-        self.bbSpd = [0,14,15,16,17,18,19,20,21,22,23,24,25,26,
-	      1,2,3,4,5,6,7,8,9,10,11,12,13]
-        self.w = [8./27.,2./27.,2./27.,2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-	       1./54.,1./216.,1./216,1./216.,1./216.,2./27.,2./27.,
-	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-		1./54.,1./216.,1./216,1./216.,1./216.]
+        self.ex = [0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,0,0,0,0,1,1,1,1,-1,-1,-1,-1]; self.ex=np.array(self.ex,dtype=np.float32)
+        self.ey = [0,0,0,1,-1,0,0,1,-1,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,1,1,-1,-1]; self.ey=np.array(self.ey,dtype=np.float32)
+        self.ez = [0,0,0,0,0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1]; self.ez=np.array(self.ez,dtype=np.float32)
+        self.bbSpd = [0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15,26,25,24,23,22,21,20,19]
+        self.w = [8./27.,2./27.,2./27.,2./27.,2./27.,2./27.,2./27.,
+                  1./54.,1./54.,1./54.,1./54.,1./54.,1./54.,
+                  1./54.,1./54.,1./54.,1./54.,1./54.,1./54.,
+                  1./216.,1./216.,1./216.,1./216.,
+                  1./216.,1./216.,1./216.,1./216.]
         self.create_Qflat();
+        #self.M = np.array([],dtype=np.float32).reshape((27,27))
 
     def set_inlet_velocity_bc_macro(self,f,uz):
-        rho = (1./(1. - uz))*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
-                             (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18]))
+        rho = (1./(1. - uz))*(2.*(f[6]+f[14]+f[12]+f[18]+f[16]+f[20]+f[22]+f[24]+f[26])+ 
+                             (f[0]+f[1]+f[2]+f[4]+f[3]+f[7]+f[8]+f[9]+f[10]))
         return rho
 
 
@@ -486,8 +487,8 @@ class D3Q27Lattice(Lattice):
           compute macroscopic uz for density outlet
           bc using Regularized BC methods
         """
-        uz = -1. + (1./rho)*(2.*(f[7]+f[9]+f[11]+f[13]+f[16]+f[19]+f[21]+f[23]+f[25])+ 
-                             (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18]))
+        uz = -1. + (1./rho)*(2.*(f[5]+f[11]+f[13]+f[15]+f[17]+f[19]+f[21]+f[23]+f[25])+ 
+                             (f[0]+f[1]+f[2]+f[4]+f[3]+f[7]+f[8]+f[9]+f[10]))
         return uz
 
 
@@ -501,11 +502,11 @@ class D3Q27Lattice(Lattice):
             the non-equilibrium component of the known
             speeds in opposite direction:
 
-         for D3Q27, unknown speeds on (low-z) inlet: 7,9,11,13,16,19,21,23,25
-                         bbSpd = 20,22,24,26,3,6,8,10,12
+         for D3Q27, unknown speeds on (low-z) inlet: 5,11,13,15,17,19,21,23,25
+                         bbSpd = 6,14,12,18,16,26,24,22,20
                 
         """
-        sp = [7,9,11,13,16,19,21,23,25]; bbSp = [20,22,24,26,3,6,8,10,12];
+        sp = [5,11,13,15,17,19,21,23,25]; bbSp = [6,14,12,18,16,26,24,22,20];
         f[sp] += f[bbSp] - fEq[bbSp];
 
 
@@ -524,12 +525,12 @@ class D3Q27Lattice(Lattice):
              speeds in opposite direction:
 
 
-          for D3Q27, unknown speeds on (high-z) outlet: 20,22,24,26,3,6,8,10,12
-                          bbSpd = 7,9,11,13,16,19,21,23,25
+          for D3Q27, unknown speeds on (high-z) outlet: 6,14,12,18,16,26,24,22,20
+                          bbSpd = 5,11,13,15,17,19,21,23,25
                  
 
         """
-        sp = [20,22,24,26,3,6,8,10,12]; bbSp = [7,9,11,13,16,19,21,23,25];
+        sp = [6,14,12,18,16,26,24,22,20]; bbSp = [5,11,13,15,17,19,21,23,25];
         f[sp] += f[bbSp] - fEq[bbSp];
 
   

@@ -64,36 +64,6 @@ XX = np.reshape(X,int(numEl))
 YY = np.reshape(Y,int(numEl))
 ZZ = np.reshape(Z,int(numEl))
 
-#print 'There are %d nodes in the solid node list'%len(snl)
-#print 'Writing those nodes to file'
-## now write this obstList to file.
-#obstFilename = 'snl.lbm'
-#obstFile = open(obstFilename,'w')
-#obstFile.write('%i \n'%len(snl))
-#for i in range(len(snl)):
-#    nd = int(snl[i]); nd=nd;# make snl node numbers 0-based
-#    obstFile.write('%i \n'% nd) 
-#obstFile.close()
-#
-#print 'There are %d nodes in the inlet node list'%len(inl)
-#print 'Writing those nodes to file'
-#inletFileName = 'inl.lbm'
-#inletFile = open(inletFileName,'w')
-#inletFile.write('%i \n'%len(inl))
-#for i in range(len(inl)):
-#    nd = int(inl[i]); nd = nd;#make inl node numbers 0-based
-#    inletFile.write('%i \n'% nd) 
-#inletFile.close()
-#
-#print 'There are %d nodes in the outlet node list'%len(onl)
-#print 'Writing those nodes to file'
-#outletFileName = 'onl.lbm'
-#outletFile = open(outletFileName,'w')
-#outletFile.write('%i \n'%len(onl))
-#for i in range(len(onl)):
-#    nd = int(onl[i]); nd = nd;#make onl node numbers 0-based
-#    outletFile.write('%i \n'% nd) 
-#outletFile.close()
 
 print 'There are %d nodes listed in ndType'%len(ndType)
 print 'Writing those to file'
