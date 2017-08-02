@@ -85,7 +85,7 @@ void D3Q27Lattice::set_inlet_bc_macro(LBM_DataHandler& f)
 
 void D3Q27Lattice::set_outlet_bc_micro(LBM_DataHandler& f)
 {
-	int sp[9]={6,14,12,18,16,26,24,22,202};
+	int sp[9]={6,14,12,18,16,26,24,22,20};
 	int bbSp[9]={5,11,13,15,17,19,21,23,25};
 	int numBB = 9;
 	for(int s=0;s<numBB;s++)
