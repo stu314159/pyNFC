@@ -93,6 +93,8 @@ class Lattice(object):
             c_i = [self.ex[spd], self.ey[spd], self.ez[spd]]
             qt = np.outer(c_i,c_i); qt -= cs2*eye3;
             self.Qflat[spd,:] = qt.flatten()
+            
+        #print self.Qflat
 
 
     def compute_Pi1_flat(self,f,fEq):
