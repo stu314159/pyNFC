@@ -48,6 +48,8 @@ int main(int argc, char**argv){
 
   int tot = Nx * Ny * Nz;
   int xdims[3] = {Nz,Ny,Nx}; 
+  double dx;
+  dx = Lx_p/(Nx-1);
 
   int * order = new int[tot];
   // read ordering data
@@ -137,7 +139,7 @@ int main(int argc, char**argv){
   
     std::cout << "Processing data dump #" << d << std::endl;
     writeH5(pi,xi,yi,zi,v_dat,"out.h5",xdims,d);
-    writeXdmf(xdims,"data.xmf",d);
+    writeXdmf(xdims,dx,"data.xmf",d);
   }
  
   delete [] p_dat;
@@ -155,7 +157,7 @@ int main(int argc, char**argv){
   return 0;
 }
 
-void writeXdmf(int*dims,std::string filename,int d){
+void writeXdmf(int*dims,double dx,std::string filename,int d){
   std::stringstream name;
   std::string start = "data";
   std::string end = ".xmf";
@@ -179,7 +181,7 @@ void writeXdmf(int*dims,std::string filename,int d){
   xdmf << "0 0 0\n"; 
   xdmf << "</DataItem>\n";
   xdmf << "<DataItem Dimensions=\"3\" NumberType=\"Integer\" Format=\"XML\">\n";
-  xdmf << "1 1 1\n";
+  xdmf << dx << "  " << dx << "  " << dx << " \n";
   xdmf << "</DataItem>\n";
   xdmf << "</Geometry>\n";
 

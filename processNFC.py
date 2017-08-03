@@ -54,6 +54,7 @@ Y,Z,X = np.meshgrid(y,z,x);
 XX = np.reshape(X,numEl)
 YY = np.reshape(Y,numEl)
 ZZ = np.reshape(Z,numEl)
+dx = x[1] - x[0]
 
 # compute the number of data dumps I expect to process
 nDumps = (Num_ts-Warmup_ts)/plot_freq + 1 
@@ -106,5 +107,5 @@ for i in range(nDumps):
   h5_file = 'out'+str(i)+'.h5'
   xmf_file = 'data'+str(i)+'.xmf'
   writeH5(pressure,ux,uy,uz,velmag,h5_file)
-  writeXdmf(dims,xmf_file,i)
+  writeXdmf(dims,dx,xmf_file,i)
 
