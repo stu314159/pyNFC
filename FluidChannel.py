@@ -62,7 +62,26 @@ class ChannelCavity(EmptyChannel):
       ol = np.intersect1d(ol[:],cav3[:])
       return ol[:]
 
-
+class StraightPipe(EmptyChannel):
+    """
+    a square channel where the non-solid nodes
+    constitute a circular pipe.
+    
+    """
+    def __init__(self,x_c,y_c,diameter):
+        self.x_c = x_c;
+        self.y_c = y_c;
+        self.diameter = diameter;
+        
+    def get_Lo(self):
+        return self.diameter;
+        
+    def get_obstList(self,X,Y,Z):
+        x = np.array(X); y = np.array(Y); 
+        dist = (x - self.x_c)**2 + (y - self.y_c)**2
+        
+        return list(np.where(dist >= (self.diameter/2.0)**2))
+    
 class SphereObstruction(EmptyChannel):
     """
      a channel with a sphere obstruction
