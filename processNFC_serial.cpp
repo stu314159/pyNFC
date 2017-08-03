@@ -26,6 +26,7 @@ int main(int argc, char**argv){
   int Num_ts, ts_rep_freq, warmup_ts, plot_freq;
   double Cs, rho_lbm, u_lbm, omega;
   int Nx, Ny, Nz, restartFlag;
+  int pRefIdx;
   double Lx_p, Ly_p, Lz_p, t_conv_fact, l_conv_fact, p_conv_fact;
   
   
@@ -35,6 +36,7 @@ int main(int argc, char**argv){
   input >> Cs >> rho_lbm >> u_lbm >> omega;
   input >> Nx >> Ny >> Nz >> restartFlag;
   input >> Lx_p >> Ly_p >> Lz_p >> t_conv_fact >> l_conv_fact >> p_conv_fact;
+  input >> pRefIdx;
   input.close();
   
   
@@ -120,9 +122,17 @@ int main(int argc, char**argv){
       pi[order[i]] = p_dat[i];
     }
 
+    // get pressure reference value; adjust and apply the conv factors
+    float pRef = pi[pRefIdx];
+    for(int i=0; i<tot;i++)
+    {
+      pi[i] -= pRef;
+      pi[i] *= p_conv_fact;
+    }
 
     for(int i = 0; i < tot; i++){
       v_dat[i] = sqrt((xi[i]*xi[i])+(yi[i]*yi[i])+(zi[i]*zi[i])); 
+      v_dat[i] /= u_conv_fact;
     }
   
     std::cout << "Processing data dump #" << d << std::endl;

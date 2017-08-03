@@ -1,3 +1,5 @@
+#!/p/home/sblair/anaconda2/bin/python
+
 # -*- coding: utf-8 -*-
 """
 
@@ -6,6 +8,9 @@ Created on Thu Aug  3 11:32:57 2017
 
 @author: stu
 """
+import sys
+sys.path.insert(1,'.')
+
 import FluidChannel as fc
 import argparse
 
@@ -20,7 +25,7 @@ args = parser.parse_args()
 #overall channel dimensions
 aLx_p = 1.1
 aLy_p = 1.1
-aLz_p = 10.0
+aLz_p = 25.0
 aNdivs = args.nDivs
 
 x_c = aLx_p/2.;
