@@ -16,7 +16,7 @@ const int RANK = 3;
 
 // Prototype for write functions
 int writeH5(float*,float*,float*,float*,float*,std::string,int*,int);
-void writeXdmf(int*,std::string,int);
+void writeXdmf(int*,double,std::string,int);
 
 int main(int argc, char**argv){
   
