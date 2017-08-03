@@ -955,6 +955,8 @@ class FluidChannel:
         self.z = np.reshape(Z,int(self.nnodes))
         
         self.dx = self.x[1]-self.x[0]
+        
+        self.set_pRef_indx(Lx_p/2.,Ly_p/2.,0.95*Lz_p);
 
         # get fluid properties from the included fluid library
         self.rho_p, self.nu_p = fluid_properties(fluid)
@@ -1015,10 +1017,35 @@ class FluidChannel:
         mat_dict['nu_p'] = self.nu_p
 
         mat_dict['ndType'] = list(self.ndType[:])
+        mat_dict['pRef_idx'] = self.pRef_indx;
 
         scipy.io.savemat(geom_filename,mat_dict)
 
-
+    def set_pRef_indx(self,Xref,Yref,Zref):
+        """
+        find the node index within the fluid channel that can
+        serve as the pressure reference.
+        
+        By default this pressure reference will be placed at 95% of 
+        the channel length (in the Z-direction) at the X-and Y- center 
+        of the channel.  Save this pRef index in the geometry file and
+        write it into the params file for post-processing"
+        """
+        xInd = np.where(np.abs(self.x - Xref)<self.dx/1.5);
+        yInd = np.where(np.abs(self.y - Yref)<self.dx/1.5);
+        zInd = np.where(np.abs(self.z - Zref)<self.dx/1.5);
+        
+        ndList = np.intersect1d(xInd,yInd);
+        ndList = np.intersect1d(zInd,ndList)
+        
+        if len(ndList>0):
+            self.pRef_indx = ndList[0]
+        else:
+            self.pRef_indx = 0
+            print "Warning: failed to select pRef node!"
+            
+        
+        
     
     def write_bc_vtk(self):
         """

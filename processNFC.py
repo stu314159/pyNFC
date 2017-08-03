@@ -40,6 +40,7 @@ Lz_p = float(input_data.readline())
 t_conv_fact = float(input_data.readline())
 l_conv_fact = float(input_data.readline())
 p_conv_fact = float(input_data.readline())
+pRef_idx = int(input_data.readline())
 
 input_data.close()
 
@@ -74,7 +75,7 @@ for i in range(nDumps):
   ux_i /= u_conv_fact
   uy_i /= u_conv_fact
   uz_i /= u_conv_fact
-  pressure_i /= p_conv_fact 
+  pressure_i *= p_conv_fact 
   
   order_map = np.fromfile('ordering.b_dat',dtype=np.int32).astype(np.int32)
 # re-order per order_map
@@ -84,6 +85,8 @@ for i in range(nDumps):
   uy[order_map] = uy_i
   uz[order_map] = uz_i
   pressure[order_map] = pressure_i
+  pRef = pressure[pRef_idx];
+  pressure -= pRef; # adjust for reference pressure
   
   velmag = np.sqrt(ux**2+uy**2+uz**2)
 

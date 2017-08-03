@@ -42,9 +42,6 @@ Lo = float(geom_input['Lo'])
 Ny_divs = int(geom_input['Ny_divs'])
 rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
-#snl = list((geom_input['snl']).flatten())
-#inl = list((geom_input['inl']).flatten()) # must be inlet on Z-min
-#onl = list((geom_input['onl']).flatten()) # must be outlet on Z-max
 ndType = list((geom_input['ndType']).flatten())
 
 
@@ -82,7 +79,6 @@ else:
    lat = pp.D3Q27Lattice(int(Nx),int(Ny),int(Nz))
 
 
-#lat15 = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
 print "initializing the adjacency list"
 lat.initialize_adjDict();
 print "creating %s partition for %d processes" % (partition_style, numProcs)
