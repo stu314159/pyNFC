@@ -11,6 +11,7 @@ import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
 from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+import PartitionHelper as PH
 #import numpy as np
 
 class Lattice(object):
@@ -59,7 +60,12 @@ class Lattice(object):
 
     def initialize_adjDict(self):  
         
-        self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+        #self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+        self.partHelper = PH.PartitionHelper(self.Nx,self.Ny,self.Nz,self.get_numSpd());
+        self.adjDict = {}
+        self.partHelper.setAdjacency(self.adjDict); # now self.adjDict is populated
+        # hopefully this took less time than before.
+        
 
 
     def compute_cutSize(self):
