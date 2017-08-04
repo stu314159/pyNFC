@@ -37,9 +37,9 @@ latticeType = args.latticeType
 partitionType = args.partitionType
 
 # make these additional arguments?
-geom_file = 'channel_cavity_geom.py'
-run_script = 'run_chanCav.sh'
-N_divs=201
+geom_file = 'pipe_flow_geom.py'
+run_script = 'run_pipeFlow.sh'
+N_divs=81
 pp_bool=1
 dynamics=3
 

@@ -97,10 +97,11 @@ omega = 1./(3.*nu_lbm+0.5)
 u_conv_fact = (dt/dx)*(To/Lo)
 t_conv_fact = (dt*To)
 l_conv_fact = dx*Lo
-p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))*(l_conv_fact**3)
+p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))/(l_conv_fact**3)
 #p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))
 
 rho_lbm = rho_p*(l_conv_fact**3)
+#rho_lbm = rho_p
 
 print 'l_conv_fact = %g.\n'%l_conv_fact
 print 'p_conv_fact = %g.\n'%p_conv_fact

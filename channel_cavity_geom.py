@@ -31,4 +31,5 @@ testChan = fc.FluidChannel(Lx_p = aLx_p, Ly_p = aLy_p, Lz_p = aLz_p,
 testChan.write_mat_file('ChanCavityTest')
 #testChan.write_bc_vtk()
 
+testChan.set_pRef_indx(aLx_p/2.,0.2465,0.98*aLz_p)
 
