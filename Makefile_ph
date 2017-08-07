@@ -15,9 +15,12 @@ FILE=PartitionHelper
 EXT=cpp
 
 # varibles that work on local laptopt
-MPI_CC=pgc++
+#MPI_CC=pgc++
 ##MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
-MPI_FLAGS=-fast -fPIC -std=c++11 -mp=nonuma -Minfo
+#MPI_FLAGS=-fast -fPIC -std=c++11 -mp=nonuma -Minfo
+MPI_CC=g++
+MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
+
 PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
 PYTHON_LIB=/home/stu/anaconda2/lib
 BOOST_INC = /usr/include

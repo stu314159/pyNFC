@@ -15,10 +15,10 @@
 
 MAT_FILE=wall_mounted_brick.mat
 
-Num_ts=51
-ts_rep_freq=5
+Num_ts=5001
+ts_rep_freq=500
 Warmup_ts=0
-plot_freq=10
+plot_freq=500
 Re=25
 dt=0.01
 Cs=0
