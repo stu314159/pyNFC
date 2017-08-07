@@ -116,6 +116,17 @@ void PyLBM_Interface::set_omegaMRT(boost::python::object obj)
 	fData.omegaMRT = (float *)buf;
 }
 
+void PyLBM_Interface::set_MPIcomm(boost::python::object obj)
+{
+	PyObject* py_obj = obj.ptr();
+	MPI_Comm *comm_p = PyMPIComm_Get(py_obj);
+	comm = *comm_p;
+	MPI_Comm_size(comm,&mpi_size);
+	MPI_Comm_rank(comm,&mpi_rank);
+	std::cout << "MPI rank " << mpi_rank << " of size " <<
+			mpi_size << " has communicator object." << std::endl;
+}
+
 void PyLBM_Interface::set_adjacency(boost::python::object obj)
 {
 	PyObject* pobj = obj.ptr();
@@ -406,6 +417,7 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(LBM_Interface)
 {
+	if (import_mpi4py() < 0) return; /* needed for mpi4py comm interaction */
 	class_<PyLBM_Interface>("PyLBM_Interface",init<int>())
         		.def("get_numSpd",&PyLBM_Interface::get_numSpd)
         		.def("computeFout",&PyLBM_Interface::computeFout)
@@ -437,5 +449,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_dynamics",&PyLBM_Interface::set_dynamics)
         		.def("set_Cs",&PyLBM_Interface::set_Cs)
         		.def("set_omegaMRT",&PyLBM_Interface::set_omegaMRT)
+        		.def("set_MPIcomm",&PyLBM_Interface::set_MPIcomm)
         		;
 }

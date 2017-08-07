@@ -16,11 +16,16 @@ EXT=cpp
 
 # varibles that work on local laptopt
 #MPI_CC=pgc++
-MPI_CC=g++
+#MPI_CC=g++
 ##MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
 #MPI_FLAGS=-fast -fPIC -std=c++11 -mp=nonuma -Minfo
-MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
+#MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
+MPI_CC=mpic++
+##MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
+MPI_FLAGS=-std=c++11 -O3 -Wall -fPIC -fopenmp
+
 PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
+MPI4PY_INCLUDE = /home/stu/anaconda2/lib/python2.7/site-packages/mpi4py/include
 PYTHON_LIB=/home/stu/anaconda2/lib
 BOOST_INC = /usr/include
 BOOST_LIB = /usr/lib/x86_64-linux-gnu
@@ -75,7 +80,7 @@ $(FILE).so: $(FILE).o $(OBJECTS)
 	$(MPI_CC) $(MPI_FLAGS) -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
  
 $(FILE).o: $(FILE).cpp
-	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC)  -c $(FILE).$(EXT)
+	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -I$(MPI4PY_INCLUDE) -c $(FILE).$(EXT)
 
 %.o:%.cpp
 	$(MPI_CC) $(MPI_FLAGS)  -c $^
