@@ -37,6 +37,7 @@ ifeq ($(PE_ENV),PGI)
 	-mp=nonuma -Minfo
 	PYTHON_INCLUDE = /p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+        MPI4PY_INCLUDE=/p/home/sblair/anaconda2/lib/python2.7/site-packages/mpi4py/include
 	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
 	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
 endif
@@ -46,6 +47,7 @@ ifeq ($(PE_ENV),CRAY)
 	MPI_FLAGS=-O3 -h omp  -hlist=m -fPIC -h std=c++11
 	PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+        MPI4PY_INCLUDE=/p/home/sblair/anaconda2/lib/python2.7/site-packages/mpi4py/include
 	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
 	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
 endif
@@ -55,6 +57,7 @@ ifeq ($(PE_ENV),INTEL)
 	MPI_FLAGS=-O3 -std=c++11 -xHost -openmp -fPIC
 	PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+        MPI4PY_INCLUDE=/p/home/sblair/anaconda2/lib/python2.7/site-packages/mpi4py/include
 	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
 	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
 endif
@@ -64,6 +67,7 @@ ifeq ($(PE_ENV),GNU)
 	MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
 	PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	PYTHON_LIB=/p/home/sblair/anaconda2/lib
+        MPI4PY_INCLUDE=/p/home/sblair/anaconda2/lib/python2.7/site-packages/mpi4py/include
 	BOOST_INC=/app/COST/boost/1.58.0/gnu/include
 	BOOST_LIB=/app/COST/boost/1.58.0/gnu/lib
 endif
