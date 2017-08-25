@@ -1,10 +1,14 @@
-#!/usr/bin/env python2
+#!/p/home/sblair/anaconda2/bin/python
+
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jul 14 08:54:21 2017
 
 @author: sblair
 """
+import sys
+sys.path.insert(1,'.')
+
 
 import FluidChannel as fc
 import argparse

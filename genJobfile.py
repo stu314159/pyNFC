@@ -36,13 +36,17 @@ queue = args.queue
 latticeType = args.latticeType
 partitionType = args.partitionType
 
-executableName = 'pyNFC_test.py'
+# make these additional arguments?
+geom_file = 'channel_cavity_geom.py'
+run_script = 'run_chanCav.sh'
+N_divs=91
+pp_bool = 1
 
-filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_test.py',
-               'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', 'test_script.sh',
-               'pyPartition.py','pyNFC_preprocess.py','pyNFC_postprocess.py',
+filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_run.py',
+               'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', run_script,
+               'pyPartition.py','pyNFC_preprocess.py','pyNFC_partition.py',
                'partition_suggestion.py','partition_compare.py','processNFC_serial',
-               'LBM_Interface.so','processNFC.py','hdf5Helper.py']
+               'LBM_Interface.so','processNFC.py','hdf5Helper.py',geom_file]
 
 
 
@@ -101,5 +105,6 @@ jf.write('module load scipy\n')
 jf.write('module load mpi4py\n')
 jf.write('module load boost\n')
 jf.write('module load cray-hdf5\n')
-jf.write('./test_script.sh %s %s %d %d\n'%(latticeType,partitionType,mpi_procs,ompthreads_per_node))
+jf.write('./%s %d %s %s %d %d %d\n'%(run_script,N_divs,
+         latticeType,partitionType,mpi_procs,ompthreads_per_node,pp_bool))
 jf.close()
