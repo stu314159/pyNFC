@@ -123,8 +123,7 @@ void PyLBM_Interface::set_MPIcomm(boost::python::object obj)
 	comm = *comm_p;
 	MPI_Comm_size(comm,&mpi_size);
 	MPI_Comm_rank(comm,&mpi_rank);
-	std::cout << "MPI rank " << mpi_rank << " of size " <<
-			mpi_size << " has communicator object." << std::endl;
+
 }
 
 void PyLBM_Interface::set_adjacency(boost::python::object obj)

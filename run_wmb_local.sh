@@ -8,7 +8,7 @@
 # 4 - partition methodology [ '1D' | '3D' | 'metis' ]
 # 5 - number of partitions
 # 6 - number of omp threads
-# 7 - pre-process
+# 7 - pre-process [1 = yes, 0 = no]
 
 
 
