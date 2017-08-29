@@ -1,4 +1,4 @@
-#!/p/home/sblair/anaconda/bin/python
+#!/home/users/sblair/anaconda2/bin/python
 """
 Data processing script for binary data files.
 
@@ -10,6 +10,9 @@ Usage:
 Will produce *.h5 storage files as well as *.xmf files to 
 be read by Paraview.
 """
+
+import sys
+sys.path.insert(1,'.')
 
 import math
 import os

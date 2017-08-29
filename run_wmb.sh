@@ -14,7 +14,7 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=wall_mounted_brick.mat
 
-Num_ts=50001
+Num_ts=5001
 ts_rep_freq=50
 Warmup_ts=0
 plot_freq=500
@@ -24,14 +24,14 @@ Cs=0
 Restart_flag=0
 
 if [ "$7" = "1" ]; then
-python ./wmb_geom.py $1
+aprun -n 1 ./wmb_geom.py $1
 
 
 
 if [ "$4" = "metis" ]; then
   module swap PrgEnv-gnu PrgEnv-intel
 fi
-python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
+aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
 
 if [ "$4" = "metis" ]; then
@@ -45,6 +45,6 @@ fi
 export OMP_NUM_THREADS=$6
 aprun -n $5 -d $6  ./pyNFC_run.py
 
-#python ./processNFC.py 
-./processNFC_serial
+aprun -n 1 ./processNFC.py 
+#./processNFC_serial
 

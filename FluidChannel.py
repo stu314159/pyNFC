@@ -989,7 +989,7 @@ class FluidChannel:
             np.intersect1d(self.obst_list[:],self.solid_list[:]))
             
         
-        self.ndType = np.zeros((self.nnodes,),dtype=np.int32)
+        self.ndType = np.zeros((int(self.nnodes),),dtype=np.int32)
         # node types:
         # regular fluid node: 0
         # solid node: 1
