@@ -16,7 +16,7 @@ const int RANK = 3;
 
 // Prototype for write functions
 int writeH5(float*,float*,float*,float*,float*,std::string,int*,int);
-void writeXdmf(int*,std::string,int);
+void writeXdmf(int*,double,std::string,int);
 
 int main(int argc, char**argv){
   
@@ -26,6 +26,7 @@ int main(int argc, char**argv){
   int Num_ts, ts_rep_freq, warmup_ts, plot_freq;
   double Cs, rho_lbm, u_lbm, omega;
   int Nx, Ny, Nz, restartFlag;
+  int pRefIdx;
   double Lx_p, Ly_p, Lz_p, t_conv_fact, l_conv_fact, p_conv_fact;
   
   
@@ -35,6 +36,7 @@ int main(int argc, char**argv){
   input >> Cs >> rho_lbm >> u_lbm >> omega;
   input >> Nx >> Ny >> Nz >> restartFlag;
   input >> Lx_p >> Ly_p >> Lz_p >> t_conv_fact >> l_conv_fact >> p_conv_fact;
+  input >> pRefIdx;
   input.close();
   
   
@@ -46,6 +48,8 @@ int main(int argc, char**argv){
 
   int tot = Nx * Ny * Nz;
   int xdims[3] = {Nz,Ny,Nx}; 
+  double dx;
+  dx = Lx_p/(Nx-1);
 
   int * order = new int[tot];
   // read ordering data
@@ -120,14 +124,22 @@ int main(int argc, char**argv){
       pi[order[i]] = p_dat[i];
     }
 
+    // get pressure reference value; adjust and apply the conv factors
+    float pRef = pi[pRefIdx];
+    for(int i=0; i<tot;i++)
+    {
+      pi[i] -= pRef;
+      pi[i] *= p_conv_fact;
+    }
 
     for(int i = 0; i < tot; i++){
       v_dat[i] = sqrt((xi[i]*xi[i])+(yi[i]*yi[i])+(zi[i]*zi[i])); 
+      v_dat[i] /= u_conv_fact;
     }
   
     std::cout << "Processing data dump #" << d << std::endl;
     writeH5(pi,xi,yi,zi,v_dat,"out.h5",xdims,d);
-    writeXdmf(xdims,"data.xmf",d);
+    writeXdmf(xdims,dx,"data.xmf",d);
   }
  
   delete [] p_dat;
@@ -145,7 +157,7 @@ int main(int argc, char**argv){
   return 0;
 }
 
-void writeXdmf(int*dims,std::string filename,int d){
+void writeXdmf(int*dims,double dx,std::string filename,int d){
   std::stringstream name;
   std::string start = "data";
   std::string end = ".xmf";
@@ -169,7 +181,7 @@ void writeXdmf(int*dims,std::string filename,int d){
   xdmf << "0 0 0\n"; 
   xdmf << "</DataItem>\n";
   xdmf << "<DataItem Dimensions=\"3\" NumberType=\"Integer\" Format=\"XML\">\n";
-  xdmf << "1 1 1\n";
+  xdmf << dx << "  " << dx << "  " << dx << " \n";
   xdmf << "</DataItem>\n";
   xdmf << "</Geometry>\n";
 

@@ -39,7 +39,7 @@ partitionType = args.partitionType
 # make these additional arguments?
 geom_file = 'channel_cavity_geom.py'
 run_script = 'run_chanCav.sh'
-N_divs=121
+N_divs=201
 pp_bool=1
 dynamics=3
 
@@ -48,7 +48,8 @@ filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_run.py',
                'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', run_script,
                'pyPartition.py','pyNFC_preprocess.py','pyNFC_partition.py',
                'partition_suggestion.py','partition_compare.py','processNFC_serial',
-               'LBM_Interface.so','processNFC.py','hdf5Helper.py',geom_file]
+               'LBM_Interface.so','PartitionHelper.so','processNFC.py','hdf5Helper.py',
+                geom_file]
 
 
 

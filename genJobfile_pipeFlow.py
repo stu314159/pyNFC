@@ -37,16 +37,19 @@ latticeType = args.latticeType
 partitionType = args.partitionType
 
 # make these additional arguments?
-geom_file = 'channel_cavity_geom.py'
-run_script = 'run_chanCav.sh'
-N_divs=91
-pp_bool = 1
+geom_file = 'pipe_flow_geom.py'
+run_script = 'run_pipeFlow.sh'
+N_divs=81
+pp_bool=1
+dynamics=3
+
 
 filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_run.py',
                'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', run_script,
                'pyPartition.py','pyNFC_preprocess.py','pyNFC_partition.py',
                'partition_suggestion.py','partition_compare.py','processNFC_serial',
-               'LBM_Interface.so','processNFC.py','hdf5Helper.py',geom_file]
+               'LBM_Interface.so','PartitionHelper.so','processNFC.py','hdf5Helper.py',
+                geom_file]
 
 
 
@@ -93,9 +96,6 @@ jf.write('cd $JOBID \n')
 for s in filesToCopy:
     jf.write('cp $PBS_O_WORKDIR/%s . \n'% s)
 
-## move to the $JOBDIR
-#jf.write('cd $JOBDIR \n')  #<--- this was an error
-
 # invoke execution
 jf.write('module swap PrgEnv-cray PrgEnv-gnu\n') #let's just plan on using GNU for now
 jf.write('module load costinit\n')
@@ -105,6 +105,6 @@ jf.write('module load scipy\n')
 jf.write('module load mpi4py\n')
 jf.write('module load boost\n')
 jf.write('module load cray-hdf5\n')
-jf.write('./%s %d %s %s %d %d %d\n'%(run_script,N_divs,
-         latticeType,partitionType,mpi_procs,ompthreads_per_node,pp_bool))
+jf.write('./%s %d %s %d %s %d %d %d\n'%(run_script,N_divs,
+         latticeType,dynamics,partitionType,mpi_procs,ompthreads_per_node,pp_bool))
 jf.close()

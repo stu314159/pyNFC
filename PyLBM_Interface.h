@@ -8,8 +8,10 @@
 #include "LBM_DataHandler.h"
 #include "LBM_HaloData.h"
 #include "LBM_HaloDataOrganizer.h"
+#include <mpi.h>
 
 #include <boost/python.hpp>
+#include <mpi4py/mpi4py.h>
 #include <cstdlib>
 #include <omp.h>
 
@@ -42,6 +44,7 @@ public:
 	void set_Cs(const float cs);
 	void set_omegaMRT(boost::python::object obj);
 	void set_totalNodes(const int tn);
+	void set_MPIcomm(boost::python::object obj);
 	void process_nodeList(const bool isEven,const int nodeList);
 	void computeFout(LBM_DataHandler& f);
 	void streamData(float * fOut,const int nd,LBM_DataHandler& f);
@@ -59,6 +62,10 @@ public:
 
 	LBM_HaloDataOrganizer myHalo_in;
 	LBM_HaloDataOrganizer myHalo_out;
+
+	MPI_Comm comm;
+	int mpi_size;
+	int mpi_rank;
 
 
 private:

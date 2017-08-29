@@ -27,7 +27,7 @@ class Partition:
         self.xmax = xmax;
         self.ymax = ymax;
         self.zmax = zmax;
-    
+    0,0,0
     def inPart(self,x,y,z):
         if ((x < self.xmin) or (x > self.xmax)):
             return False

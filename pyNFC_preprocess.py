@@ -72,6 +72,7 @@ Lo = float(geom_input['Lo'])
 Ny_divs = int(geom_input['Ny_divs'])
 rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
+pRef_idx = int(geom_input['pRef_idx'])
 #snl = list((geom_input['snl']).flatten())
 #inl = list((geom_input['inl']).flatten()) # must be inlet on Z-min
 #onl = list((geom_input['onl']).flatten()) # must be outlet on Z-max
@@ -97,9 +98,11 @@ omega = 1./(3.*nu_lbm+0.5)
 u_conv_fact = (dt/dx)*(To/Lo)
 t_conv_fact = (dt*To)
 l_conv_fact = dx*Lo
-p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))*(l_conv_fact**3)
+p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))/(l_conv_fact**3)
+#p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))
 
 rho_lbm = rho_p*(l_conv_fact**3)
+#rho_lbm = rho_p
 
 print 'l_conv_fact = %g.\n'%l_conv_fact
 print 'p_conv_fact = %g.\n'%p_conv_fact
@@ -146,6 +149,7 @@ if run_dec!='n' and run_dec!='N':
     params.write('%15.14f \n'%t_conv_fact)  # time, length and pressure conversion factors
     params.write('%15.14f \n'%l_conv_fact)
     params.write('%g \n'%p_conv_fact)
+    params.write('%d \n'%pRef_idx);
     
     params.close()
     

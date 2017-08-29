@@ -1,21 +1,21 @@
-#!/home/users/sblair/anaconda2/bin/python
-##!/usr/bin/env python2
+#!/p/home/sblair/anaconda2/bin/python
 
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jul 14 08:54:21 2017
 
-@author: sblair
+Pipe flow problem
+Created on Thu Aug  3 11:32:57 2017
+
+@author: stu
 """
 import sys
 sys.path.insert(1,'.')
 
-
 import FluidChannel as fc
 import argparse
 
-parser = argparse.ArgumentParser(prog='wmb_geom.py',
-                                 description='create geometry files for cavity channel problem')
+parser = argparse.ArgumentParser(prog='pipe_flow_geom.py',
+                                 description='create geometry files for pipe flow problem')
                                  
 parser.add_argument('nDivs',type=int)
 
@@ -23,25 +23,24 @@ parser.add_argument('nDivs',type=int)
 args = parser.parse_args()
 
 #overall channel dimensions
-aLx_p = 6.4
-aLy_p = 3.0
-aLz_p = 14.0
+aLx_p = 1.1
+aLy_p = 1.1
+aLz_p = 25.0
 aNdivs = args.nDivs
 
-# wall mounted brick parameters
-x_c = 3.5;
-z_c = 3.2;
-W = 1.;
-H = W;
-L = W;
+x_c = aLx_p/2.;
+y_c = aLy_p/2.;
+pDiam = min([aLx_p,aLy_p]) - 0.1
 
-myObst = fc.WallMountedBrick(x_c,z_c,L,W,H);
+myObst = fc.StraightPipe(x_c,y_c,pDiam);
 
 myChan = fc.FluidChannel(Lx_p=aLx_p,Ly_p=aLy_p,Lz_p=aLz_p,obst=myObst,
                          N_divs=aNdivs)                         
 
 # write the mat file
-myChan.write_mat_file('wall_mounted_brick');
+myChan.write_mat_file('pipe_flow');
 
 # write vtk of boundary conditions so you can visualize them
 #myChan.write_bc_vtk();
+
+myChan.set_pRef_indx(aLx_p/2.,aLy_p/2.,0.95*aLz_p)

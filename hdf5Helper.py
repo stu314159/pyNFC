@@ -25,7 +25,7 @@ def writeH5(pressure,u,v,w,velmag,filename):
 
   f.close()
 
-def writeXdmf(dims,filename,i):
+def writeXdmf(dims,dx,filename,i):
   """
   Write the xmf file, that describes the hdf5 data, to be read by Paraview.
   filename = string with the desired filename
@@ -47,7 +47,7 @@ def writeXdmf(dims,filename,i):
   f.write('0 0 0\n') 
   f.write('</DataItem>\n')
   f.write('<DataItem Dimensions="3" NumberType="Integer" Format="XML">\n')
-  f.write('1 1 1\n')
+  f.write('%g %g %g\n'%(dx,dx,dx))
   f.write('</DataItem>\n')
   f.write('</Geometry>\n')
 

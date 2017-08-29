@@ -11,6 +11,7 @@ import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
 from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+import PartitionHelper as PH
 #import numpy as np
 
 class Lattice(object):
@@ -59,7 +60,12 @@ class Lattice(object):
 
     def initialize_adjDict(self):  
         
-        self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+        #self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+        self.partHelper = PH.PartitionHelper(self.Nx,self.Ny,self.Nz,self.get_numSpd());
+        self.adjDict = {}
+        self.partHelper.setAdjacency(self.adjDict); # now self.adjDict is populated
+        # hopefully this took less time than before.
+        
 
 
     def compute_cutSize(self):
@@ -123,15 +129,15 @@ class D3Q27Lattice(Lattice):
     """
     def __init__(self,Nx,Ny,Nz):
         super(D3Q27Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]
-        self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]
-        self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]
-        self.bbSpd = [0,14,15,16,17,18,19,20,21,22,23,24,25,26,
-	      1,2,3,4,5,6,7,8,9,10,11,12,13]
-        self.w = [8./27.,2./27.,2./27.,2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-	       1./54.,1./216.,1./216,1./216.,1./216.,2./27.,2./27.,
-	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-		1./54.,1./216.,1./216,1./216.,1./216.]
+        self.ex = [0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,0,0,0,0,1,1,1,1,-1,-1,-1,-1]; self.ex=np.array(self.ex,dtype=np.float32)
+        self.ey = [0,0,0,1,-1,0,0,1,-1,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,1,1,-1,-1]; self.ey=np.array(self.ey,dtype=np.float32)
+        self.ez = [0,0,0,0,0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1]; self.ez=np.array(self.ez,dtype=np.float32)
+        self.bbSpd = [0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15,26,25,24,23,22,21,20,19]
+        self.w = [8./27.,2./27.,2./27.,2./27.,2./27.,2./27.,2./27.,
+                  1./54.,1./54.,1./54.,1./54.,1./54.,1./54.,
+                  1./54.,1./54.,1./54.,1./54.,1./54.,1./54.,
+                  1./216.,1./216.,1./216.,1./216.,
+                  1./216.,1./216.,1./216.,1./216.]
 
 class Partitioner:
     """
