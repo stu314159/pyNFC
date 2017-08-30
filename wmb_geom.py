@@ -1,4 +1,5 @@
-#!/home/users/sblair/anaconda2/bin/python
+#!/usr/bin/env python
+##!/home/users/sblair/anaconda2/bin/python
 ##!/usr/bin/env python2
 
 # -*- coding: utf-8 -*-

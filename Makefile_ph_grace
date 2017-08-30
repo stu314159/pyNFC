@@ -1,25 +1,26 @@
 # location of the Python header files
 PYTHON_VERSION = 2.7
-PYTHON_INCLUDE = /home/users/sblair/work/projects/venv/include/python$(PYTHON_VERSION)
-PYTHON_LIB=/home/users/sblair/work/projects/venv/lib
+PYTHON_INCLUDE = /home/users/sblair/anaconda2/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/home/users/sblair/anaconda2/lib
 BOOST_PYLIB = py27
-
-MPI4PY_INC=/home/users/sblair/work/projects/venv/lib/python2.7/site-packages/mpi4py/include
-MPI4PY_LIB=/home/users/sblair/work/projects/venv/lib/python2.7/site-packages/mpi4py/lib-pmpi 
+ 
 # location of the Boost Python include files and library
  
 BOOST_INC = /home/users/sblair/lib/boost/include
 BOOST_LIB = /home/users/sblair/lib/boost/lib
 
 # compile mesh classes
-TARGET = LBM_Interface
-FILE=PyLBM_Interface
+TARGET=PartitionHelper
+FILE=PartitionHelper
 EXT=cpp
 
 # varibles that work on local laptopt
 #MPI_CC=pgc++
 ##MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
 #MPI_FLAGS=-fast -fPIC -std=c++11 -mp=nonuma -Minfo
+MPI_CC=g++
+MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
+
 #PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
 #PYTHON_LIB=/home/stu/anaconda2/lib
 #BOOST_INC = /usr/include
@@ -56,7 +57,7 @@ endif
 
 ifeq ($(PE_ENV),GNU)
 	MPI_CC=CC
-	MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC 
+	MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
 	#PYTHON_INCLUDE=/p/home/sblair/anaconda2/include/python$(PYTHON_VERSION)
 	#PYTHON_LIB=/p/home/sblair/anaconda2/lib
 	#BOOST_INC=/app/COST/boost/1.58.0/gnu/include
@@ -65,17 +66,15 @@ endif
 
 MY_LIBS= -lboost_python-$(BOOST_PYLIB) -lpython$(PYTHON_VERSION)
 
-SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
-	LBM_HaloData.cpp LBM_HaloDataOrganizer.cpp  
-OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler.o  \
-	LBM_HaloData.o LBM_HaloDataOrganizer.o
+SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp 
+OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler.o  
 	 
 
 $(FILE).so: $(FILE).o $(OBJECTS)
-	$(MPI_CC) $(MPI_FLAGS) -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS) -L$(MPI4PY_LIB) -I$(MPI4PY_INC)
+	$(MPI_CC) $(MPI_FLAGS) -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
  
 $(FILE).o: $(FILE).cpp
-	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -I$(MPI4PY_INC)  -c $(FILE).$(EXT)
+	$(MPI_CC) $(MPI_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC)  -c $(FILE).$(EXT)
 
 %.o:%.cpp
 	$(MPI_CC) $(MPI_FLAGS)  -c $^
