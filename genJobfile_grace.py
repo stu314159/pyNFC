@@ -37,10 +37,12 @@ latticeType = args.latticeType
 partitionType = args.partitionType
 
 # make these additional arguments?
-geom_file = 'channel_cavity_geom.py'
-run_script = 'run_chanCav.sh'
-N_divs=91
-pp_bool = 1
+geom_file = 'wmb_geom.py'
+run_script = 'run_wmb.sh'
+N_divs=21
+pp_bool=1
+dynamics=3
+
 
 filesToCopy = ['FluidChannel.py', 'pyLattice.py', 'pyNFC.py', 'pyNFC_run.py',
                'pyNFC_Util.py', 'validate.py', 'vtkHelper.py', run_script,
@@ -67,7 +69,7 @@ jf = open(jobfileName,'w')
 
 # essential PBS directives
 jf.write('#!/bin/bash \n') # the shell
-jf.write('#PBS -A %s \n'%proj_id) # project identifier
+#jf.write('#PBS -A %s \n'%proj_id) # project identifier
 jf.write('#PBS -q %s \n'%queue) # specify queue
 jf.write('#PBS -l select=%d:ncpus=%d:mpiprocs=%d:ompthreads=%d \n'% \
          (nnodes,ppn,mpi_procs_per_node,ompthreads_per_node))
@@ -82,7 +84,7 @@ jf.write('#PBS -S /bin/bash \n')
 
 
 # Execution block
-jf.write('cd $WORKDIR\n')
+jf.write('cd /mnt/lustre/scratch/sblair/jobout \n')
 jf.write("JOBID=`echo $PBS_JOBID | cut -d '.' -f 1` \n")
 jf.write('if [ ! -d $JOBID ]; then \n')
 jf.write('  mkdir -p $JOBID \n')
@@ -93,18 +95,15 @@ jf.write('cd $JOBID \n')
 for s in filesToCopy:
     jf.write('cp $PBS_O_WORKDIR/%s . \n'% s)
 
-## move to the $JOBDIR
-#jf.write('cd $JOBDIR \n')  #<--- this was an error
-
 # invoke execution
 jf.write('module swap PrgEnv-cray PrgEnv-gnu\n') #let's just plan on using GNU for now
-jf.write('module load costinit\n')
-jf.write('module load python\n')
+#jf.write('module load costinit\n')
+#jf.write('module load python\n')
 jf.write('module load numpy\n')
-jf.write('module load scipy\n')
+#jf.write('module load scipy\n')
 jf.write('module load mpi4py\n')
 jf.write('module load boost\n')
 jf.write('module load cray-hdf5\n')
-jf.write('./%s %d %s %s %d %d %d\n'%(run_script,N_divs,
-         latticeType,partitionType,mpi_procs,ompthreads_per_node,pp_bool))
+jf.write('./%s %d %s %d %s %d %d %d\n'%(run_script,N_divs,
+         latticeType,dynamics,partitionType,mpi_procs,ompthreads_per_node,pp_bool))
 jf.close()

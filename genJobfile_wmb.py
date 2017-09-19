@@ -39,7 +39,7 @@ partitionType = args.partitionType
 # make these additional arguments?
 geom_file = 'wmb_geom.py'
 run_script = 'run_wmb.sh'
-N_divs=21
+N_divs=51
 pp_bool=1
 dynamics=3
 

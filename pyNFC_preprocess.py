@@ -1,4 +1,6 @@
-#!/p/home/sblair/anaconda2/bin/python
+#!/usr/bin/env python 
+##!/home/users/sblair/anaconda2/bin/python
+##!/p/home/sblair/anaconda2/bin/python
 
 #pyNFC_preprocess.py
 """
