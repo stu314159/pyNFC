@@ -98,7 +98,7 @@ class GridObst(EmptyChannel):
         and most appropriate choice for this
         non-dimensionalization.
         """
-        return self.yT
+        return self.yPitch
     
     def get_obstList(self,X,Y,Z):
         """
