@@ -20,7 +20,7 @@ aN_divs = args.nDivs
 # overall channel dimensions
 aLx_p = 0.40 # meters
 aLy_p = 0.40 # meters
-aLz_p = 2.15 # meters
+aLz_p = 0.45 # meters (change to 2.15 m for actual LBM calcs)
 
 # thickness of grids (m)
 xT = 0.01 # x-thickness of vertical grids
@@ -36,7 +36,7 @@ hX = 0.20  # x-dimension of the circular hole in the grid
 hY = 0.20  # y-dimension of the circular hole in the grid
 hD = 0.043 # diameter of the circular hole in the grid
 
-gridObst = fc.GridChan(gridZ,xT,yT,zT,xPitch,yPitch,hX,hY,hD);
+gridObst = fc.GridObst(gridZ,xT,yT,zT,xPitch,yPitch,hX,hY,hD);
 
 gridChan = fc.FluidChannel(Lx_p = aLx_p, Ly_p = aLy_p, \
                            Lz_p = aLz_p, obst=gridObst, \

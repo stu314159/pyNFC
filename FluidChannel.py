@@ -62,14 +62,14 @@ class ChannelCavity(EmptyChannel):
       ol = np.intersect1d(ol[:],cav3[:])
       return ol[:]
 
-class GridChan(EmptyChannel):
+class GridObst(EmptyChannel):
     """
     a channel with a turbulence-inducing grid at the entrance
     of the channel.  The grid has a circular hole to accomodate
     passage of a drive-shaft for a propeller
     
     """
-    def __init__(self,gridZ,xT,yT,zT,yPitch,xPitch,hX,hY,hD):
+    def __init__(self,gridZ,xT,yT,zT,xPitch,yPitch,hX,hY,hD):
         """
         gridZ - z-coordinate of center of grid
         xT - thickness of grid webs in x-direction (vertical webs)
@@ -92,7 +92,7 @@ class GridChan(EmptyChannel):
         self.hY = hY;
         self.hD = hD;
         
-    def get_Lo(self):
+    def get_Lo(self,):
         """
         to do: talk to Luksa about non-dimensionalization
         and most appropriate choice for this
@@ -107,6 +107,52 @@ class GridChan(EmptyChannel):
         x = np.array(X);
         y = np.array(Y);
         z = np.array(Z);
+        
+        xMax = np.max(x);
+        xMin = np.min(x); # expect this to be zero
+        yMax = np.max(y);
+        yMin = np.min(y); # expect this to be zero
+        xPitch = self.xPitch
+        yPitch = self.yPitch
+        xT = self.xT
+        yT = self.yT
+        zT = self.zT
+        gridZ = self.gridZ
+        hX = self.hX
+        hY = self.hY
+        hD = self.hD
+        
+        
+        obst_list = [];
+        # get x-center of vertical grids
+        xC_vGrids = np.linspace(xMin,xMax,((xMax-xMin)/xPitch+1));
+        for i in range(len(xC_vGrids)):
+            distX = np.abs(x - xC_vGrids[i]);
+            distZ = np.abs(z - gridZ);
+            gridObstA = np.where((distX < xT/2.))
+            gridObstB = np.where((distZ < zT/2.))
+            gridObst = np.intersect1d(gridObstA,gridObstB);
+            obst_list = np.union1d(obst_list[:],gridObst)
+        
+        
+        # get y-center of horizontal grids
+        yC_hGrids = np.linspace(yMin,yMax,((yMax - yMin)/yPitch)+1 );
+        for i in range(len(yC_hGrids)):
+            distY = np.abs(y - yC_hGrids[i]);
+            distZ = np.abs(z - gridZ);
+            gridObstA = np.where((distY < yT/2.))
+            gridObstB = np.where((distZ < zT/2.))
+            gridObst = np.intersect1d(gridObstA,gridObstB);
+            obst_list = np.union1d(obst_list[:],gridObst)
+        
+        # remove grids within the hole region
+        distH = np.sqrt((y - hY)**2. + (x - hX)**2.)
+        obstH = np.where(distH < hD/2.)
+        obst_list = np.setdiff1d(obst_list[:],obstH)
+            
+        obst_list = obst_list.astype(np.int)
+        return obst_list[:]
+        
         
 
 class StraightPipe(EmptyChannel):
