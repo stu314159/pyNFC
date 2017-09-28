@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-##!/home/users/sblair/anaconda2/bin/python
+#!/home/stu/anaconda2/bin/python
 """
  testing implementation of pyNFC
 """
@@ -62,7 +61,7 @@ for ts in range(Num_ts):
     isEven = (ts%2 == 0)
     myPart.take_LBM_timestep(isEven)
 
-    if ((ts % plot_freq == 0) and (ts > Warmup_ts)):
+    if ((ts % plot_freq == 0)):
         myPart.write_data(isEven)
     
 

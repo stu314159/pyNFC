@@ -14,13 +14,13 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=ChanCavityTest.mat
 
-Num_ts=300001
+Num_ts=250001
 ts_rep_freq=1000
 Warmup_ts=0
 plot_freq=10000
-Re=3000
-dt=0.0002
-Cs=0
+Re=30000
+dt=0.00005
+Cs=20
 Restart_flag=0
 
 
@@ -32,15 +32,11 @@ Restart_flag=0
 if [ "$7" = "1" ]; then
 aprun -n 1 ./channel_cavity_geom.py $1
 
-if [ "$4" = "metis" ]; then
-  module swap PrgEnv-gnu PrgEnv-intel
-fi
+
+module load mpi4py
 aprun -n 1 ./pyNFC_partition.py $MAT_FILE $2 $4 $5
 
 
-if [ "$4" = "metis" ]; then
-  module swap PrgEnv-intel PrgEnv-gnu
-fi
 
 else
 echo "pre-processing skipped, commencing time steps"
@@ -50,9 +46,11 @@ fi
 aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
 
+module unload mpi4py
+
 export OMP_NUM_THREADS=$6
 aprun -n $5 -d $6  ./pyNFC_run.py
 
-#python ./processNFC.py 
-aprun -n 1 ./processNFC_serial
+aprun -n 1 ./processNFC.py 
+#aprun -n 1 ./processNFC_serial
 

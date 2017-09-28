@@ -1,4 +1,5 @@
-#!/p/home/sblair/anaconda/bin/python
+#!/usr/bin/env python
+##!/home/users/sblair/anaconda2/bin/python
 """
 Data processing script for binary data files.
 
@@ -11,6 +12,9 @@ Will produce *.h5 storage files as well as *.xmf files to
 be read by Paraview.
 """
 
+import sys
+sys.path.insert(1,'.')
+
 import math
 import os
 import numpy as np
@@ -21,6 +25,7 @@ input_file_name = 'params.lbm'
 input_data = open(input_file_name,'r')
 
 latticeType = str(input_data.readline())
+dyamics = int(input_data.readline())
 Num_ts = int(input_data.readline())
 ts_rep_freq = int(input_data.readline())
 Warmup_ts = int(input_data.readline())
@@ -39,6 +44,7 @@ Lz_p = float(input_data.readline())
 t_conv_fact = float(input_data.readline())
 l_conv_fact = float(input_data.readline())
 p_conv_fact = float(input_data.readline())
+pRef_idx = int(input_data.readline())
 
 input_data.close()
 
@@ -52,6 +58,7 @@ Y,Z,X = np.meshgrid(y,z,x);
 XX = np.reshape(X,numEl)
 YY = np.reshape(Y,numEl)
 ZZ = np.reshape(Z,numEl)
+dx = x[1] - x[0]
 
 # compute the number of data dumps I expect to process
 nDumps = (Num_ts-Warmup_ts)/plot_freq + 1 
@@ -73,7 +80,7 @@ for i in range(nDumps):
   ux_i /= u_conv_fact
   uy_i /= u_conv_fact
   uz_i /= u_conv_fact
-  pressure_i /= p_conv_fact 
+  pressure_i *= p_conv_fact 
   
   order_map = np.fromfile('ordering.b_dat',dtype=np.int32).astype(np.int32)
 # re-order per order_map
@@ -83,6 +90,8 @@ for i in range(nDumps):
   uy[order_map] = uy_i
   uz[order_map] = uz_i
   pressure[order_map] = pressure_i
+  pRef = pressure[pRef_idx];
+  pressure -= pRef; # adjust for reference pressure
   
   velmag = np.sqrt(ux**2+uy**2+uz**2)
 
@@ -102,5 +111,5 @@ for i in range(nDumps):
   h5_file = 'out'+str(i)+'.h5'
   xmf_file = 'data'+str(i)+'.xmf'
   writeH5(pressure,ux,uy,uz,velmag,h5_file)
-  writeXdmf(dims,xmf_file,i)
+  writeXdmf(dims,dx,xmf_file,i)
 

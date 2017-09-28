@@ -8,21 +8,23 @@
 # 4 - partition methodology [ '1D' | '3D' | 'metis' ]
 # 5 - number of partitions
 # 6 - number of omp threads
-# 7 - pre-process
+# 7 - pre-process [1 = yes, 0 = no]
 
 
-# saves mat file named ChanCavityTest.mat
-MAT_FILE=ChanCavityTest.mat
 
-Num_ts=300001
-ts_rep_freq=1000
+
+MAT_FILE=wall_mounted_brick.mat
+
+
+Num_ts=501
+ts_rep_freq=50
 Warmup_ts=0
-plot_freq=10000
-Re=3000
-dt=0.0002
+plot_freq=100
+
+Re=25
+dt=0.01
 Cs=0
 Restart_flag=0
-
 
 # must re-process if you change:
 # N_divs, partition methodology, or the number of partitions.
@@ -30,29 +32,23 @@ Restart_flag=0
 # but the resulting partitions may not be the same as what would have
 # been picked with new lattice type
 if [ "$7" = "1" ]; then
-aprun -n 1 ./channel_cavity_geom.py $1
-
-if [ "$4" = "metis" ]; then
-  module swap PrgEnv-gnu PrgEnv-intel
-fi
-aprun -n 1 ./pyNFC_partition.py $MAT_FILE $2 $4 $5
+python ./wmb_geom.py $1
 
 
-if [ "$4" = "metis" ]; then
-  module swap PrgEnv-intel PrgEnv-gnu
-fi
+python ./pyNFC_partition.py $MAT_FILE $2 $4 $5
+
+
 
 else
 echo "pre-processing skipped, commencing time steps"
 fi
 
 # basically, pyNFC_preprocess.py just writes params.lbm now.
-aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
+python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
 
 export OMP_NUM_THREADS=$6
-aprun -n $5 -d $6  ./pyNFC_run.py
+#aprun -n $5 -d $6  ./pyNFC_run.py
+mpirun -np $5 ./pyNFC_run_local.py
 
-#python ./processNFC.py 
-aprun -n 1 ./processNFC_serial
-
+python ./processNFC.py 

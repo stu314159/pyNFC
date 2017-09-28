@@ -6,6 +6,7 @@ class module for the Lattice class to be used with pyNFC
 """
 import numpy as np
 
+
 class Lattice(object):
     """
        define the layout and adjacency of the LBM lattice
@@ -92,6 +93,8 @@ class Lattice(object):
             c_i = [self.ex[spd], self.ey[spd], self.ez[spd]]
             qt = np.outer(c_i,c_i); qt -= cs2*eye3;
             self.Qflat[spd,:] = qt.flatten()
+            
+        #print self.Qflat
 
 
     def compute_Pi1_flat(self,f,fEq):
@@ -153,6 +156,9 @@ class Lattice(object):
 
         return omega_t 
 
+    #def set_omega(self,omega):
+    #    self.omega = omega
+    
     def relax(self,fIn,fEq,omega):
         """
            execute LBM relaxation
@@ -246,9 +252,65 @@ class D3Q15Lattice(Lattice):
         self.w = [2./9.,1./9.,1./9,1./9.,1./9.,1./9.,1./9., \
 	             1./72.,1./72.,1./72.,1./72., \
 	             1./72.,1./72.,1./72.,1./72.]
-	    
+        self.constructMt()
+        self.M = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			-2,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,
+			16,-4,-4,-4,-4,-4,-4,1,1,1,1,1,1,1,1,
+			0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,
+			0,-4,4,0,0,0,0,1,-1,1,-1,1,-1,1,-1,
+			0,0,0,1,-1,0,0,1,1,-1,-1,1,1,-1,-1,
+			0,0,0,-4,4,0,0,1,1,-1,-1,1,1,-1,-1,
+			0,0,0,0,0,1,-1,1,1,1,1,-1,-1,-1,-1,
+			0,0,0,0,0,-4,4,1,1,1,1,-1,-1,-1,-1,
+			0,2,2,-1,-1,-1,-1,0,0,0,0,0,0,0,0,
+			0,0,0,1,1,-1,-1,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,1,-1,-1,1,1,-1,-1,1,
+			0,0,0,0,0,0,0,1,1,-1,-1,-1,-1,1,1,
+			0,0,0,0,0,0,0,1,-1,1,-1,-1,1,-1,1,
+			0,0,0,0,0,0,0,1,-1,-1,1,-1,1,1,-1], dtype=np.float32).reshape((15,15));
+   
+        
+       
         self.create_Qflat();
 
+    def constructMt(self):
+        self.Mt = np.zeros((15,15),dtype=np.float32);
+        for i in range(15):
+            self.Mt[0,i] = 1
+            u = self.ex[i]; v = self.ey[i]; w = self.ez[i];
+            energy = (u*u+v*v+w*w)
+            self.Mt[1,i] = energy - 2
+            self.Mt[2,i] = 0.5*(15.*(energy**2.)- 55.*(energy) +32.)
+            self.Mt[3,i] = u;
+            self.Mt[5,i] = v;
+            self.Mt[7,i] = w;
+            self.Mt[4,i] = 0.5*(5.*(energy) - 13)*u
+            self.Mt[6,i] = 0.5*(5.*(energy) - 13)*v
+            self.Mt[8,i] = 0.5*(5.*(energy) - 13)*w
+            self.Mt[9,i] = 3.*(u*u) - energy
+            self.Mt[10,i] = v*v - w*w
+            self.Mt[11,i] = u*v
+            self.Mt[12,i] = v*w
+            self.Mt[13,i] = u*w
+            self.Mt[14,i] = u*v*w
+        
+        
+    def constructOmegaMRT(self,omega):
+        
+        nMinv = -1.*np.linalg.inv(self.M);
+        self.omegaMRT = np.dot(nMinv,np.dot(self.S,self.M));
+        
+    def buildS(self):
+        # D'Humieres et al Phil. Trans. R. Soc. Lond A (2002) v360, 437-451
+        s1 = 1.6; s2 = 1.2; s4 = 1.6; s14 = 1.2; s9 = self.omega; 
+        s11 = self.omega;
+        self.S = np.diag([0., s1, s2, 0., s4, 0., s4, 0., s4, s9, s9, 
+                     s11, s11, s11, s14]).astype(np.float32);
+        
+    def set_omega(self,omega):
+        self.omega = omega;
+        self.buildS()
+        
     def set_inlet_velocity_bc_macro(self,f,uz): # not too flexible, but it is what NFC does (one thing at a time)
         """
           compute macroscopic density for velocity inlet
@@ -293,7 +355,8 @@ class D3Q15Lattice(Lattice):
 
 
     def bounceBack_outletBoundary_micro(self,f,fEq):
-        """
+        """ s4 = 1.54; s10 = 1.5; s13 = 1.83; s16 = 1.4; s17 = 1.61; s18 = 1.98; 
+        s20 = 1.98; s23 = 1.74; s26 = 1.74
           input:
              f and fEq
 
@@ -329,13 +392,47 @@ class D3Q19Lattice(Lattice):
                   1./36.,1./36.,1./36.,1./36.,1./36.,1./36.,
                   1./36.,1./36.,1./36.,1./36.,1./36.,1./36.]
         self.create_Qflat();
+        self.M = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			-30, -11, -11, -11, -11, -11, -11, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+			12, -4, -4, -4, -4, -4, -4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			0, 1, -1, 0, 0, 0, 0, 1, -1, 1, -1, 1, -1, 1, -1,0, 0, 0, 0,
+			0, -4, 4, 0, 0, 0, 0, 1, -1, 1, -1, 1, -1, 1, -1, 0, 0, 0, 0,
+			0, 0, 0, 1, -1, 0, 0, 1, 1, -1, -1, 0, 0, 0, 0, 1, -1, 1, -1,
+			0, 0, 0, -4, 4, 0, 0, 1, 1, -1, -1, 0, 0, 0, 0, 1, -1, 1, -1,
+			0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 1, 1, -1, -1, 1, 1, -1, -1,
+			0, 0, 0, 0, 0, -4, 4, 0, 0, 0, 0, 1, 1, -1, -1, 1, 1, -1, -1,
+			0, 2, 2, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -2, -2, -2, -2,
+			0, -4, -4, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, -2, -2, -2, -2,
+			0, 0, 0, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 0, 0, 0, 0,
+			0, 0, 0, -2, -2, 2, 2, 1, 1, 1, 1, -1, -1, -1, -1, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, 0, 0, 0, 0, 0,0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, -1, 1, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 1, -1, 1, -1, -1, 1, -1, 1, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, -1, -1, 1, 1, 0, 0, 0, 0, 1, -1, 1, -1,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, -1, -1, -1, -1, 1, 1],dtype=np.float32).reshape((19,19))
+   
+        
+                     
+    def buildS(self):
+        s1 = 1.19; s2 = 1.4; s4 = 1.2; s9 = self.omega; s13 = self.omega; 
+        s16=1.98; s10=1.4
+        self.S = np.diag([0.,s1,s2,0.,s4,0.,s4,0.,s4,s9,s10,s9,
+                     s10,s13,s13,s13,s16,s16,s16]).astype(np.float32);
 
+    def constructOmegaMRT(self,omega):
+        nMinv = -1.*np.linalg.inv(self.M);
+        self.omegaMRT = np.dot(nMinv,np.dot(self.S,self.M));    
+    
+    def set_omega(self,omega):
+        self.omega = omega;
+        self.buildS()
+        
     def set_inlet_velocity_bc_macro(self,f,uz):
         """
           compute macroscopic density for velocity inlet bc using
           Regularized BC methods
         """
-        #rho = (1./(1.-uz))*(2.0*(f6+f13+f14+f17+f18)+(f0+f1+f2+f3+f4+f7+f8+f9+f10));
         rho = (1./(1.-uz))*(2.*(f[6]+f[13]+f[14]+f[17]+f[18])+(f[0]+f[1]+f[2]+f[3]+f[4]+f[7]+f[8]+f[9]+f[10]))
         return rho
 
@@ -393,20 +490,117 @@ class D3Q27Lattice(Lattice):
     """
     def __init__(self,Nx,Ny,Nz):
         super(D3Q27Lattice,self).__init__(Nx,Ny,Nz)
-        self.ex = [0,-1,0,0,-1,-1,-1,-1,0,0,-1,-1,-1,-1,1,0,0,1,1,1,1,0,0,1,1,1,1]; self.ex = np.array(self.ex,dtype=np.float32)
-        self.ey = [0,0,-1,0,-1,1,0,0,-1,-1,-1,-1,1,1,0,1,0,1,-1,0,0,1,1,1,1,-1,-1]; self.ey = np.array(self.ey,dtype=np.float32)
-        self.ez = [0,0,0,-1,0,0,-1,1,-1,1,-1,1,-1,1,0,0,1,0,0,1,-1,1,-1,1,-1,1,-1]; self.ez = np.array(self.ez,dtype=np.float32)
-        self.bbSpd = [0,14,15,16,17,18,19,20,21,22,23,24,25,26,
-	      1,2,3,4,5,6,7,8,9,10,11,12,13]
-        self.w = [8./27.,2./27.,2./27.,2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-	       1./54.,1./216.,1./216,1./216.,1./216.,2./27.,2./27.,
-	       2./27.,1./54.,1./54.,1./54.,1./54.,1./54.,
-		1./54.,1./216.,1./216,1./216.,1./216.]
+        self.ex = [0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,0,0,0,0,1,1,1,1,-1,-1,-1,-1]; self.ex=np.array(self.ex,dtype=np.float32)
+        self.ey = [0,0,0,1,-1,0,0,1,-1,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,1,1,-1,-1]; self.ey=np.array(self.ey,dtype=np.float32)
+        self.ez = [0,0,0,0,0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1]; self.ez=np.array(self.ez,dtype=np.float32)
+        self.bbSpd = [0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15,26,25,24,23,22,21,20,19]
+        self.w = [8./27.,2./27.,2./27.,2./27.,2./27.,2./27.,2./27.,
+                  1./54.,1./54.,1./54.,1./54.,1./54.,1./54.,
+                  1./54.,1./54.,1./54.,1./54.,1./54.,1./54.,
+                  1./216.,1./216.,1./216.,1./216.,
+                  1./216.,1./216.,1./216.,1./216.]
         self.create_Qflat();
+        self.constructMt();
+        #self.orthogonalizeM();
+        self.M = np.copy(self.Mt)
+        
+        
 
+    def constructMt(self):
+        self.Mt = np.zeros((27,27),dtype=np.float);
+        numSpd = 27;
+        # density moment        
+        for i in range(numSpd):
+            self.Mt[0,i]=1;
+            
+            # x velocity moment
+            self.Mt[1,i] = self.ex[i];
+            self.Mt[2,i] = self.ey[i];
+            self.Mt[3,i] = self.ez[i];
+            
+            # kinetic energy
+         
+            self.Mt[4,i] = self.ex[i]**2+self.ey[i]**2+self.ez[i]**2
+        
+            # second order tensor XX
+        
+            u = self.ex[i]; v = self.ey[i]; w = self.ez[i]
+            self.Mt[5,i] = 2.*u**2 - v**2 - w**2
+            self.Mt[6,i] = v**2 - w**2
+            self.Mt[7,i] = u*v
+            self.Mt[8,i] = v*w
+            self.Mt[9,i] = w*u
+            # fluxes of energy and square of energy
+            energy = u**2+v**2+w**2;
+            self.Mt[10,i] = 3.*(energy)*u
+            self.Mt[11,i] = 3.*(energy)*v
+            self.Mt[12,i] = 3.*(energy)*w
+            self.Mt[13,i] = (9./2.)*((energy)**2)*u
+            self.Mt[14,i] = (9./2.)*((energy)**2)*v
+            self.Mt[15,i] = (9./2.)*((energy)**2)*w
+            
+            # square and cube of energy
+            self.Mt[16,i] = (3./2.)*((energy)**2)
+            self.Mt[17,i] = (9./2.)*((energy)**3)
+            
+            # product of second order tensor and energy
+            self.Mt[18,i] = (2.*(u**2)-(v**2)-(w**2))*(energy)
+            self.Mt[19,i] = ((v**2) - (w**2))*(energy)
+            self.Mt[20,i] = u*v*energy
+            self.Mt[21,i] = v*w*energy
+            self.Mt[22,i] = w*u*energy
+            
+            # third order pseudo-vector
+            self.Mt[23,i] = u*(v**2 - w**2)
+            self.Mt[24,i] = v*(w**2 - u**2)
+            self.Mt[25,i] = w*(u**2 - v**2)
+            self.Mt[26,i] = u*v*w
+            
+            
+    def orthogonalizeM(self):
+        # start with the 4th 
+        self.M = np.copy(self.Mt);
+        
+        for k in range(4,27):
+            for i in range(k):
+                f = np.dot(self.M[k,:],self.M[i,:])
+                mag = np.dot(self.M[i,:],self.M[i,:])
+                self.M[k,:] -= (f/mag)*self.M[i,:];
+                
+        # hack-job fix to match paper:
+        self.M[18,:]*=3.
+        self.M[19,:]*=3.
+        self.M[20,:]*=3.
+        self.M[21,:]*=3.
+        self.M[22,:]*=3.
+            
+        
+        
+        
+    
+    
+    def buildS(self):
+#        s4 = 1.54; s10 = 1.5; s13 = 1.83; s16 = 1.4; s17 = 1.61; s18 = 1.98; 
+#        s20 = 1.98; s23 = 1.74; s26 = 1.74
+        s4 = self.omega; s10 = self.omega; s13 = self.omega; s16 = self.omega;
+        s17 = self.omega; s18 = self.omega; s20 = self.omega; s23 = self.omega;
+        s26 = self.omega;
+        s5 = self.omega; s7 = self.omega;
+        self.S = np.diag([0,0,0,0,s4, s5,s5, s7,s7,s7,s10,s10,s10,s13,s13,s13,
+                          s16,s17,s18,s18,s20,s20,s20,s23,s23,s23,
+                          s26]).astype(np.float32);    
+                          
+    def constructOmegaMRT(self,omega):
+        nMinv = -1.*np.linalg.inv(self.M);
+        self.omegaMRT = np.dot(nMinv,np.dot(self.S,self.M));    
+    
+    def set_omega(self,omega):
+        self.omega = omega;
+        self.buildS()
+        
     def set_inlet_velocity_bc_macro(self,f,uz):
-        rho = (1./(1. - uz))*(2.*(f[3]+f[6]+f[8]+f[10]+f[12]+f[20]+f[22]+f[24]+f[26])+ 
-                             (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18]))
+        rho = (1./(1. - uz))*(2.*(f[6]+f[14]+f[12]+f[18]+f[16]+f[20]+f[22]+f[24]+f[26])+ 
+                             (f[0]+f[1]+f[2]+f[4]+f[3]+f[7]+f[8]+f[9]+f[10]))
         return rho
 
 
@@ -415,8 +609,8 @@ class D3Q27Lattice(Lattice):
           compute macroscopic uz for density outlet
           bc using Regularized BC methods
         """
-        uz = -1. + (1./rho)*(2.*(f[7]+f[9]+f[11]+f[13]+f[16]+f[19]+f[21]+f[23]+f[25])+ 
-                             (f[0]+f[1]+f[2]+f[4]+f[5]+f[14]+f[15]+f[17]+f[18]))
+        uz = -1. + (1./rho)*(2.*(f[5]+f[11]+f[13]+f[15]+f[17]+f[19]+f[21]+f[23]+f[25])+ 
+                             (f[0]+f[1]+f[2]+f[4]+f[3]+f[7]+f[8]+f[9]+f[10]))
         return uz
 
 
@@ -430,14 +624,15 @@ class D3Q27Lattice(Lattice):
             the non-equilibrium component of the known
             speeds in opposite direction:
 
-         for D3Q27, unknown speeds on (low-z) inlet: 7,9,11,13,16,19,21,23,25
-                         bbSpd = 20,22,24,26,3,6,8,10,12
+         for D3Q27, unknown speeds on (low-z) inlet: 5,11,13,15,17,19,21,23,25
+                         bbSpd = 6,14,12,18,16,26,24,22,20
                 
         """
-        sp = [7,9,11,13,16,19,21,23,25]; bbSp = [20,22,24,26,3,6,8,10,12];
+        sp = [5,11,13,15,17,19,21,23,25]; bbSp = [6,14,12,18,16,26,24,22,20];
         f[sp] += f[bbSp] - fEq[bbSp];
 
 
+            
     def bounceBack_outletBoundary_micro(self,f,fEq):
         """
           input:
@@ -450,12 +645,12 @@ class D3Q27Lattice(Lattice):
              speeds in opposite direction:
 
 
-          for D3Q27, unknown speeds on (high-z) outlet: 20,22,24,26,3,6,8,10,12
-                          bbSpd = 7,9,11,13,16,19,21,23,25
+          for D3Q27, unknown speeds on (high-z) outlet: 6,14,12,18,16,26,24,22,20
+                          bbSpd = 5,11,13,15,17,19,21,23,25
                  
 
         """
-        sp = [20,22,24,26,3,6,8,10,12]; bbSp = [7,9,11,13,16,19,21,23,25];
+        sp = [6,14,12,18,16,26,24,22,20]; bbSp = [5,11,13,15,17,19,21,23,25];
         f[sp] += f[bbSp] - fEq[bbSp];
 
   
@@ -464,7 +659,4 @@ if __name__=="__main__":
       put testing code here
     """
 
-#from sympy import *
-#
-#f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f13 = symbols("f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14")
-#print "f0 + f1 = " + str(f0 + f1)
+

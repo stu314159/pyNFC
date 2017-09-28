@@ -1,3 +1,7 @@
+#!/usr/bin/env python 
+##!/home/users/sblair/anaconda2/bin/python
+##!/p/home/sblair/anaconda2/bin/python
+
 #pyNFC_preprocess.py
 """
    pre-processing steps for pyNFC code.  Basic geometry definition
@@ -19,6 +23,7 @@ parser = argparse.ArgumentParser(prog='pyNFC_preprocess.py',
 
 parser.add_argument('geom_filename',type=str)
 parser.add_argument('lattice_type',type=str)
+parser.add_argument('dynamics',type=int)
 parser.add_argument('partition_style',type=str)
 parser.add_argument('numProcs',type=int)
 parser.add_argument('Num_ts',type=int)
@@ -35,6 +40,7 @@ args = parser.parse_args()
 # assign to required variables
 geom_filename = args.geom_filename
 lattice_type = args.lattice_type
+dynamics = args.dynamics
 partition_style = args.partition_style
 numProcs = args.numProcs
 
@@ -67,6 +73,7 @@ Lo = float(geom_input['Lo'])
 Ny_divs = int(geom_input['Ny_divs'])
 rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
+pRef_idx = int(geom_input['pRef_idx'])
 #snl = list((geom_input['snl']).flatten())
 #inl = list((geom_input['inl']).flatten()) # must be inlet on Z-min
 #onl = list((geom_input['onl']).flatten()) # must be outlet on Z-max
@@ -75,48 +82,6 @@ Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
 Nx = math.ceil((Ny_divs-1)*(Lx_p/Lo))+1
 Nz = math.ceil((Ny_divs-1)*(Lz_p/Lo))+1
 nnodes = Nx*Ny*Nz
-
-# compute geometric data only once
-#x = np.linspace(0.,Lx_p,Nx).astype(np.float32);
-#y = np.linspace(0.,Ly_p,Ny).astype(np.float32);
-#z = np.linspace(0.,Lz_p,Nz).astype(np.float32);
-#numEl = Nx*Ny*Nz
-#Y,Z,X = np.meshgrid(y,z,x);
-#
-#XX = np.reshape(X,int(numEl))
-#YY = np.reshape(Y,int(numEl))
-#ZZ = np.reshape(Z,int(numEl))
-#
-#print 'There are %d nodes in the solid node list'%len(snl)
-#print 'Writing those nodes to file'
-## now write this obstList to file.
-#obstFilename = 'snl.lbm'
-#obstFile = open(obstFilename,'w')
-#obstFile.write('%i \n'%len(snl))
-#for i in range(len(snl)):
-#    nd = int(snl[i]); nd=nd;# make snl node numbers 0-based
-#    obstFile.write('%i \n'% nd) 
-#obstFile.close()
-#
-#print 'There are %d nodes in the inlet node list'%len(inl)
-#print 'Writing those nodes to file'
-#inletFileName = 'inl.lbm'
-#inletFile = open(inletFileName,'w')
-#inletFile.write('%i \n'%len(inl))
-#for i in range(len(inl)):
-#    nd = int(inl[i]); nd = nd;#make inl node numbers 0-based
-#    inletFile.write('%i \n'% nd) 
-#inletFile.close()
-#
-#print 'There are %d nodes in the outlet node list'%len(onl)
-#print 'Writing those nodes to file'
-#outletFileName = 'onl.lbm'
-#outletFile = open(outletFileName,'w')
-#outletFile.write('%i \n'%len(onl))
-#for i in range(len(onl)):
-#    nd = int(onl[i]); nd = nd;#make onl node numbers 0-based
-#    outletFile.write('%i \n'% nd) 
-#outletFile.close()
 
 
 # non-dimensionalization
@@ -134,9 +99,11 @@ omega = 1./(3.*nu_lbm+0.5)
 u_conv_fact = (dt/dx)*(To/Lo)
 t_conv_fact = (dt*To)
 l_conv_fact = dx*Lo
-p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))*(l_conv_fact**3)
+p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))/(l_conv_fact**3)
+#p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))
 
 rho_lbm = rho_p*(l_conv_fact**3)
+#rho_lbm = rho_p
 
 print 'l_conv_fact = %g.\n'%l_conv_fact
 print 'p_conv_fact = %g.\n'%p_conv_fact
@@ -159,7 +126,7 @@ if run_dec!='n' and run_dec!='N':
     # write the input file
     params = open('params.lbm','w')
     params.write('%s \n'% lattice_type) # lattice selection (keep.  We might actually use this)
-    
+    params.write('%d \n'% dynamics)
     params.write('%d \n'%Num_ts)
     params.write('%d \n'%ts_rep_freq)
     params.write('%d \n'%Warmup_ts)
@@ -183,6 +150,7 @@ if run_dec!='n' and run_dec!='N':
     params.write('%15.14f \n'%t_conv_fact)  # time, length and pressure conversion factors
     params.write('%15.14f \n'%l_conv_fact)
     params.write('%g \n'%p_conv_fact)
+    params.write('%d \n'%pRef_idx);
     
     params.close()
     
@@ -190,27 +158,4 @@ else:
     print 'Run aborted.  Better luck next time!'
 
 
-## ------------------------------------------------------------------------------------------
-## add the partitioning work here; just use metis; if you can make it work with metis,
-## it also should "just work" for geometric partitioning schemes
-#
-#if lattice_type == 'D3Q15':
-#   lat = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
-#elif lattice_type == 'D3Q19':
-#   lat = pp.D3Q19Lattice(int(Nx),int(Ny),int(Nz))
-#else:
-#   lat = pp.D3Q27Lattice(int(Nx),int(Ny),int(Nz))
-#
-#
-##lat15 = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
-#print "initializing the adjacency list"
-#lat.initialize_adjDict();
-#print "creating %s partition for %d processes" % (partition_style, numProcs)
-#lat.set_Partition(numParts= numProcs, style = partition_style)
-#lat.compute_cutSize()
-#print "cut size for %s partition = %g" % (partition_style, lat.get_cutSize())
-##print "writing vtk file for %s partition" % partition_style
-##partition_vtk_filename = "partition_%s.vtk" % partition_style
-##lat.partition.write_vtk(partition_vtk_filename)
-#print "writing %s partition to disk" % partition_style
-#lat.partition.write_partition()
+

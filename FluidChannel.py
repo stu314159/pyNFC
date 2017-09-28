@@ -62,7 +62,119 @@ class ChannelCavity(EmptyChannel):
       ol = np.intersect1d(ol[:],cav3[:])
       return ol[:]
 
+class GridObst(EmptyChannel):
+    """
+    a channel with a turbulence-inducing grid at the entrance
+    of the channel.  The grid has a circular hole to accomodate
+    passage of a drive-shaft for a propeller
+    
+    """
+    def __init__(self,gridZ,xT,yT,zT,xPitch,yPitch,hX,hY,hD):
+        """
+        gridZ - z-coordinate of center of grid
+        xT - thickness of grid webs in x-direction (vertical webs)
+        yT - thickness of grid webs in y-direction (horizontal webs)
+        zT - thickness of grid in z-direction
+        yPitch - pitch of horizontal grids in Y-direction
+        xPitch - pitch of vertical grids in the X-direction
+        hX - x-coordinate of grid hole
+        hY - y-coordinate of grid hole
+        hD - diameter of grid hole
+        """
+        
+        self.gridZ = gridZ;
+        self.xT = xT;
+        self.yT = yT;
+        self.zT = zT;
+        self.yPitch = yPitch;
+        self.xPitch = xPitch;
+        self.hX = hX;
+        self.hY = hY;
+        self.hD = hD;
+        
+    def get_Lo(self,):
+        """
+        to do: talk to Luksa about non-dimensionalization
+        and most appropriate choice for this
+        non-dimensionalization.
+        """
+        return self.yPitch
+    
+    def get_obstList(self,X,Y,Z):
+        """
+        
+        """
+        x = np.array(X);
+        y = np.array(Y);
+        z = np.array(Z);
+        
+        xMax = np.max(x);
+        xMin = np.min(x); # expect this to be zero
+        yMax = np.max(y);
+        yMin = np.min(y); # expect this to be zero
+        xPitch = self.xPitch
+        yPitch = self.yPitch
+        xT = self.xT
+        yT = self.yT
+        zT = self.zT
+        gridZ = self.gridZ
+        hX = self.hX
+        hY = self.hY
+        hD = self.hD
+        
+        
+        obst_list = [];
+        # get x-center of vertical grids
+        xC_vGrids = np.linspace(xMin,xMax,((xMax-xMin)/xPitch+1));
+        for i in range(len(xC_vGrids)):
+            distX = np.abs(x - xC_vGrids[i]);
+            distZ = np.abs(z - gridZ);
+            gridObstA = np.where((distX < xT/2.))
+            gridObstB = np.where((distZ < zT/2.))
+            gridObst = np.intersect1d(gridObstA,gridObstB);
+            obst_list = np.union1d(obst_list[:],gridObst)
+        
+        
+        # get y-center of horizontal grids
+        yC_hGrids = np.linspace(yMin,yMax,((yMax - yMin)/yPitch)+1 );
+        for i in range(len(yC_hGrids)):
+            distY = np.abs(y - yC_hGrids[i]);
+            distZ = np.abs(z - gridZ);
+            gridObstA = np.where((distY < yT/2.))
+            gridObstB = np.where((distZ < zT/2.))
+            gridObst = np.intersect1d(gridObstA,gridObstB);
+            obst_list = np.union1d(obst_list[:],gridObst)
+        
+        # remove grids within the hole region
+        distH = np.sqrt((y - hY)**2. + (x - hX)**2.)
+        obstH = np.where(distH < hD/2.)
+        obst_list = np.setdiff1d(obst_list[:],obstH)
+            
+        obst_list = obst_list.astype(np.int)
+        return obst_list[:]
+        
+        
 
+class StraightPipe(EmptyChannel):
+    """
+    a square channel where the non-solid nodes
+    constitute a circular pipe.
+    
+    """
+    def __init__(self,x_c,y_c,diameter):
+        self.x_c = x_c;
+        self.y_c = y_c;
+        self.diameter = diameter;
+        
+    def get_Lo(self):
+        return self.diameter;
+        
+    def get_obstList(self,X,Y,Z):
+        x = np.array(X); y = np.array(Y); 
+        dist = (x - self.x_c)**2 + (y - self.y_c)**2
+        
+        return list(np.where(dist >= (self.diameter/2.0)**2))
+    
 class SphereObstruction(EmptyChannel):
     """
      a channel with a sphere obstruction
@@ -179,7 +291,9 @@ class TwinJet(EmptyChannel):
     
     def get_obstList(self,X,Y,Z):
         
-        x = np.array(X); y = np.array(Y); z = np.array(Z);
+       #x = np.array(X); 
+        y = np.array(Y); 
+        z = np.array(Z);
         obst_l = np.where(z < self.L)
         obst_h = np.where(z > 0.2)
         obst = np.intersect1d(obst_l[:],obst_h[:])
@@ -328,11 +442,11 @@ class ConeScourPit(EmptyChannel):
         """
        
         x_c_cone = self.x_c
-	z_c_cone = self.z_c
+        z_c_cone = self.z_c
         y_c_cone = 0
         x_s = 2.25*2*self.cyl_rad
         rad_cone = x_s + self.cyl_rad
-	h_cone = rad_cone*0.57735
+        h_cone = rad_cone*0.57735
 
         floor_part = np.array(np.where(Y < h_cone)).flatten()
 
@@ -372,10 +486,10 @@ class SinglePile(EmptyChannel):
          return a list of all indices of lattice points within the boundaries of the bed Bed thickness is equal to the diameter of the piling (2x radius)
         """
        
-    	#Bed
+        #Bed
         floor_part = np.array(np.where(Y < 2*self.cyl_rad)).flatten()
-	
-	#Piling
+
+        #Piling
         dist = (X - self.x_c)**2 + (Z - self.z_c)**2;
         cyl_part = list(np.array(np.where( dist < self.cyl_rad**2)).flatten())
 
@@ -403,16 +517,14 @@ class WavyBed(EmptyChannel):
 
     def get_obstList(self,X,Y,Z):
         """
-waveh and wavel are used to characterize the sine wave for the bed.  shallower sin waves do better in remaining stable throughout the simulation at low Reynolds numbers.
+        waveh and wavel are used to characterize the sine wave for the bed.  shallower sin waves do better in remaining stable throughout the simulation at low Reynolds numbers.
 
         """
-       
-    	#Bed
-	waveh = 0.125
-	wavel = 5        
-	floor_part = np.array(np.where(Y < (waveh*np.sin(wavel*Z) + 2*self.cyl_rad))).flatten()
-	
-	#Piling
+        waveh = 0.125
+        wavel = 5        
+        floor_part = np.array(np.where(Y < (waveh*np.sin(wavel*Z) + 2*self.cyl_rad))).flatten()
+        
+        #Piling
         dist = (X - self.x_c)**2 + (Z - self.z_c)**2;
         cyl_part = list(np.array(np.where( dist < self.cyl_rad**2)).flatten())
 
@@ -433,7 +545,7 @@ class PipeContract(EmptyChannel):
  constructor identifying diameters into and out of contraction.  Recommend diam_in = 1.8 and diam_out = 0.8
         """
         self.diam_in = diam_in
-	self.diam_out = diam_out
+        self.diam_out = diam_out
 
     def get_Lo(self):
         return self.diam_out
@@ -443,32 +555,32 @@ class PipeContract(EmptyChannel):
    Define areas external to pipe.
         """
        #Pipe in - find all points exterior of large pipe
-	pipe_in = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_in/2)**2)).flatten()
-	pipe_in_stop = np.array(np.where(Z <= 4)).flatten()
-	pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
-
-	#Contraction - find all points exterior of contraction
-	r_cone = self.diam_out
-	h_cone = self.diam_out	
-	contraction = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (r_cone/h_cone)**2*(Z - (4 + h_cone))**2)).flatten()
-	contraction_start = np.array(np.where(Z >= 4)).flatten()
-	contraction_stop = np.array(np.where(Z <= 4 + .5*self.diam_out)).flatten()
-	contraction = np.intersect1d(contraction[:],contraction_start[:])
-	contraction = np.intersect1d(contraction[:],contraction_stop[:])
-
-	#Pipe out - final all points exterior of smaller pipe
-	pipe_out = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_out/2)**2)).flatten()
-	pipe_out_start = np.array(np.where(Z >= 4 + .5*self.diam_out)).flatten()
-	pipe_out = np.intersect1d(pipe_out[:],pipe_out_start[:])
-
-
-	#Put the pieces together
-
-	#pipe = pipe_in[:]
-	pipe = np.union1d(contraction[:],pipe_in[:])
-	pipe = np.union1d(pipe[:],pipe_out[:])
-
-	obst_list = pipe[:]
+        pipe_in = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_in/2)**2)).flatten()
+        pipe_in_stop = np.array(np.where(Z <= 4)).flatten()
+        pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
+    
+        #Contraction - find all points exterior of contraction
+        r_cone = self.diam_out
+        h_cone = self.diam_out	
+        contraction = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (r_cone/h_cone)**2*(Z - (4 + h_cone))**2)).flatten()
+        contraction_start = np.array(np.where(Z >= 4)).flatten()
+        contraction_stop = np.array(np.where(Z <= 4 + .5*self.diam_out)).flatten()
+        contraction = np.intersect1d(contraction[:],contraction_start[:])
+        contraction = np.intersect1d(contraction[:],contraction_stop[:])
+    
+        #Pipe out - final all points exterior of smaller pipe
+        pipe_out = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_out/2)**2)).flatten()
+        pipe_out_start = np.array(np.where(Z >= 4 + .5*self.diam_out)).flatten()
+        pipe_out = np.intersect1d(pipe_out[:],pipe_out_start[:])
+    
+    
+        #Put the pieces together
+    
+        #pipe = pipe_in[:]
+        pipe = np.union1d(contraction[:],pipe_in[:])
+        pipe = np.union1d(pipe[:],pipe_out[:])
+    
+        obst_list = pipe[:]
 
        
         return list(obst_list[:])
@@ -483,7 +595,7 @@ class PipeExpand(EmptyChannel):
           constructor identifying pipe diameters into and out of expansion.  Recommend diam_in = 0.8 and diam_out = 1.8
         """
         self.diam_in = diam_in
-	self.diam_out = diam_out
+        self.diam_out = diam_out
 
     def get_Lo(self):
         return self.diam_in
@@ -493,30 +605,30 @@ class PipeExpand(EmptyChannel):
    Define areas external to pipe.
         """
        #Pipe in - find all points exterior of small
-	pipe_in = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_in/2)**2)).flatten()
-	pipe_in_stop = np.array(np.where(Z <= 1.5 + 0.5*(self.diam_out - self.diam_in))).flatten()
-	pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
-
-	#Expansion - find all points exterior of expansion
-	r_cone = self.diam_in
-	h_cone = self.diam_in	
-	expansion = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (r_cone/h_cone)**2*(Z - 1.5)**2)).flatten()
-	expansion_start = np.array(np.where(Z >= 1.5 + 0.5*(self.diam_out - self.diam_in)))
-	#expansion_stop = np.array(np.where(Z <= 4)).flatten()
-	expansion = np.intersect1d(expansion[:],expansion_start[:])
-	#expansion = np.intersect1d(expansion[:],expansion_stop[:])
-
-	#Pipe out - final all points exterior of smaller pipe
-	pipe_out = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_out/2)**2)).flatten()
-	pipe_out_start = np.array(np.where(Z >= 1.5 + 0.5*(self.diam_in - self.diam_out))).flatten()
-	pipe_out = np.intersect1d(pipe_out[:],pipe_out_start[:])
-
-
-	#Put the pieces together
-
-	pipe = expansion[:]
-	pipe = np.union1d(expansion[:],pipe_in[:])
-	pipe = np.union1d(pipe[:],pipe_out[:])
+        pipe_in = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_in/2)**2)).flatten()
+        pipe_in_stop = np.array(np.where(Z <= 1.5 + 0.5*(self.diam_out - self.diam_in))).flatten()
+        pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
+    
+        #Expansion - find all points exterior of expansion
+        r_cone = self.diam_in
+        h_cone = self.diam_in	
+        expansion = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (r_cone/h_cone)**2*(Z - 1.5)**2)).flatten()
+        expansion_start = np.array(np.where(Z >= 1.5 + 0.5*(self.diam_out - self.diam_in)))
+        #expansion_stop = np.array(np.where(Z <= 4)).flatten()
+        expansion = np.intersect1d(expansion[:],expansion_start[:])
+        #expansion = np.intersect1d(expansion[:],expansion_stop[:])
+    
+        #Pipe out - final all points exterior of smaller pipe
+        pipe_out = np.array(np.where((X - 1)**2 + (Y - 1)**2 > (self.diam_out/2)**2)).flatten()
+        pipe_out_start = np.array(np.where(Z >= 1.5 + 0.5*(self.diam_in - self.diam_out))).flatten()
+        pipe_out = np.intersect1d(pipe_out[:],pipe_out_start[:])
+    
+    
+        #Put the pieces together
+    
+        pipe = expansion[:]
+        pipe = np.union1d(expansion[:],pipe_in[:])
+        pipe = np.union1d(pipe[:],pipe_out[:])
 
 	obst_list = pipe[:]
 
@@ -533,7 +645,7 @@ class PipeTurn(EmptyChannel):
           constructor providing pipe diameter for use in Lo.  Use 0.5.
         """
         self.diam_in = diam_in
-	
+
     def get_Lo(self):
         return self.diam_in
 
@@ -542,54 +654,54 @@ class PipeTurn(EmptyChannel):
    Define areas external to pipe.
         """
        #Pipe_1
-	pipe_1 = np.array(np.where((X - 1)**2 + (Y - 4)**2 >= 0.5**2)).flatten()
-	pipe_1_stop_z = np.array(np.where(Z <= 3.0)).flatten()
-	pipe_1_stop_y = np.array(np.where(Y >= 3.25)).flatten()
-	pipe_1_stop = np.intersect1d(pipe_1_stop_z[:],pipe_1_stop_y[:])
-	pipe_1 = np.intersect1d(pipe_1[:],pipe_1_stop[:])
-
-	#Turn_1
-	turn_1 = np.array(np.where((0.75 - np.sqrt((Y - 3.25)**2 + (Z -3)**2))**2 + (X - 1)**2 >= 0.5**2)).flatten()
-	turn_1_stop_z = np.array(np.where(Z >= 3.0)).flatten()
-	turn_1_stop_y = np.array(np.where(Y>= 1.75)).flatten()
-	turn_1_stop = np.intersect1d(turn_1_stop_z[:],turn_1_stop_y[:])
-	turn_1 = np.intersect1d(turn_1[:],turn_1_stop[:])
-
-	#Pipe_2
-	pipe_2 = np.array(np.where((X - 1)**2 + (Y - 2.5)**2 >= 0.5**2)).flatten()
-	pipe_2_start_z = np.array(np.where(Z >= 1.5)).flatten()
-	pipe_2_start_y_up = np.array(np.where(Y <= 3.25)).flatten()
-	pipe_2_start_y_down = np.array(np.where(Y >= 1.75)).flatten()
-	pipe_2_start_y = np.intersect1d(pipe_2_start_y_up[:],pipe_2_start_y_down[:])	
-	pipe_2_start = np.intersect1d(pipe_2_start_z[:],pipe_2_start_y[:])
-	pipe_2 = np.intersect1d(pipe_2[:],pipe_2_start[:])
-	pipe_2_stop_z = np.array(np.where(Z <= 3.0)).flatten()
-	pipe_2_stop_y = np.array(np.where(Y <= 3.25)).flatten()
-	pipe_2_stop = np.intersect1d(pipe_2_stop_z[:],pipe_2_stop_y[:])
-	pipe_2 = np.intersect1d(pipe_2[:],pipe_2_stop[:])
-
-	#Turn_2
-	turn_2 = np.array(np.where((0.75 - np.sqrt((Y - 1.75)**2 + (Z -1.5)**2))**2 + (X - 1)**2 >= 0.5**2)).flatten()
-	turn_2_stop_z = np.array(np.where(Z <= 1.5)).flatten()
-	turn_2_stop_y = np.array(np.where(Y <= 3.25)).flatten()
-	turn_2_stop = np.intersect1d(turn_2_stop_z[:],turn_2_stop_y[:])
-	turn_2 = np.intersect1d(turn_2[:],turn_2_stop[:])
-	
-	#Pipe_3
-	pipe_3 = np.array(np.where((X - 1)**2 + (Y - 1.0)**2 >= 0.5**2)).flatten()
-	pipe_3_start_z = np.array(np.where(Z >= 1.5)).flatten()
-	pipe_3_start_y = np.array(np.where(Y <= 1.75)).flatten()
-	pipe_3_start = np.intersect1d(pipe_3_start_z[:],pipe_3_start_y[:])
-	pipe_3 = np.intersect1d(pipe_3[:],pipe_3_start[:])	
-
-	#Put the pieces together
-
-	pipe = np.union1d(pipe_1[:],turn_1[:])
-	pipe = np.union1d(pipe[:],pipe_2[:])
-	pipe = np.union1d(pipe[:],turn_2[:])	
-	pipe = np.union1d(pipe[:],pipe_3[:])
-
-	obst_list = pipe[:]
+        pipe_1 = np.array(np.where((X - 1)**2 + (Y - 4)**2 >= 0.5**2)).flatten()
+        pipe_1_stop_z = np.array(np.where(Z <= 3.0)).flatten()
+        pipe_1_stop_y = np.array(np.where(Y >= 3.25)).flatten()
+        pipe_1_stop = np.intersect1d(pipe_1_stop_z[:],pipe_1_stop_y[:])
+        pipe_1 = np.intersect1d(pipe_1[:],pipe_1_stop[:])
+    
+        #Turn_1
+        turn_1 = np.array(np.where((0.75 - np.sqrt((Y - 3.25)**2 + (Z -3)**2))**2 + (X - 1)**2 >= 0.5**2)).flatten()
+        turn_1_stop_z = np.array(np.where(Z >= 3.0)).flatten()
+        turn_1_stop_y = np.array(np.where(Y>= 1.75)).flatten()
+        turn_1_stop = np.intersect1d(turn_1_stop_z[:],turn_1_stop_y[:])
+        turn_1 = np.intersect1d(turn_1[:],turn_1_stop[:])
+    
+        #Pipe_2
+        pipe_2 = np.array(np.where((X - 1)**2 + (Y - 2.5)**2 >= 0.5**2)).flatten()
+        pipe_2_start_z = np.array(np.where(Z >= 1.5)).flatten()
+        pipe_2_start_y_up = np.array(np.where(Y <= 3.25)).flatten()
+        pipe_2_start_y_down = np.array(np.where(Y >= 1.75)).flatten()
+        pipe_2_start_y = np.intersect1d(pipe_2_start_y_up[:],pipe_2_start_y_down[:])	
+        pipe_2_start = np.intersect1d(pipe_2_start_z[:],pipe_2_start_y[:])
+        pipe_2 = np.intersect1d(pipe_2[:],pipe_2_start[:])
+        pipe_2_stop_z = np.array(np.where(Z <= 3.0)).flatten()
+        pipe_2_stop_y = np.array(np.where(Y <= 3.25)).flatten()
+        pipe_2_stop = np.intersect1d(pipe_2_stop_z[:],pipe_2_stop_y[:])
+        pipe_2 = np.intersect1d(pipe_2[:],pipe_2_stop[:])
+    
+        #Turn_2
+        turn_2 = np.array(np.where((0.75 - np.sqrt((Y - 1.75)**2 + (Z -1.5)**2))**2 + (X - 1)**2 >= 0.5**2)).flatten()
+        turn_2_stop_z = np.array(np.where(Z <= 1.5)).flatten()
+        turn_2_stop_y = np.array(np.where(Y <= 3.25)).flatten()
+        turn_2_stop = np.intersect1d(turn_2_stop_z[:],turn_2_stop_y[:])
+        turn_2 = np.intersect1d(turn_2[:],turn_2_stop[:])
+        
+        #Pipe_3
+        pipe_3 = np.array(np.where((X - 1)**2 + (Y - 1.0)**2 >= 0.5**2)).flatten()
+        pipe_3_start_z = np.array(np.where(Z >= 1.5)).flatten()
+        pipe_3_start_y = np.array(np.where(Y <= 1.75)).flatten()
+        pipe_3_start = np.intersect1d(pipe_3_start_z[:],pipe_3_start_y[:])
+        pipe_3 = np.intersect1d(pipe_3[:],pipe_3_start[:])	
+    
+        #Put the pieces together
+    
+        pipe = np.union1d(pipe_1[:],turn_1[:])
+        pipe = np.union1d(pipe[:],pipe_2[:])
+        pipe = np.union1d(pipe[:],turn_2[:])	
+        pipe = np.union1d(pipe[:],pipe_3[:])
+    
+        obst_list = pipe[:]
 
         return list(obst_list[:])
 
@@ -603,19 +715,19 @@ class PipeOut(EmptyChannel):
         defines the diameter and length (z axis) of pipe leading to open area
         """
         self.diam_in = diam_in
-	self.length_in = length_in
+        self.length_in = length_in
 
     def get_Lo(self):
         return self.diam_in
 
     def get_obstList(self,X,Y,Z):
         """
-   Define solid areas around pipe.  Everything else will be open.  Ensure coordinates for center of circle match center of Lx-Ly.
+            Define solid areas around pipe.  Everything else will be open.  Ensure coordinates for center of circle match center of Lx-Ly.
         """
-       #Pipe In
-	pipe_in = np.array(np.where((X - 0.5*(4))**2 + (Y - 0.5*(4))**2 >= (0.5*self.diam_in)**2)).flatten()
-	pipe_in_stop = np.array(np.where(Z <= self.length_in)).flatten()
-	pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
+        #Pipe In
+        pipe_in = np.array(np.where((X - 0.5*(4))**2 + (Y - 0.5*(4))**2 >= (0.5*self.diam_in)**2)).flatten()
+        pipe_in_stop = np.array(np.where(Z <= self.length_in)).flatten()
+        pipe_in = np.intersect1d(pipe_in[:],pipe_in_stop[:])
 
 
 	obst_list = pipe_in[:]
@@ -632,7 +744,7 @@ class Butterfly(EmptyChannel):
           constructor identifying pipe diameter.  Must be a 1 diam pipe inside a 1.2 x 1.2 x 8 channel.  Valve center at z = 3.
         """
         self.diam = diam
-	
+
 
     def get_Lo(self):
         return self.diam
@@ -698,8 +810,7 @@ class Tee(EmptyChannel):
         Constructor identifying the diameters of the two pipes.  Pipe 1 runs straight through from Z_min to Z_max.  Pipe 2 tees off and runs parallel to Pipe 1.  Pipe 1 enters/exits z planes at y = 1.  Pipe 2 runs at y = 3.  Assumes dimensions of space (X,Y,Z) is (2,4,8).
         """
         self.diam_1 = diam_1
-	self.diam_2 = diam_2
-	
+        self.diam_2 = diam_2
 
     def get_Lo(self):
         return self.diam_1
@@ -762,7 +873,6 @@ class Tee(EmptyChannel):
 	pipe = np.union1d(pipe[:],elbow_2[:])
 	pipe = np.union1d(pipe[:],tee_2[:])
 	pipe = np.setxor1d(pipe[:], empty[:])	
- 
 	obst_list = pipe[:]
 
         return list(obst_list[:])
@@ -783,6 +893,136 @@ def fluid_properties(fluid_str):
      for keys in fluid_lib:
        print " '%s' " % keys
      raise KeyError('invalid fluid specified')
+
+class LidDrivenCavity:
+    def __init__(self,Lx_p = 1.,
+                      Ly_p = 1., Lz_p = 1.,
+                      fluid='water',
+                      N_divs=11) :
+      """
+      class constructor - lid driven cavity.
+      All surfaces xm,xp,ym,zm,zp are solid except
+      the "lid" (yp) which is a moving surface
+      (node type 5)
+      """
+      self.Lx_p = Lx_p
+      self.Ly_p = Ly_p
+      self.Lz_p = Lz_p
+      self.N_divs = N_divs
+      self.fluid = fluid
+      
+      # generate the geometry
+      Lo = Ly_p # by convention (for now)
+      self.Lo = Lo
+      self.Ny = math.ceil((N_divs-1)*(Ly_p/Lo))+1
+      self.Nx = math.ceil((N_divs-1)*(Lx_p/Lo))+1
+      self.Nz = math.ceil((N_divs-1)*(Lz_p/Lo))+1
+      self.nnodes = self.Nx*self.Ny*self.Nz
+      print "Creating channel with %g lattice points." % self.nnodes
+      x = np.linspace(0.,Lx_p,self.Nx).astype(np.float32);
+      y = np.linspace(0.,Ly_p,self.Ny).astype(np.float32);
+      z = np.linspace(0.,Lz_p,self.Nz).astype(np.float32);
+   
+      Y,Z,X = np.meshgrid(y,z,x);
+    
+      self.x = np.reshape(X,int(self.nnodes))
+      self.y = np.reshape(Y,int(self.nnodes))
+      self.z = np.reshape(Z,int(self.nnodes))
+      self.dx = x[1]-x[0]
+      # get fluid properties from the included fluid library
+      self.rho_p, self.nu_p = fluid_properties(fluid)
+      self.set_cavity_walls()
+      self.ndType = np.zeros((self.nnodes,),dtype=np.int32)
+      self.ndType[self.solid_list]=1
+      self.ndType[self.lid_list]=5
+      
+       # must have geometry set first
+    def set_cavity_walls(self,walls=['left','right','bottom','west','east']): 
+        """
+         set up to 5 walls as solid walls for the simulation
+        """
+        solid_list_a = np.empty(0).flatten()
+        solid_list_b = np.empty(0).flatten()
+        solid_list_c = np.empty(0).flatten()
+        solid_list_d = np.empty(0).flatten()
+        solid_list_e = np.empty(0).flatten()
+
+        for w in walls:
+            if w=='right':
+                solid_list_a = np.array(np.where((self.x==0.))).flatten()
+            elif w=='left':
+                solid_list_b = np.array(np.where((self.x > (self.Lx_p-self.dx/2.)))).flatten()
+            elif w=='west':
+                solid_list_d = np.array(np.where((self.z == 0.))).flatten()
+            elif w=='bottom':
+                solid_list_c = np.array(np.where((self.y == 0.))).flatten()
+            elif w=='east':
+                solid_list_e = np.array(np.where((self.z > (self.Lz_p - self.dx/2.)))).flatten()
+
+        solid_list = np.array(np.union1d(solid_list_a,solid_list_b)); 
+        solid_list = np.array(np.union1d(solid_list,solid_list_c));
+        solid_list = np.array(np.union1d(solid_list,solid_list_e));
+        self.solid_list = np.array(np.union1d(solid_list,solid_list_d))
+        
+        self.lid_list = np.array(np.where((self.y > (self.Ly_p-self.dx/2.)))).flatten()
+#        self.lid_list = np.setxor1d(self.lid_list[:],
+#            np.intersect1d(self.lid_list[:],self.solid_list[:]))
+        
+        
+    def write_mat_file(self, geom_filename):
+        """
+          generate the mat file to interface with genInput.py.  Needs to save
+          Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, and ndType.
+          note that the snl and obst_list need to be combined into one list 
+        """
+        mat_dict = {}
+        mat_dict['Lx_p'] = self.Lx_p
+        mat_dict['Ly_p'] = self.Ly_p
+        mat_dict['Lz_p'] = self.Lz_p
+        mat_dict['Lo'] = self.Lo
+        mat_dict['Ny_divs'] = self.N_divs
+        mat_dict['rho_p'] = self.rho_p
+        mat_dict['nu_p'] = self.nu_p
+
+        mat_dict['ndType'] = list(self.ndType[:])
+
+        scipy.io.savemat(geom_filename,mat_dict)
+        
+    def write_bc_vtk(self):
+        """
+         write node lists to properly formatted VTK files
+        """
+        print "Creating boundary condition arrays"
+        # perhaps at some other time this class should be extended
+        # to allow obstacles within the lid-driven cavity
+#        obst_array = np.zeros(self.nnodes)
+#        obst_array[list(self.obst_list)] = 100.
+#
+#        #print type(self.inlet_list)
+#        inlet_array = np.zeros(self.nnodes)
+#        inlet_array[list(self.inlet_list)] = 200.
+#
+#        outlet_array = np.zeros(self.nnodes)
+#        outlet_array[list(self.outlet_list)] = 300.
+        print "length of lid_list = %d \n"%(len(list(self.lid_list)))
+        lid_array = np.zeros(self.nnodes)
+        lid_array[list(self.lid_list)] = 700.
+
+        solid_array = np.zeros(self.nnodes)
+        solid_array[list(self.solid_list)] = 500.
+        
+        dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
+        origin = [0., 0., 0.]
+        dx = self.x[1] - self.x[0]
+        spacing = [dx, dx, dx] #uniform lattice
+        
+        print "Writing boundary conditions to VTK files"
+        #writeVTK(inlet_array,'inlet','inlet.vtk',dims,origin,spacing)
+        #writeVTK(outlet_array,'outlet','outlet.vtk',dims,origin,spacing)
+        #writeVTK(obst_array,'obst','obst.vtk',dims,origin,spacing)
+        writeVTK(lid_array,'lid','lid.vtk',dims,origin,spacing)
+        writeVTK(solid_array,'solid','solid.vtk',dims,origin,spacing)
+                         
 
 class FluidChannel:
     def __init__(self,Lx_p=1.,
@@ -821,6 +1061,10 @@ class FluidChannel:
         self.x = np.reshape(X,int(self.nnodes))
         self.y = np.reshape(Y,int(self.nnodes))
         self.z = np.reshape(Z,int(self.nnodes))
+        
+        self.dx = self.x[1]-self.x[0]
+        
+        self.set_pRef_indx(Lx_p/2.,Ly_p/2.,0.95*Lz_p);
 
         # get fluid properties from the included fluid library
         self.rho_p, self.nu_p = fluid_properties(fluid)
@@ -853,11 +1097,22 @@ class FluidChannel:
 
         self.obst_list = np.setxor1d(self.obst_list[:],
             np.intersect1d(self.obst_list[:],self.solid_list[:]))
+            
+        
+        self.ndType = np.zeros((int(self.nnodes),),dtype=np.int32)
+        # node types:
+        # regular fluid node: 0
+        # solid node: 1
+        # velocity zm (inlet) node: 2
+        # pressure zp (outlet) node: 3
+        self.ndType[np.union1d(self.obst_list,self.solid_list)] = 1
+        self.ndType[self.inlet_list] = 2
+        self.ndType[self.outlet_list] = 3
        
     def write_mat_file(self, geom_filename):
         """
           generate the mat file to interface with genInput.py.  Needs to save
-          Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, snl, inl and onl.
+          Lx_p, Ly_p, Lz_p, Lo, Ny_divs, rho_p, nu_p, and ndType.
           note that the snl and obst_list need to be combined into one list 
         """
         mat_dict = {}
@@ -868,13 +1123,37 @@ class FluidChannel:
         mat_dict['Ny_divs'] = self.N_divs
         mat_dict['rho_p'] = self.rho_p
         mat_dict['nu_p'] = self.nu_p
-        mat_dict['snl'] = list(np.union1d(self.obst_list[:],self.solid_list[:]))
-        mat_dict['inl'] = list(self.inlet_list[:])
-        mat_dict['onl'] = list(self.outlet_list[:])
+
+        mat_dict['ndType'] = list(self.ndType[:])
+        mat_dict['pRef_idx'] = self.pRef_indx;
 
         scipy.io.savemat(geom_filename,mat_dict)
 
-
+    def set_pRef_indx(self,Xref,Yref,Zref):
+        """
+        find the node index within the fluid channel that can
+        serve as the pressure reference.
+        
+        By default this pressure reference will be placed at 95% of 
+        the channel length (in the Z-direction) at the X-and Y- center 
+        of the channel.  Save this pRef index in the geometry file and
+        write it into the params file for post-processing"
+        """
+        xInd = np.where(np.abs(self.x - Xref)<self.dx/1.5);
+        yInd = np.where(np.abs(self.y - Yref)<self.dx/1.5);
+        zInd = np.where(np.abs(self.z - Zref)<self.dx/1.5);
+        
+        ndList = np.intersect1d(xInd,yInd);
+        ndList = np.intersect1d(zInd,ndList)
+        
+        if len(ndList>0):
+            self.pRef_indx = ndList[0]
+        else:
+            self.pRef_indx = 0
+            print "Warning: failed to select pRef node!"
+            
+        
+        
     
     def write_bc_vtk(self):
         """
@@ -920,9 +1199,9 @@ class FluidChannel:
             if w=='right':
                 solid_list_a = np.array(np.where((self.x==0.))).flatten()
             elif w=='left':
-                solid_list_b = np.array(np.where((self.x == self.Lx_p))).flatten()
+                solid_list_b = np.array(np.where((self.x > (self.Lx_p-self.dx/2.)))).flatten()
             elif w=='top':
-                solid_list_d = np.array(np.where((self.y == self.Ly_p))).flatten()
+                solid_list_d = np.array(np.where((self.y > (self.Ly_p-self.dx/2.)))).flatten()
             elif w=='bottom':
                 solid_list_c = np.array(np.where((self.y == 0.))).flatten()
 

@@ -8,8 +8,10 @@
 #include "LBM_DataHandler.h"
 #include "LBM_HaloData.h"
 #include "LBM_HaloDataOrganizer.h"
+#include <mpi.h>
 
 #include <boost/python.hpp>
+#include <mpi4py/mpi4py.h>
 #include <cstdlib>
 #include <omp.h>
 
@@ -32,14 +34,17 @@ public:
 	void set_bnlSZ(int sz);
 	void set_inlSZ(int sz);
 	void set_interiorNL(boost::python::object obj);
-	void set_inl(boost::python::object obj);
-	void set_onl(boost::python::object obj);
-	void set_snl(boost::python::object obj);
+
+	void set_ndT(boost::python::object obj);
 	void set_ndType(const int nt,LBM_DataHandler& f);
 	void set_Ubc(const float u);
 	void set_rhoBC(const float rho);
 	void set_omega(const float o);
+	void set_dynamics(const int d);
+	void set_Cs(const float cs);
+	void set_omegaMRT(boost::python::object obj);
 	void set_totalNodes(const int tn);
+	void set_MPIcomm(boost::python::object obj);
 	void process_nodeList(const bool isEven,const int nodeList);
 	void computeFout(LBM_DataHandler& f);
 	void streamData(float * fOut,const int nd,LBM_DataHandler& f);
@@ -58,6 +63,10 @@ public:
 	LBM_HaloDataOrganizer myHalo_in;
 	LBM_HaloDataOrganizer myHalo_out;
 
+	MPI_Comm comm;
+	int mpi_size;
+	int mpi_rank;
+
 
 private:
 	float * fIn;
@@ -69,9 +78,9 @@ private:
 	int bnl_sz; //boundary node list size
 	int * interior_nl;
 	int inl_sz; // interior node list size
-	int * inl;
-	int * onl;
-	int * snl;
+
+	int * ndT;
+	float u_bc;
 	int numSpd;
 	int totalNodes;
 
@@ -79,6 +88,8 @@ private:
 	float * uy;
 	float * uz;
 	float * rho;
+
+
 
 
 };

@@ -1,4 +1,5 @@
 #include "PyLBM_Interface.h"
+#include <iostream>
 
 
 PyLBM_Interface::PyLBM_Interface(const int numSpd) :
@@ -51,14 +52,6 @@ void PyLBM_Interface::streamData(float * fOut, const int nd,LBM_DataHandler& fDa
 }
 
 
-void PyLBM_Interface::set_inl(boost::python::object obj)
-{
-	PyObject* pobj = obj.ptr();
-	Py_buffer pybuf;
-	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-	void * buf = pybuf.buf;
-	inl = (int *)buf;
-}
 
 void PyLBM_Interface::set_fEven(boost::python::object obj)
 {
@@ -114,6 +107,25 @@ void PyLBM_Interface::set_rho(boost::python::object obj)
 	rho = (float *)buf;
 }
 
+void PyLBM_Interface::set_omegaMRT(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void * buf = pybuf.buf;
+	fData.omegaMRT = (float *)buf;
+}
+
+void PyLBM_Interface::set_MPIcomm(boost::python::object obj)
+{
+	PyObject* py_obj = obj.ptr();
+	MPI_Comm *comm_p = PyMPIComm_Get(py_obj);
+	comm = *comm_p;
+	MPI_Comm_size(comm,&mpi_size);
+	MPI_Comm_rank(comm,&mpi_rank);
+
+}
+
 void PyLBM_Interface::set_adjacency(boost::python::object obj)
 {
 	PyObject* pobj = obj.ptr();
@@ -141,22 +153,14 @@ void PyLBM_Interface::set_interiorNL(boost::python::object obj)
 	interior_nl = (int *)buf;
 }
 
-void PyLBM_Interface::set_onl(boost::python::object obj)
-{
-	PyObject* pobj = obj.ptr();
-	Py_buffer pybuf;
-	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-	void * buf = pybuf.buf;
-	onl = (int *)buf;
-}
 
-void PyLBM_Interface::set_snl(boost::python::object obj)
+void PyLBM_Interface::set_ndT(boost::python::object obj)
 {
 	PyObject* pobj = obj.ptr();
 	Py_buffer pybuf;
 	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
 	void * buf = pybuf.buf;
-	snl = (int *)buf;
+	ndT = (int *)buf;
 }
 
 void PyLBM_Interface::getHaloInPointers(boost::python::object nd,
@@ -232,23 +236,15 @@ void PyLBM_Interface::computeFout(LBM_DataHandler & fData)
 
 void PyLBM_Interface::set_ndType(const int nd, LBM_DataHandler& fData)
 {
-	fData.nodeType = 0;
-	if(snl[nd]==1)
-	{
-		fData.nodeType=1;
-	}else if(inl[nd]==1)
-	{
-		fData.nodeType=2;
-	}else if(onl[nd]==1)
-	{
-		fData.nodeType=3;
-	}
+
+	fData.nodeType = ndT[nd];
 
 }
 
 void PyLBM_Interface::set_Ubc(const float u)
 {
 	fData.u_bc = u;
+	u_bc = u;
 }
 
 void PyLBM_Interface::set_rhoBC(const float rho)
@@ -259,6 +255,16 @@ void PyLBM_Interface::set_rhoBC(const float rho)
 void PyLBM_Interface::set_omega(const float o)
 {
 	fData.omega = o;
+}
+void PyLBM_Interface::set_dynamics(const int d)
+{
+	fData.dynamics = d;
+
+}
+
+void PyLBM_Interface::set_Cs(const float cs)
+{
+	fData.Cs = cs;
 }
 
 void PyLBM_Interface::set_bnlSZ(int sz)
@@ -291,6 +297,7 @@ void PyLBM_Interface::compute_local_data(const bool isEven)
 	float ux_i, uy_i, uz_i,rho_i;
 	float * f;
 	int nd;
+	int ndType;
 	//iterate through the boundary nodes
 	for(int ndId = 0; ndId<bnl_sz; ndId++)
 	{
@@ -300,6 +307,19 @@ void PyLBM_Interface::compute_local_data(const bool isEven)
 		myLattice->computeMacroscopicData(rho_i,ux_i,uy_i,uz_i,f);
 		// insert result into arrays
 		ux[nd] = ux_i; uy[nd]=uy_i; uz[nd]=uz_i; rho[nd]=rho_i;
+		ndType = ndT[nd];
+		switch (ndType)
+		{
+		case 1:
+			ux[nd] = 0; uy[nd] = 0; uz[nd] = 0;
+			break;
+		case 2:
+			ux[nd] = 0; uy[nd] = 0; uz[nd] = u_bc;
+			break;
+		case 5:
+			ux[nd] = 0; uy[nd] = 0; uz[nd] = u_bc;
+		}
+
 	}
 
 	//iterate through the interior nodes
@@ -338,11 +358,14 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 #pragma omp parallel for
 	for(int ndI=0; ndI<ndList_len;ndI++)
 	{
-		LBM_DataHandler fData_l(numSpd);
-                fData_l.u_bc = fData.u_bc;
-                fData_l.rho_bc = fData.rho_bc;
-                fData_l.omega = fData.omega;
-                // get the node number (for the local partition)
+		LBM_DataHandler fData_l(numSpd); // a copy constructor would be cleaner here.
+		fData_l.u_bc = fData.u_bc;
+		fData_l.rho_bc = fData.rho_bc;
+		fData_l.omega = fData.omega;
+		fData_l.dynamics = fData.dynamics;
+		fData_l.Cs = fData.Cs;
+		fData_l.omegaMRT = fData.omegaMRT;
+		// get the node number (for the local partition)
 		int nd = ndList[ndI];
 		// set the node type in fData
 		set_ndType(nd,fData_l);
@@ -354,7 +377,7 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		streamData(fOut,nd,fData_l);
 
 	}
-  
+
 }
 
 
@@ -393,6 +416,7 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(LBM_Interface)
 {
+	if (import_mpi4py() < 0) return; /* needed for mpi4py comm interaction */
 	class_<PyLBM_Interface>("PyLBM_Interface",init<int>())
         		.def("get_numSpd",&PyLBM_Interface::get_numSpd)
         		.def("computeFout",&PyLBM_Interface::computeFout)
@@ -401,9 +425,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_Ubc",&PyLBM_Interface::set_Ubc)
         		.def("set_rhoBC",&PyLBM_Interface::set_rhoBC)
         		.def("set_omega",&PyLBM_Interface::set_omega)
-        		.def("set_inl",&PyLBM_Interface::set_inl)
-        		.def("set_onl",&PyLBM_Interface::set_onl)
-        		.def("set_snl",&PyLBM_Interface::set_snl)
+        		.def("set_ndT",&PyLBM_Interface::set_ndT)
         		.def("set_fEven",&PyLBM_Interface::set_fEven)
         		.def("set_fOdd",&PyLBM_Interface::set_fOdd)
         		.def("set_adjacency",&PyLBM_Interface::set_adjacency)
@@ -423,5 +445,9 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("getHaloInPointers",&PyLBM_Interface::getHaloInPointers)
         		.def("extract_halo_data",&PyLBM_Interface::extract_halo_data)
         		.def("insert_boundary_data",&PyLBM_Interface::insert_boundary_data)
+        		.def("set_dynamics",&PyLBM_Interface::set_dynamics)
+        		.def("set_Cs",&PyLBM_Interface::set_Cs)
+        		.def("set_omegaMRT",&PyLBM_Interface::set_omegaMRT)
+        		.def("set_MPIcomm",&PyLBM_Interface::set_MPIcomm)
         		;
 }
