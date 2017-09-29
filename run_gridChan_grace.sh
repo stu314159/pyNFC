@@ -9,19 +9,20 @@
 # 5 - number of partitions
 # 6 - number of omp threads
 # 7 - pre-process
+# 8 - restart
 
 
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=gridChan.mat
 
-Num_ts=300001
+Num_ts=100001
 ts_rep_freq=500
 Warmup_ts=0
-plot_freq=15000
+plot_freq=10000
 Re=15000
 dt=0.00005
 Cs=10
-Restart_flag=0
+Restart_flag=$8
 
 
 # must re-process if you change:
