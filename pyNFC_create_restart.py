@@ -18,9 +18,10 @@ import sys
 sys.path.insert(1,'.')
 
 import numpy as np
-import argpars
+import argparse
+import h5py
 
-parser = argpars.ArgumentParser(prog="pyNFC_create_restart.py", 
+parser = argparse.ArgumentParser(prog="pyNFC_create_restart.py", 
                                 description="restart file creation script.")
 parser.add_argument('dumpNum',type=int)
 
@@ -28,7 +29,7 @@ parser.add_argument('dumpNum',type=int)
 args = parser.parse_args()
 
 # assign to the variables
-dN = parser.dumpNum
+dN = args.dumpNum
 
 rho_fn = 'density'+str(dN)+'.b_dat'
 ux_fn = 'ux'+str(dN)+'.b_dat'
@@ -53,20 +54,15 @@ uz[order_map] = uz_i
 pressure[order_map] = pressure_i
 
 # write back out to files in correct order
-rx = open('restart_x','w')
-ux.tofile(rx)
-rx.close()
+f = h5py.File('restart.h5')
+# Store velocity data into the velo_group of h5 file
+velo_group = f.create_group("velocity")
+x_velo = velo_group.create_dataset("x",data=ux)
+y_velo = velo_group.create_dataset("y",data=uy)
+z_velo = velo_group.create_dataset("z",data=uz)
 
-ry = open('restart_y','w')
-uy.tofile(ry)
-ry.close()
+# Store velocity data into the velo_group of h5 file
+pres_group = f.create_group("density")
+presmag = pres_group.create_dataset("rho",data=pressure)
 
-rz = open('restart_z','w')
-uz.tofile(rz)
-rz.close()
-
-rd = open('restart_rho','w')
-pressure.tofile(rd)
-rd.close()
-
-
+f.close()

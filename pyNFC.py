@@ -11,6 +11,7 @@ from mpi4py import MPI
 import pyLattice as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
 import LBM_Interface as LB
+import h5py
 
 class NFC_LBM_partition(object):
     """
@@ -594,7 +595,43 @@ class NFC_LBM_partition(object):
             self.fEven[idx,:] = self.rho_lbm * self.w
             self.fOdd[idx,:] = self.rho_lbm * self.w
 
-
+    def load_restart_data(self):
+        """
+         load velocity and density data from restart.h5 and use data
+         to initialize fEven and fOdd arrays.  Note that this is called
+         from pyNFC_run.py and it occurs after construction and initialization
+         of the fEven and fOdd data arrays.
+        """
+        
+        # # allocate numpy arrays to store the local node data
+        # ux_l = np.zeros((self.total_nodes,1),dtype=np.float);
+        # uy_l = np.zeros_like(ux_l);
+        # uz_l = np.zeros_like(ux_l);
+        # rho_l = np.zeros_like(ux_l);
+        
+        # open the restart.h5 file for reading
+        f = h5py.File('restart.h5','r')
+        ux_d = f['velocity/x'];
+        uy_d = f['velocity/y'];
+        uz_d = f['velocity/z'];
+        rho_d = f['density/rho'];
+        
+        for nd in range(self.total_nodes):
+            gNd = self.local_to_global[nd]
+            # ux_l[nd] = ux_d[gNd];
+            # uy_l[nd] = uy_d[gNd];
+            # uz_l[nd] = uz_d[gNd];
+            # rho_l[nd] = rho_d[gNd];
+            u = [ux_d[gNd],uy_d[gNd],uz_d[gNd]]
+            rho = rho_d[gNd];
+            self.fEven[nd,:] = self.lattice.compute_equilibrium([],rho,u);
+            self.fOdd[nd,:] = self.lattice.compute_equilibrium([],rho,u);
+                      
+        # when done, close h5py
+        f.close()
+        
+        # convert ux, uy, uz, rho data into density distribution values
+        # for fEven and fOdd --> load into the arrays.
 
 
 

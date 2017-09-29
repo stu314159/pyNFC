@@ -47,6 +47,12 @@ myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,dynamics,
 
 myPart.write_node_sorting() # should this be done in the constructor?
 
+if Restart_flag == 1:
+    if rank == 0:
+        print "Loading re-start data"
+    myPart.load_restart_data()
+    
+
 # do some time stepping
 #numTs = 10
 #plot_freq = 5;
