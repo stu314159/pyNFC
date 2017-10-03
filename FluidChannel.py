@@ -1005,10 +1005,10 @@ class LidDrivenCavity:
 #        outlet_array = np.zeros(self.nnodes)
 #        outlet_array[list(self.outlet_list)] = 300.
         print "length of lid_list = %d \n"%(len(list(self.lid_list)))
-        lid_array = np.zeros(self.nnodes)
+        lid_array = np.zeros(int(self.nnodes))
         lid_array[list(self.lid_list)] = 700.
 
-        solid_array = np.zeros(self.nnodes)
+        solid_array = np.zeros(int(self.nnodes))
         solid_array[list(self.solid_list)] = 500.
         
         dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
@@ -1160,17 +1160,17 @@ class FluidChannel:
          write node lists to properly formatted VTK files
         """
         print "Creating boundary condition arrays"
-        obst_array = np.zeros(self.nnodes)
+        obst_array = np.zeros(int(self.nnodes))
         obst_array[list(self.obst_list)] = 100.
 
         #print type(self.inlet_list)
-        inlet_array = np.zeros(self.nnodes)
+        inlet_array = np.zeros(int(self.nnodes))
         inlet_array[list(self.inlet_list)] = 200.
 
-        outlet_array = np.zeros(self.nnodes)
+        outlet_array = np.zeros(int(self.nnodes))
         outlet_array[list(self.outlet_list)] = 300.
 
-        solid_array = np.zeros(self.nnodes)
+        solid_array = np.zeros(int(self.nnodes))
         solid_array[list(self.solid_list)] = 500.
         
         dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
