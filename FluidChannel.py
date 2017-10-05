@@ -125,7 +125,7 @@ class GridObst(EmptyChannel):
         
         obst_list = [];
         # get x-center of vertical grids
-        xC_vGrids = np.linspace(xMin,xMax,((xMax-xMin)/xPitch+1));
+        xC_vGrids = np.linspace(xMin+xT/2.,xMax-xT/2.,((xMax-xMin)/xPitch)+1);
         for i in range(len(xC_vGrids)):
             distX = np.abs(x - xC_vGrids[i]);
             distZ = np.abs(z - gridZ);
@@ -136,7 +136,7 @@ class GridObst(EmptyChannel):
         
         
         # get y-center of horizontal grids
-        yC_hGrids = np.linspace(yMin,yMax,((yMax - yMin)/yPitch)+1 );
+        yC_hGrids = np.linspace(yMin+yT/2.,yMax-yT/2.,((yMax - yMin)/yPitch)+1);
         for i in range(len(yC_hGrids)):
             distY = np.abs(y - yC_hGrids[i]);
             distZ = np.abs(z - gridZ);

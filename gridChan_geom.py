@@ -32,8 +32,8 @@ yPitch = 0.0386 # y-pitch of horizontal grids
 
 gridZ = 0.35 # z-location of center of grid structure
 
-hX = 0.20  # x-dimension of the circular hole in the grid
-hY = 0.20  # y-dimension of the circular hole in the grid
+hX = aLx_p/2.  # x-dimension of the circular hole in the grid
+hY = aLy_p/2.  # y-dimension of the circular hole in the grid
 hD = 0.043 # diameter of the circular hole in the grid
 
 gridObst = fc.GridObst(gridZ,xT,yT,zT,xPitch,yPitch,hX,hY,hD);
