@@ -71,6 +71,42 @@ void PyLBM_Interface::set_fOdd(boost::python::object obj)
 	fOdd = (float *)buf;
 }
 
+void PyLBM_Interface::set_uAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	uAvg = (float*)buf;
+}
+
+void PyLBM_Interface::set_vAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	vAvg = (float*)buf;
+}
+
+void PyLBM_Interface::set_wAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	wAvg = (float*)buf;
+}
+
+void PyLBM_Interface::set_rhoAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void buf = pybuf.buf;
+	rhoAvg = (float*)buf;
+}
+
 void PyLBM_Interface::set_ux(boost::python::object obj)
 {
 	PyObject* pobj = obj.ptr();
@@ -439,6 +475,10 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_uy",&PyLBM_Interface::set_uy)
         		.def("set_uz",&PyLBM_Interface::set_uz)
         		.def("set_rho",&PyLBM_Interface::set_rho)
+				.def("set_uAvg",&PyLBM_Interface::set_uAvg)
+				.def("set_vAvg",&PyLBM_Interface::set_vAvg)
+				.def("set_wAvg",&PyLBM_Interface::set_wAvg)
+				.def("set_rhoAvg",&PyLBM_Interface::set_rhoAvg)
         		.def("compute_local_data",&PyLBM_Interface::compute_local_data)
         		.def("registerNeighbor",&PyLBM_Interface::registerNeighbor)
         		.def("getHaloOutPointers",&PyLBM_Interface::getHaloOutPointers)

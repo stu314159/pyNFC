@@ -52,7 +52,9 @@ if Restart_flag == 1:
     if rank == 0:
         print "Loading re-start data"
     myPart.load_restart_data()
-    
+
+if TimeAvg_flag == 1:
+    myPart.initialize_timeAvg()    
 
 # do some time stepping
 #numTs = 10

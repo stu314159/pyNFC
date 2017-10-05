@@ -53,6 +53,10 @@ myPart.write_node_sorting() # should this be done in the constructor?
 if Restart_flag == 1:
     myPart.load_restart_data()
     
+if TimeAvg_flag == 1:
+    myPart.initialize_timeAvg()
+
+    
 # do some time stepping
 #numTs = 10
 #plot_freq = 5;

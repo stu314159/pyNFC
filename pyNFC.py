@@ -40,6 +40,7 @@ class NFC_LBM_partition(object):
 
         self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
         self.dynamics = dynamics;
+        self.timeAvg = False
 
         
         
@@ -115,7 +116,27 @@ class NFC_LBM_partition(object):
         self.vtk_suffix = '.b_dat'
 
 
-
+    def initialize_timeAvg(self):
+        """
+        if time-averaging is requested, set boolean specifying time averaging
+        and allocate data arrays to hold time-average data.
+        
+        Pointers to the data array need to be passed to the PyLBM_Interface object
+        """
+        self.timeAvg = True
+        
+        self.uAvg = np.zeros([self.num_local_nodes],dtype=np.float);
+        self.vAvg = np.zeros_like(self.uAvg)
+        self.wAvg = np.zeros_like(self.vAvg)
+        self.rhoAvg = np.zeros_like(self.wAvg)
+        
+        # pass pointers to PyLBM_Interface object
+        self.myLB.set_uAvg(self.uAvg);
+        self.myLB.set_vAvg(self.vAvg);
+        self.myLB.set_wAvg(self.wAvg);
+        self.myLB.set_rhoAvg(self.rhoAvg);
+        
+        
     def take_LBM_timestep(self,isEven):
         """
           carry out the LBM process for a time step.  Orchestrate processing of all
