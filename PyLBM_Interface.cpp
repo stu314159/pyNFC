@@ -103,7 +103,7 @@ void PyLBM_Interface::set_rhoAvg(boost::python::object obj)
 	PyObject* pobj = obj.ptr();
 	Py_buffer pybuf;
 	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
-	void buf = pybuf.buf;
+	void* buf = pybuf.buf;
 	rhoAvg = (float*)buf;
 }
 
