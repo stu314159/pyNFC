@@ -9,6 +9,8 @@
 # 5 - number of partitions
 # 6 - number of omp threads
 # 7 - pre-process
+# 8 - restart
+# 9 - time average
 
 
 # saves mat file named ChanCavityTest.mat
@@ -21,7 +23,8 @@ plot_freq=5000
 Re=150
 dt=0.004
 Cs=1
-Restart_flag=0
+Restart_flag=$8
+TimeAvg_flag=$9
 
 if [ "$7" = "1" ]; then
 aprun -n 1 ./wmb_geom.py $1
@@ -44,7 +47,8 @@ echo "pre-processing skipped, commencing time steps"
 fi
 
 aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
-$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
+$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
+$TimeAvg_flag
 
 module unload mpi4py
 export OMP_NUM_THREADS=$6
