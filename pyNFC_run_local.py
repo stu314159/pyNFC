@@ -31,6 +31,7 @@ Nx = int(input_data.readline())
 Ny = int(input_data.readline())
 Nz = int(input_data.readline())
 Restart_flag = int(input_data.readline())
+TimeAvg_flag = int(input_data.readline())
 Lx_p = float(input_data.readline())
 Ly_p = float(input_data.readline())
 Lz_p = float(input_data.readline())
@@ -51,7 +52,9 @@ if Restart_flag == 1:
     if rank == 0:
         print "Loading re-start data"
     myPart.load_restart_data()
-    
+
+if TimeAvg_flag == 1:
+    myPart.initialize_timeAvg()    
 
 # do some time stepping
 #numTs = 10
