@@ -86,4 +86,4 @@ if rank == 0:
     print "approximate LPU/sec = %g " % LPUs
     
 if TimeAvg_flag == 1:
-    myPart.write_timeAvg(Num_ts);
+    myPart.write_timeAvg();

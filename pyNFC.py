@@ -125,10 +125,12 @@ class NFC_LBM_partition(object):
         """
         self.timeAvg = True
         
-        self.uAvg = np.zeros([self.num_local_nodes],dtype=np.float);
-        self.vAvg = np.zeros_like(self.uAvg)
-        self.wAvg = np.zeros_like(self.vAvg)
-        self.rhoAvg = np.zeros_like(self.wAvg)
+        print "rank %g num_local_nodes = %d"%(self.rank,self.num_local_nodes)
+        
+        self.uAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        self.vAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        self.wAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        self.rhoAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
         
         # pass pointers to PyLBM_Interface object
         self.myLB.set_uAvg(self.uAvg);
@@ -137,7 +139,7 @@ class NFC_LBM_partition(object):
         self.myLB.set_rhoAvg(self.rhoAvg);
         self.myLB.set_timeAvg(True);
         
-    def write_timeAvg(self,NumTs):
+    def write_timeAvg(self):
         """
         when the simulation is done:
         a) divide all time average data by the number of time steps; and
@@ -145,13 +147,13 @@ class NFC_LBM_partition(object):
         
         """
         
-        self.uAvg/=float(NumTs);
-        self.vAvg/=float(NumTs);
-        self.wAvg/=float(NumTs);
-        self.rhoAvg/=float(NumTs);
+        # self.uAvg/=float(NumTs);
+        # self.vAvg/=float(NumTs);
+        # self.wAvg/=float(NumTs);
+        # self.rhoAvg/=float(NumTs);
         
         # self.offset_bytes is the number of bytes offset
-
+        
         # file mode
         amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
 
@@ -161,24 +163,25 @@ class NFC_LBM_partition(object):
         uz_fn = 'wAvg.b_dat'
         rho_fn = 'rhoAvg.b_dat'
         
+                       
         # write uAvg
         fh = MPI.File.Open(self.comm,ux_fn,amode)
-        fh.Write_at_all(self.offset_bytes,ux)
+        fh.Write_at_all(self.offset_bytes,self.uAvg[:self.num_local_nodes])
         fh.Close()
 
         # write vAvg
         fh = MPI.File.Open(self.comm,uy_fn,amode)
-        fh.Write_at_all(self.offset_bytes,uy)
+        fh.Write_at_all(self.offset_bytes,self.vAvg[:self.num_local_nodes])
         fh.Close()
 
         # write wAvg
         fh = MPI.File.Open(self.comm,uz_fn,amode)
-        fh.Write_at_all(self.offset_bytes,uz)
+        fh.Write_at_all(self.offset_bytes,self.wAvg[:self.num_local_nodes])
         fh.Close()
 
         # write rhoAvg
         fh = MPI.File.Open(self.comm,rho_fn,amode)
-        fh.Write_at_all(self.offset_bytes,rho)
+        fh.Write_at_all(self.offset_bytes,self.rhoAvg[:self.num_local_nodes])
         fh.Close()
         
     def take_LBM_timestep(self,isEven):

@@ -418,6 +418,13 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		// if I am time-averaging data, now would be a good time
 		// to take the macroscopic velocity and density from fData_l
 		// to store in my time-average arrays.
+		if (timeAvg)
+		{
+			uAvg[nd]+=fData_l.ux;
+			vAvg[nd]+=fData_l.uy;
+			wAvg[nd]+=fData_l.uz;
+			rhoAvg[nd]+=fData_l.rho;
+		}
 
 
 		// stream data to fOut array
