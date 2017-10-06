@@ -62,7 +62,7 @@ ZZ = np.reshape(Z,numEl)
 dx = x[1] - x[0]
 
 # compute the number of data dumps I expect to process
-nDumps = (Num_ts-Warmup_ts)/plot_freq + 1
+nDumps = (Num_ts-Warmup_ts)/plot_freq 
 
 order_map = np.fromfile('ordering.b_dat',dtype=np.int32).astype(np.int32)
 
