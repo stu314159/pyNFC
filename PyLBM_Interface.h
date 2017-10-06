@@ -48,6 +48,7 @@ public:
 	void set_omega(const float o);
 	void set_dynamics(const int d);
 	void set_Cs(const float cs);
+	void set_timeAvg(const bool b);
 	void set_omegaMRT(boost::python::object obj);
 	void set_totalNodes(const int tn);
 	void set_MPIcomm(boost::python::object obj);
@@ -99,6 +100,7 @@ private:
 	float * vAvg;
 	float * wAvg;
 	float * rhoAvg;
+	bool timeAvg;
 
 
 };

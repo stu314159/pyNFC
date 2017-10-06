@@ -135,7 +135,51 @@ class NFC_LBM_partition(object):
         self.myLB.set_vAvg(self.vAvg);
         self.myLB.set_wAvg(self.wAvg);
         self.myLB.set_rhoAvg(self.rhoAvg);
+        self.myLB.set_timeAvg(True);
         
+    def write_timeAvg(self,NumTs):
+        """
+        when the simulation is done:
+        a) divide all time average data by the number of time steps; and
+        b) write the local data to disk in appropriately-named data files.
+        
+        """
+        
+        self.uAvg/=float(NumTs);
+        self.vAvg/=float(NumTs);
+        self.wAvg/=float(NumTs);
+        self.rhoAvg/=float(NumTs);
+        
+        # self.offset_bytes is the number of bytes offset
+
+        # file mode
+        amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
+
+        # create file names
+        ux_fn = 'uAvg.b_dat'
+        uy_fn = 'vAvg.b_dat'
+        uz_fn = 'wAvg.b_dat'
+        rho_fn = 'rhoAvg.b_dat'
+        
+        # write uAvg
+        fh = MPI.File.Open(self.comm,ux_fn,amode)
+        fh.Write_at_all(self.offset_bytes,ux)
+        fh.Close()
+
+        # write vAvg
+        fh = MPI.File.Open(self.comm,uy_fn,amode)
+        fh.Write_at_all(self.offset_bytes,uy)
+        fh.Close()
+
+        # write wAvg
+        fh = MPI.File.Open(self.comm,uz_fn,amode)
+        fh.Write_at_all(self.offset_bytes,uz)
+        fh.Close()
+
+        # write rhoAvg
+        fh = MPI.File.Open(self.comm,rho_fn,amode)
+        fh.Write_at_all(self.offset_bytes,rho)
+        fh.Close()
         
     def take_LBM_timestep(self,isEven):
         """

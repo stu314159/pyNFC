@@ -81,3 +81,6 @@ if rank == 0:
     numLP = Nx*Ny*Nz
     LPUs = numLP*Num_ts/(ex_time)
     print "approximate LPU/sec = %g " % LPUs
+
+if TimeAvg_flag == 1:
+    myPart.write_timeAvg(Num_ts);

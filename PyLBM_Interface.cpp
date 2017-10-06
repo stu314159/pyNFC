@@ -298,6 +298,11 @@ void PyLBM_Interface::set_dynamics(const int d)
 
 }
 
+void PyLBM_Interface::set_timeAvg(const bool b)
+{
+	timeAvg = b;
+}
+
 void PyLBM_Interface::set_Cs(const float cs)
 {
 	fData.Cs = cs;
@@ -409,6 +414,12 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		set_fIn(fIn,nd,fData_l);
 		// compute fOut
 		computeFout(fData_l); // passes fData to the appropriate lattice function and gets fOut
+
+		// if I am time-averaging data, now would be a good time
+		// to take the macroscopic velocity and density from fData_l
+		// to store in my time-average arrays.
+
+
 		// stream data to fOut array
 		streamData(fOut,nd,fData_l);
 
@@ -479,6 +490,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
 				.def("set_vAvg",&PyLBM_Interface::set_vAvg)
 				.def("set_wAvg",&PyLBM_Interface::set_wAvg)
 				.def("set_rhoAvg",&PyLBM_Interface::set_rhoAvg)
+				.def("set_timeAvg",&PyLBM_Interface::set_timeAvg)
         		.def("compute_local_data",&PyLBM_Interface::compute_local_data)
         		.def("registerNeighbor",&PyLBM_Interface::registerNeighbor)
         		.def("getHaloOutPointers",&PyLBM_Interface::getHaloOutPointers)
