@@ -25,7 +25,7 @@ def writeH5(pressure,u,v,w,velmag,filename):
 
   f.close()
 
-def writeXdmf(dims,dx,filename,i):
+def writeXdmf(dims,dx,filename,h5_file):
   """
   Write the xmf file, that describes the hdf5 data, to be read by Paraview.
   filename = string with the desired filename
@@ -54,26 +54,31 @@ def writeXdmf(dims,dx,filename,i):
   f.write('<Attribute Name="velocity" AttributeType="Vector" Center="Node">\n')
   f.write('<DataItem ItemType="Function" Function="JOIN($0, $1, $2)" Dimensions="%d %d %d 3">\n'%(dims[0],dims[1],dims[2]))
   f.write('<DataItem Dimensions="%d %d %d" NumberType="Float" Format="HDF">\n'%(dims[0],dims[1],dims[2]))
-  f.write('out'+str(i)+'.h5:/velo_group/x_velo\n')
+  #f.write('out'+str(i)+'.h5:/velo_group/x_velo\n')
+  f.write('%s:/velo_group/x_velo\n'%h5_file)
   f.write('</DataItem>\n')
   f.write('<DataItem Dimensions="%d %d %d" NumberType="Float" Format="HDF">\n'%(dims[0],dims[1],dims[2]))
-  f.write('out'+str(i)+'.h5:/velo_group/y_velo\n')
+  #f.write('out'+str(i)+'.h5:/velo_group/y_velo\n')
+  f.write('%s:/velo_group/y_velo\n'%h5_file)
   f.write('</DataItem>\n')
   f.write('<DataItem Dimensions="%d %d %d" NumberType="Float" Format="HDF">\n'%(dims[0],dims[1],dims[2]))
-  f.write('out'+str(i)+'.h5:/velo_group/z_velo\n')
+  #f.write('out'+str(i)+'.h5:/velo_group/z_velo\n')
+  f.write('%s:/velo_group/z_velo\n'%h5_file)
   f.write('</DataItem>\n')
   f.write('</DataItem>\n')
   f.write('</Attribute>\n')
 
   f.write('<Attribute Name="pressure" AttributeType="Scalar" Center="Node">\n')
   f.write('<DataItem Dimensions="%d %d %d" NumberType="Float" Format="HDF">\n'%(dims[0],dims[1],dims[2]))
-  f.write('out'+str(i)+'.h5:/pres_group/presmag\n')
+  #f.write('out'+str(i)+'.h5:/pres_group/presmag\n')
+  f.write('%s:/pres_group/presmag\n'%h5_file)
   f.write('</DataItem>\n')
   f.write('</Attribute>\n')
 
   f.write('<Attribute Name="velocityMagnitude" AttributeType="Scalar" Center="Node">\n')
   f.write('<DataItem Dimensions="%d %d %d" NumberType="Float" Format="HDF">\n'%(dims[0],dims[1],dims[2]))
-  f.write('out'+str(i)+'.h5:/velo_group/velmag\n')
+  #f.write('out'+str(i)+'.h5:/velo_group/velmag\n')
+  f.write('%s:/velo_group/velmag\n'%h5_file)
   f.write('</DataItem>\n')
   f.write('</Attribute>\n')
 

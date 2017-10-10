@@ -113,7 +113,7 @@ for i in range(nDumps):
   h5_file = 'out'+str(i)+'.h5'
   xmf_file = 'data'+str(i)+'.xmf'
   writeH5(pressure,ux,uy,uz,velmag,h5_file)
-  writeXdmf(dims,dx,xmf_file,i)
+  writeXdmf(dims,dx,xmf_file,h5_file)
 
 if TimeAvg_flag == 1:
   """
@@ -167,4 +167,4 @@ if TimeAvg_flag == 1:
   h5_file = 'timeAvg.h5'
   xmf_file = 'timeAvg.xmf'
   writeH5(pressure,ux,uy,uz,velmag,h5_file)
-  writeXdmf(dims,dx,xmf_file,i)
+  writeXdmf(dims,dx,xmf_file,h5_file)

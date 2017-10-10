@@ -124,9 +124,7 @@ class NFC_LBM_partition(object):
         Pointers to the data array need to be passed to the PyLBM_Interface object
         """
         self.timeAvg = True
-        
-        print "rank %g num_local_nodes = %d"%(self.rank,self.num_local_nodes)
-        
+                     
         self.uAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
         self.vAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
         self.wAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
@@ -147,6 +145,7 @@ class NFC_LBM_partition(object):
         
         """
         
+                
         # self.uAvg/=float(NumTs);
         # self.vAvg/=float(NumTs);
         # self.wAvg/=float(NumTs);
