@@ -9,9 +9,9 @@ Dependencies:
 2. SciPy
 3. MPI4Py
 4. Boost.Python
+5. h5py 
 
 (Optional)
-5. h5py
 6. pymetis
 
 Allows for LBM simulation of fluid flows.  Bulk dynamics include: LBGK, RBGK, and MRT.  Lattice Options: D3Q15, D3Q19, and D3Q27 (as of now, no MRT for D3Q27).  Single parameter turbulence model implemented for LBGK and RBGK.  Regularized velocity and pressure boundary conditions implemented for all lattices on the west (Z-min) and east (Z-max) boundaries respectively.  Boundary conditions also included for a simple moving boundary (only in the z-direction) and, of course, solid boundaries.
