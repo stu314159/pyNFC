@@ -71,6 +71,42 @@ void PyLBM_Interface::set_fOdd(boost::python::object obj)
 	fOdd = (float *)buf;
 }
 
+void PyLBM_Interface::set_uAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	uAvg = (float*)buf;
+}
+
+void PyLBM_Interface::set_vAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	vAvg = (float*)buf;
+}
+
+void PyLBM_Interface::set_wAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	wAvg = (float*)buf;
+}
+
+void PyLBM_Interface::set_rhoAvg(boost::python::object obj)
+{
+	PyObject* pobj = obj.ptr();
+	Py_buffer pybuf;
+	PyObject_GetBuffer(pobj,&pybuf,PyBUF_SIMPLE);
+	void* buf = pybuf.buf;
+	rhoAvg = (float*)buf;
+}
+
 void PyLBM_Interface::set_ux(boost::python::object obj)
 {
 	PyObject* pobj = obj.ptr();
@@ -262,6 +298,11 @@ void PyLBM_Interface::set_dynamics(const int d)
 
 }
 
+void PyLBM_Interface::set_timeAvg(const bool b)
+{
+	timeAvg = b;
+}
+
 void PyLBM_Interface::set_Cs(const float cs)
 {
 	fData.Cs = cs;
@@ -373,6 +414,19 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		set_fIn(fIn,nd,fData_l);
 		// compute fOut
 		computeFout(fData_l); // passes fData to the appropriate lattice function and gets fOut
+
+		// if I am time-averaging data, now would be a good time
+		// to take the macroscopic velocity and density from fData_l
+		// to store in my time-average arrays.
+		if (timeAvg)
+		{
+			uAvg[nd]+=fData_l.ux;
+			vAvg[nd]+=fData_l.uy;
+			wAvg[nd]+=fData_l.uz;
+			rhoAvg[nd]+=fData_l.rho;
+		}
+
+
 		// stream data to fOut array
 		streamData(fOut,nd,fData_l);
 
@@ -439,6 +493,11 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_uy",&PyLBM_Interface::set_uy)
         		.def("set_uz",&PyLBM_Interface::set_uz)
         		.def("set_rho",&PyLBM_Interface::set_rho)
+				.def("set_uAvg",&PyLBM_Interface::set_uAvg)
+				.def("set_vAvg",&PyLBM_Interface::set_vAvg)
+				.def("set_wAvg",&PyLBM_Interface::set_wAvg)
+				.def("set_rhoAvg",&PyLBM_Interface::set_rhoAvg)
+				.def("set_timeAvg",&PyLBM_Interface::set_timeAvg)
         		.def("compute_local_data",&PyLBM_Interface::compute_local_data)
         		.def("registerNeighbor",&PyLBM_Interface::registerNeighbor)
         		.def("getHaloOutPointers",&PyLBM_Interface::getHaloOutPointers)

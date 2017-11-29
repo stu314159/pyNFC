@@ -16,15 +16,16 @@
 MAT_FILE=wall_mounted_brick.mat
 
 
-Num_ts=501
+Num_ts=1001
 ts_rep_freq=50
 Warmup_ts=0
-plot_freq=100
+plot_freq=250
 
 Re=25
 dt=0.01
 Cs=0
 Restart_flag=0
+TimeAvg_flag=1
 
 # must re-process if you change:
 # N_divs, partition methodology, or the number of partitions.
@@ -45,7 +46,8 @@ fi
 
 # basically, pyNFC_preprocess.py just writes params.lbm now.
 python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
-$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
+$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
+$TimeAvg_flag
 
 export OMP_NUM_THREADS=$6
 #aprun -n $5 -d $6  ./pyNFC_run.py

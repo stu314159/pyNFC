@@ -31,6 +31,7 @@ Nx = int(input_data.readline())
 Ny = int(input_data.readline())
 Nz = int(input_data.readline())
 Restart_flag = int(input_data.readline())
+TimeAvg_flag = int(input_data.readline())
 Lx_p = float(input_data.readline())
 Ly_p = float(input_data.readline())
 Lz_p = float(input_data.readline())
@@ -47,6 +48,14 @@ myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,dynamics,
 
 myPart.write_node_sorting() # should this be done in the constructor?
 
+if Restart_flag == 1:
+    if rank == 0:
+        print "Loading re-start data"
+    myPart.load_restart_data()
+
+if TimeAvg_flag == 1:
+    myPart.initialize_timeAvg()    
+
 # do some time stepping
 #numTs = 10
 #plot_freq = 5;
@@ -61,7 +70,7 @@ for ts in range(Num_ts):
     isEven = (ts%2 == 0)
     myPart.take_LBM_timestep(isEven)
 
-    if ((ts % plot_freq == 0)):
+    if ((ts % plot_freq == 0) and (ts > Warmup_ts)):
         myPart.write_data(isEven)
     
 
@@ -72,3 +81,6 @@ if rank == 0:
     numLP = Nx*Ny*Nz
     LPUs = numLP*Num_ts/(ex_time)
     print "approximate LPU/sec = %g " % LPUs
+
+if TimeAvg_flag == 1:
+    myPart.write_timeAvg();

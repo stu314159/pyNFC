@@ -35,6 +35,12 @@ public:
 	void set_inlSZ(int sz);
 	void set_interiorNL(boost::python::object obj);
 
+	// time average data arrays
+	void set_uAvg(boost::python::object obj);
+	void set_vAvg(boost::python::object obj);
+	void set_wAvg(boost::python::object obj);
+	void set_rhoAvg(boost::python::object obj);
+
 	void set_ndT(boost::python::object obj);
 	void set_ndType(const int nt,LBM_DataHandler& f);
 	void set_Ubc(const float u);
@@ -42,6 +48,7 @@ public:
 	void set_omega(const float o);
 	void set_dynamics(const int d);
 	void set_Cs(const float cs);
+	void set_timeAvg(const bool b);
 	void set_omegaMRT(boost::python::object obj);
 	void set_totalNodes(const int tn);
 	void set_MPIcomm(boost::python::object obj);
@@ -89,7 +96,11 @@ private:
 	float * uz;
 	float * rho;
 
-
+	float * uAvg;
+	float * vAvg;
+	float * wAvg;
+	float * rhoAvg;
+	bool timeAvg;
 
 
 };

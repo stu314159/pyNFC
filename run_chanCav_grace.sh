@@ -9,19 +9,22 @@
 # 5 - number of partitions
 # 6 - number of omp threads
 # 7 - pre-process
+# 8 - restart
+# 9 - time average
 
 
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=ChanCavityTest.mat
 
-Num_ts=250001
+Num_ts=50001
 ts_rep_freq=1000
 Warmup_ts=0
 plot_freq=10000
 Re=30000
 dt=0.00005
 Cs=20
-Restart_flag=0
+Restart_flag=$8
+TimeAvg_flag=$9
 
 
 # must re-process if you change:
@@ -44,7 +47,8 @@ fi
 
 # basically, pyNFC_preprocess.py just writes params.lbm now.
 aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
-$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag
+$Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
+$TimeAvg_flag
 
 module unload mpi4py
 

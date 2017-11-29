@@ -8,6 +8,74 @@ import numpy as np
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
 import scipy.io
 
+
+class LatticeSubset(object):
+    """
+    object that will represent a subset of lattice points.
+    
+    A fluid channel may have lattice subsets.  Each lattice
+    subset will be responsible for identifying its members
+    and providing facilities for them.  These facilities
+    can be specialized in derived classes.
+    """
+    def __init__(self):
+        """
+        
+        """
+        
+    def get_members(self,X,Y,Z):
+        """
+        given X,Y, and Z coordinates of a lattice
+        return the indices of lattice points
+        that are a member of the subset.
+        """
+        
+        return []
+
+
+class YZ_Slice(LatticeSubset):
+    """
+    subset of a lattice comprising a 2D slice in the YZ plane
+    
+    """
+    
+    def __init__(self,Xo,Ymin,Ymax,Zmin,Zmax):
+        """
+        pass in X-position and YZ bounds for slice
+        """
+        super(YZ_Slice,self).__init__();
+        self.Xo = Xo
+        self.Ymin = Ymin;
+        self.Ymax = Ymax;
+        self.Zmin = Zmin;
+        self.Zmax = Zmax;
+        
+    def get_members(self,X,Y,Z):
+        """
+        return indices of lattice points that are within dx/2 of specified YZ plane
+        """
+        x = np.array(X);
+        y = np.array(Y);
+        z = np.array(Z);
+        
+        # get lattice spacing.
+        xVals = np.unique(x); #sorted unique values
+        dx = xVals[1] - xVals[0]; #difference between two sorted unique values
+        
+        obst = np.where(y >= self.Ymin);
+        obst = np.intersect1d(obst[:],np.where(y<=self.Ymax));
+        obst = np.intersect1d(obst[:],np.where(z>=self.Zmin));
+        obst = np.intersect1d(obst[:],np.where(z<=self.Zmax));
+        obst = np.intersect1d(obst[:],np.where(x>=(self.Xo - dx/2.)));
+        obst = np.intersect1d(obst[:],np.where(x<=(self.Xo+dx/2.)));
+        
+        obst = obst.astype(np.int)
+        return obst[:]
+        
+    
+
+
+
 class EmptyChannel:  
     """
      a channel with nothing in it
@@ -125,7 +193,7 @@ class GridObst(EmptyChannel):
         
         obst_list = [];
         # get x-center of vertical grids
-        xC_vGrids = np.linspace(xMin,xMax,((xMax-xMin)/xPitch+1));
+        xC_vGrids = np.linspace(xMin+xT/2.,xMax-xT/2.,((xMax-xMin)/xPitch)+1);
         for i in range(len(xC_vGrids)):
             distX = np.abs(x - xC_vGrids[i]);
             distZ = np.abs(z - gridZ);
@@ -136,7 +204,7 @@ class GridObst(EmptyChannel):
         
         
         # get y-center of horizontal grids
-        yC_hGrids = np.linspace(yMin,yMax,((yMax - yMin)/yPitch)+1 );
+        yC_hGrids = np.linspace(yMin+yT/2.,yMax-yT/2.,((yMax - yMin)/yPitch)+1);
         for i in range(len(yC_hGrids)):
             distY = np.abs(y - yC_hGrids[i]);
             distZ = np.abs(z - gridZ);
@@ -1005,10 +1073,10 @@ class LidDrivenCavity:
 #        outlet_array = np.zeros(self.nnodes)
 #        outlet_array[list(self.outlet_list)] = 300.
         print "length of lid_list = %d \n"%(len(list(self.lid_list)))
-        lid_array = np.zeros(self.nnodes)
+        lid_array = np.zeros(int(self.nnodes))
         lid_array[list(self.lid_list)] = 700.
 
-        solid_array = np.zeros(self.nnodes)
+        solid_array = np.zeros(int(self.nnodes))
         solid_array[list(self.solid_list)] = 500.
         
         dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
@@ -1041,6 +1109,8 @@ class FluidChannel:
         self.N_divs = N_divs
         self.fluid = fluid
         self.obst = obst
+        
+        self.subsetList = []; # make a list of subsets visible in the class interface.
         
 
         # generate the geometry
@@ -1129,6 +1199,13 @@ class FluidChannel:
 
         scipy.io.savemat(geom_filename,mat_dict)
 
+    def add_subset(self,ss):
+        """
+        add a subset object to the list of subsets associated with this fluid channel
+        
+        """
+        self.subsetList.append(ss);
+    
     def set_pRef_indx(self,Xref,Yref,Zref):
         """
         find the node index within the fluid channel that can
@@ -1160,17 +1237,17 @@ class FluidChannel:
          write node lists to properly formatted VTK files
         """
         print "Creating boundary condition arrays"
-        obst_array = np.zeros(self.nnodes)
+        obst_array = np.zeros(int(self.nnodes))
         obst_array[list(self.obst_list)] = 100.
 
         #print type(self.inlet_list)
-        inlet_array = np.zeros(self.nnodes)
+        inlet_array = np.zeros(int(self.nnodes))
         inlet_array[list(self.inlet_list)] = 200.
 
-        outlet_array = np.zeros(self.nnodes)
+        outlet_array = np.zeros(int(self.nnodes))
         outlet_array[list(self.outlet_list)] = 300.
 
-        solid_array = np.zeros(self.nnodes)
+        solid_array = np.zeros(int(self.nnodes))
         solid_array[list(self.solid_list)] = 500.
         
         dims = [int(self.Nx), int(self.Ny), int(self.Nz)]
@@ -1183,6 +1260,21 @@ class FluidChannel:
         writeVTK(outlet_array,'outlet','outlet.vtk',dims,origin,spacing)
         writeVTK(obst_array,'obst','obst.vtk',dims,origin,spacing)
         writeVTK(solid_array,'solid','solid.vtk',dims,origin,spacing)
+        
+        if len(self.subsetList) > 0:
+            print "Writing subset lists to VTK files"
+            
+            ss_idx = 0;
+            for ss in self.subsetList:
+                print 'Writing subset %d to file'%ss_idx
+                ssNodes = ss.get_members(self.x[:],self.y[:],self.z[:])
+                ss_array = np.zeros(int(self.nnodes))
+                ss_array[list(ssNodes)] = ss_idx*1000. + 1000.
+                ssName = 'subSpace'+str(ss_idx)
+                ssFile = ssName+'.vtk'
+                writeVTK(ss_array,ssName,ssFile,dims,origin,spacing)
+                ss_idx+=1
+            
 
 
      # must have geometry set first

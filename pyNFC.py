@@ -11,6 +11,7 @@ from mpi4py import MPI
 import pyLattice as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
 import LBM_Interface as LB
+import h5py
 
 class NFC_LBM_partition(object):
     """
@@ -39,6 +40,7 @@ class NFC_LBM_partition(object):
 
         self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
         self.dynamics = dynamics;
+        self.timeAvg = False
 
         
         
@@ -114,7 +116,73 @@ class NFC_LBM_partition(object):
         self.vtk_suffix = '.b_dat'
 
 
+    def initialize_timeAvg(self):
+        """
+        if time-averaging is requested, set boolean specifying time averaging
+        and allocate data arrays to hold time-average data.
+        
+        Pointers to the data array need to be passed to the PyLBM_Interface object
+        """
+        self.timeAvg = True
+                     
+        self.uAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        self.vAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        self.wAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        self.rhoAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
+        
+        # pass pointers to PyLBM_Interface object
+        self.myLB.set_uAvg(self.uAvg);
+        self.myLB.set_vAvg(self.vAvg);
+        self.myLB.set_wAvg(self.wAvg);
+        self.myLB.set_rhoAvg(self.rhoAvg);
+        self.myLB.set_timeAvg(True);
+        
+    def write_timeAvg(self):
+        """
+        when the simulation is done:
+        a) divide all time average data by the number of time steps; and
+        b) write the local data to disk in appropriately-named data files.
+        
+        """
+        
+                
+        # self.uAvg/=float(NumTs);
+        # self.vAvg/=float(NumTs);
+        # self.wAvg/=float(NumTs);
+        # self.rhoAvg/=float(NumTs);
+        
+        # self.offset_bytes is the number of bytes offset
+        
+        # file mode
+        amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
 
+        # create file names
+        ux_fn = 'uAvg.b_dat'
+        uy_fn = 'vAvg.b_dat'
+        uz_fn = 'wAvg.b_dat'
+        rho_fn = 'rhoAvg.b_dat'
+        
+                       
+        # write uAvg
+        fh = MPI.File.Open(self.comm,ux_fn,amode)
+        fh.Write_at_all(self.offset_bytes,self.uAvg[:self.num_local_nodes])
+        fh.Close()
+
+        # write vAvg
+        fh = MPI.File.Open(self.comm,uy_fn,amode)
+        fh.Write_at_all(self.offset_bytes,self.vAvg[:self.num_local_nodes])
+        fh.Close()
+
+        # write wAvg
+        fh = MPI.File.Open(self.comm,uz_fn,amode)
+        fh.Write_at_all(self.offset_bytes,self.wAvg[:self.num_local_nodes])
+        fh.Close()
+
+        # write rhoAvg
+        fh = MPI.File.Open(self.comm,rho_fn,amode)
+        fh.Write_at_all(self.offset_bytes,self.rhoAvg[:self.num_local_nodes])
+        fh.Close()
+        
     def take_LBM_timestep(self,isEven):
         """
           carry out the LBM process for a time step.  Orchestrate processing of all
@@ -594,7 +662,43 @@ class NFC_LBM_partition(object):
             self.fEven[idx,:] = self.rho_lbm * self.w
             self.fOdd[idx,:] = self.rho_lbm * self.w
 
-
+    def load_restart_data(self):
+        """
+         load velocity and density data from restart.h5 and use data
+         to initialize fEven and fOdd arrays.  Note that this is called
+         from pyNFC_run.py and it occurs after construction and initialization
+         of the fEven and fOdd data arrays.
+        """
+        
+        # # allocate numpy arrays to store the local node data
+        # ux_l = np.zeros((self.total_nodes,1),dtype=np.float);
+        # uy_l = np.zeros_like(ux_l);
+        # uz_l = np.zeros_like(ux_l);
+        # rho_l = np.zeros_like(ux_l);
+        
+        # open the restart.h5 file for reading
+        f = h5py.File('restart.h5','r')
+        ux_d = f['velocity/x'];
+        uy_d = f['velocity/y'];
+        uz_d = f['velocity/z'];
+        rho_d = f['density/rho'];
+        
+        for nd in range(self.total_nodes):
+            gNd = self.local_to_global[nd]
+            # ux_l[nd] = ux_d[gNd];
+            # uy_l[nd] = uy_d[gNd];
+            # uz_l[nd] = uz_d[gNd];
+            # rho_l[nd] = rho_d[gNd];
+            u = [ux_d[gNd],uy_d[gNd],uz_d[gNd]]
+            rho = rho_d[gNd];
+            self.fEven[nd,:] = self.lattice.compute_equilibrium([],rho,u);
+            self.fOdd[nd,:] = self.lattice.compute_equilibrium([],rho,u);
+                      
+        # when done, close h5py
+        f.close()
+        
+        # convert ux, uy, uz, rho data into density distribution values
+        # for fEven and fOdd --> load into the arrays.
 
 
 
