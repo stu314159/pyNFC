@@ -62,6 +62,7 @@ class NFC_LBM_partition(object):
         self.myLB.set_dynamics(self.dynamics)
         self.myLB.set_Cs(self.Cs)
         self.myLB.set_MPIcomm(self.comm)
+        self.myLB.set_timeAvg(self.timeAvg)
         
         # if dynamics == 3, construct lattice.omegaMRT and pass its pointer to myLB
         if self.dynamics == 3:

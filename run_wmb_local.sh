@@ -25,7 +25,7 @@ Re=25
 dt=0.01
 Cs=0
 Restart_flag=0
-TimeAvg_flag=1
+TimeAvg_flag=0
 
 # must re-process if you change:
 # N_divs, partition methodology, or the number of partitions.
