@@ -12,7 +12,15 @@ Try to see why one might be better than the other.
 import math
 #import argparse
 import numpy as np
-from pymetis import part_graph
+
+NO_PYMETIS=0
+try:
+  from pymetis import part_graph
+except ImportError:
+  NO_PYMETIS=1
+  import sys
+
+
 #from vtkHelper import saveScalarStructuredGridVTK_binary
 #from vtkHelper import saveVelocityAndPressureVTK_binary
 from vtkHelper import saveStructuredPointsVTK_ascii
@@ -210,6 +218,9 @@ if __name__=='main':
     print 'Nz = %d ' % Nz
     
     print 'getting METIS partition'
+    if (NO_PYMETIS==1):
+      print "pymetis is not available"
+      sys.exit()
     cuts, part_vert = part_graph(N_parts,adjDict)
     
     print 'getting part_advisor partition'

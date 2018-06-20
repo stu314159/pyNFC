@@ -10,9 +10,17 @@ containing the integer of which partition each lattice point lives.
 import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
-from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+
+NO_PYMETIS=0
+try:
+  from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
+except ImportError:
+  NO_PYMETIS=1
+
+
 import PartitionHelper as PH
 import numpy as np
+import sys
 
 class Lattice(object):
     """
@@ -174,6 +182,9 @@ class Partitioner:
             self.part_vert = pc.set_geometric_partition(self.Nx, self.Ny, self.Nz,
                                                 self.px, self.py, self.pz)
         else:
+          if (NO_PYMETIS==1):
+            print "pymetis partitioning selected but not available"
+            sys.exit()
           [cuts,  self.part_vert] = part_graph(self.numParts,self.adjList) 
 
 
