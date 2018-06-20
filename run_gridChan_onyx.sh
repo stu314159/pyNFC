@@ -14,35 +14,47 @@
 
 
 # saves mat file named ChanCavityTest.mat
-MAT_FILE=wall_mounted_brick.mat
+MAT_FILE=gridChan.mat
 
-Num_ts=100001
-ts_rep_freq=5000
+Num_ts=90001
+ts_rep_freq=1000
 Warmup_ts=0
 plot_freq=5000
-Re=250
-dt=0.001
-Cs=15
+Re=15000
+dt=0.00005
+Cs=10
 Restart_flag=$8
 TimeAvg_flag=$9
 
-if [ "$7" = "1" ]; then
-aprun -n 1 ./wmb_geom.py $1
 
+# must re-process if you change:
+# N_divs, partition methodology, or the number of partitions.
+# if the lattice type changes, you do not have to re-do pre-processing,
+# but the resulting partitions may not be the same as what would have
+# been picked with new lattice type
+if [ "$7" = "1" ]; then
+aprun -n 1 ./gridChan_geom.py $1
+
+
+#module load mpi4py
 aprun -n 1 ./pyNFC_partition.py $MAT_FILE $2 $4 $5
+
+
 
 else
 echo "pre-processing skipped, commencing time steps"
 fi
 
+# basically, pyNFC_preprocess.py just writes params.lbm now.
 aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
 $TimeAvg_flag
 
-export OMP_NUM_THREADS=$6
+#module unload mpi4py
 
+export OMP_NUM_THREADS=$6
 aprun -n $5 -d $6  ./pyNFC_run.py
 
 aprun -n 1 ./processNFC.py 
-
+#aprun -n 1 ./processNFC_serial
 
