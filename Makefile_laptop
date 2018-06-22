@@ -8,14 +8,18 @@ BOOST_PYLIB = py27
  
 BOOST_INC = /usr/include
 BOOST_LIB = /usr/lib/x86_64-linux-gnu
+
+#CPP_INC=/opt/pgi/linux86-64/2018/include
+MPI4PY_INC=/home/stu/anaconda2/lib/python2.7/site-packages/mpi4py/include
  
 # compile mesh classes
 TARGET = LBM_Interface
 FILE=PyLBM_Interface
 EXT=cpp
 
-CC=pgc++
-CC_FLAGS= -fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
+CC=mpic++
+#CC_FLAGS= -fast  -fPIC -std=c++11
+CC_FLAGS=-O3 -std=c++11 -fPIC
 
 SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
 	LBM_HaloData.cpp LBM_HaloDataOrganizer.cpp
@@ -24,13 +28,13 @@ OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler
 	 
 
 $(FILE).so: $(FILE).o $(OBJECTS)
-	$(CC) $(CC_FLAGS) -shared -Wl,--export-dynamic $(FILE).o -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
+	$(CC) $(CC_FLAGS) -shared -Wl,--export-dynamic $(FILE).o -I$(MPI4PY_INC) -L$(BOOST_LIB) -lboost_python-$(BOOST_PYLIB) -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
  
 $(FILE).o: $(FILE).cpp
-	$(CC) $(CC_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $(FILE).$(EXT)
+	$(CC) $(CC_FLAGS) -I$(MPI4PY_INC) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $(FILE).$(EXT)
 
 %.o:%.cpp
-	$(CC) $(CC_FLAGS) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $^
+	$(CC) $(CC_FLAGS) -I$(MPI4PY_INC) -I$(PYTHON_INCLUDE) -I$(BOOST_INC) -c $^
 
 clean:
 	rm -f *.o *.so $(TARGET) *~
