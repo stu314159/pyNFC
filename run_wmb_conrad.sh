@@ -16,21 +16,22 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=wall_mounted_brick.mat
 
-Num_ts=100001
+Num_ts=10001
 ts_rep_freq=500
 Warmup_ts=0
-plot_freq=5000
-Re=250
-dt=0.0001
-Cs=5
+plot_freq=500
+Re=25
+dt=0.01
+Cs=0
 Restart_flag=$8
 TimeAvg_flag=$9
 
 if [ "$7" = "1" ]; then
 aprun -n 1 ./wmb_geom.py $1
 
+module swap PrgEnv-gnu PrgEnv-intel
 aprun -n 1 ./pyNFC_partition.py $MAT_FILE $2 $4 $5
-
+module swap PrgEnv-intel PrgEnv-gnu
 else
 echo "pre-processing skipped, commencing time steps"
 fi
