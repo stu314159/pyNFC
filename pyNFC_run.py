@@ -6,7 +6,7 @@
 
 from mpi4py import MPI
 import time
-
+import h5py
 #from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
