@@ -21,8 +21,8 @@ ts_rep_freq=1000
 Warmup_ts=0
 plot_freq=5000
 Re=15000
-dt=0.00005
-Cs=10
+dt=0.00001
+Cs=20
 Restart_flag=$8
 TimeAvg_flag=$9
 
