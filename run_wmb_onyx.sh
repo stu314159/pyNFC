@@ -16,13 +16,13 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=wall_mounted_brick.mat
 
-Num_ts=100001
-ts_rep_freq=5000
+Num_ts=10001
+ts_rep_freq=500
 Warmup_ts=0
-plot_freq=5000
-Re=250
-dt=0.001
-Cs=15
+plot_freq=500
+Re=125
+dt=0.004
+Cs=5
 Restart_flag=$8
 TimeAvg_flag=$9
 
