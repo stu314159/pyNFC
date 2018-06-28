@@ -1,4 +1,4 @@
-#!/home/stu/anaconda2/bin/python
+#!/usr/bin/env python
 """
  testing implementation of pyNFC
 """
