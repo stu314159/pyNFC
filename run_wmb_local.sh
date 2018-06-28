@@ -9,7 +9,8 @@
 # 5 - number of partitions
 # 6 - number of omp threads
 # 7 - pre-process [1 = yes, 0 = no]
-
+# 8 - Restart [1= yes, 0 = no]
+# 9 - Time Avg [1 = yes, 0 = no]
 
 
 
@@ -24,8 +25,8 @@ plot_freq=100
 Re=25
 dt=0.01
 Cs=0
-Restart_flag=1
-TimeAvg_flag=0
+Restart_flag=$8
+TimeAvg_flag=$9
 
 # must re-process if you change:
 # N_divs, partition methodology, or the number of partitions.
@@ -51,6 +52,6 @@ $TimeAvg_flag
 
 export OMP_NUM_THREADS=$6
 #aprun -n $5 -d $6  ./pyNFC_run.py
-mpirun -np $5 ./pyNFC_run_local.py
+mpirun -np $5 ./pyNFC_run.py
 
 python ./processNFC.py 

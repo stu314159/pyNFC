@@ -61,7 +61,7 @@ if TimeAvg_flag == 1:
 #numTs = 10
 #plot_freq = 5;
 if rank == 0:
-    if rank==0:
+    if ((Restart_flag==1) and (rank==0)):
         print "Loading restart data."
     time1 = time.time()
 
