@@ -682,9 +682,9 @@ class NFC_LBM_partition(object):
         """
         #print "rank %d allocating subspace data arrays for %d timesteps"%(self.rank,num_ts)
         self.ssNd_ux = np.zeros([len(self.ss_nd_list),num_ts],dtype=np.float32)
-        self.ssNd_uy = np.zeros_like(self.ssNd_vx)
-        self.ssNd_uz = np.zeros_like(self.ssNd_vx)
-        self.ssNd_rho = np.zeros_like(self.ssNd_vx)
+        self.ssNd_uy = np.zeros_like(self.ssNd_ux)
+        self.ssNd_uz = np.zeros_like(self.ssNd_ux)
+        self.ssNd_rho = np.zeros_like(self.ssNd_ux)
         
         # assign pointers through Boost Interface
         self.myLB.set_ss_ux(self.ssNd_ux)

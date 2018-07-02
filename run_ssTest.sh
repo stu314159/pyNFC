@@ -29,7 +29,7 @@ Cs=0
 Restart_flag=$8
 TimeAvg_flag=$9
 SubspaceData_flag=${10}
-echo $SubspaceData_flag
+
 
 # must re-process if you change:
 # N_divs, partition methodology, or the number of partitions.
