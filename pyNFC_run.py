@@ -6,7 +6,7 @@
 
 from mpi4py import MPI
 import time
-import h5py
+
 #from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -56,6 +56,11 @@ if Restart_flag == 1:
 if TimeAvg_flag == 1:
     myPart.initialize_timeAvg()
 
+# if there are subset nodes and if subset data is to be stored,
+# initialize the data structure that will store the subset data 
+# and write it to disk in an appropriate data structure.
+    
+# NFC_LBM_partition should own this data structure.
     
 # do some time stepping
 #numTs = 10

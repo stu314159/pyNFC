@@ -244,7 +244,7 @@ class NFC_LBM_partition(object):
 
     def initialize_node_lists(self):
         """
-         load pre-processor data into inl, onl and snl lists
+         load pre-processor data into ndType lists
         """
         
 

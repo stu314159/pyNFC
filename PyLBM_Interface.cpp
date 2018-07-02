@@ -425,7 +425,8 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 			wAvg[nd]+=fData_l.uz;
 			rhoAvg[nd]+=fData_l.rho;
 		}
-
+        
+        
 
 		// stream data to fOut array
 		streamData(fOut,nd,fData_l);

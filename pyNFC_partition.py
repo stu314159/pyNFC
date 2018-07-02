@@ -43,7 +43,6 @@ Lo = float(geom_input['Lo'])
 Ny_divs = int(geom_input['Ny_divs'])
 rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
-ndType = list((geom_input['ndType']).flatten())
 
 
 Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
@@ -63,14 +62,7 @@ YY = np.reshape(Y,int(numEl))
 ZZ = np.reshape(Z,int(numEl))
 
 
-print 'There are %d nodes listed in ndType'%len(ndType)
-print 'Writing those to file'
-ndTypeFileName = 'ndType.lbm'
-ndTypeFile = open(ndTypeFileName,'w')
-for i in range(len(ndType)):
-    nT = int(ndType[i]);
-    ndTypeFile.write('%i \n'%nT)
-ndTypeFile.close()
+
 
 if lattice_type == 'D3Q15':
    lat = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
