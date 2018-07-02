@@ -98,6 +98,7 @@ class NFC_LBM_partition(object):
         # pass pointers of node lists to myLB object
 #    
         self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
+        self.myLB.set_ssNds(self.ssNds) # assign ss Node list
         self.myLB.set_adjacency(self.adjacency)
         self.myLB.set_fEven(self.fEven)
         self.myLB.set_fOdd(self.fOdd)
@@ -668,6 +669,7 @@ class NFC_LBM_partition(object):
         self.fOdd = np.empty_like(self.fEven)
         self.ndT = np.zeros([self.total_nodes],dtype=np.int32);
         self.ssNds = np.zeros([self.total_nodes],dtype=np.int32);
+        
 
     def allocate_subspace_data_arrays(self,num_ts):
         """
@@ -679,10 +681,17 @@ class NFC_LBM_partition(object):
         
         """
         #print "rank %d allocating subspace data arrays for %d timesteps"%(self.rank,num_ts)
-        self.ssNd_vx = np.zeros([len(self.ss_nd_list),num_ts],dtype=np.float32)
-        self.ssNd_vy = np.zeros_like(self.ssNd_vx)
-        self.ssNd_vz = np.zeros_like(self.ssNd_vx)
+        self.ssNd_ux = np.zeros([len(self.ss_nd_list),num_ts],dtype=np.float32)
+        self.ssNd_uy = np.zeros_like(self.ssNd_vx)
+        self.ssNd_uz = np.zeros_like(self.ssNd_vx)
         self.ssNd_rho = np.zeros_like(self.ssNd_vx)
+        
+        # assign pointers through Boost Interface
+        self.myLB.set_ss_ux(self.ssNd_ux)
+        self.myLB.set_ss_uy(self.ssNd_uy)
+        self.myLB.set_ss_uz(self.ssNd_uz)
+        self.myLB.set_ss_rho(self.ssNd_rho)
+        
         
         
         
