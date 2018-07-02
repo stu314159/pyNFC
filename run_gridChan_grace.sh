@@ -16,13 +16,14 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=gridChan.mat
 
-Num_ts=15001
-ts_rep_freq=500
+Num_ts=140001
+ts_rep_freq=5000
 Warmup_ts=0
-plot_freq=1000
+plot_freq=10000
 Re=15000
 dt=0.00005
-Cs=10
+#Cs=10
+Cs=2.5
 Restart_flag=$8
 TimeAvg_flag=$9
 
