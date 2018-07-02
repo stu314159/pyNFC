@@ -11,13 +11,14 @@
 # 7 - pre-process [1 = yes, 0 = no]
 # 8 - Restart [1= yes, 0 = no]
 # 9 - Time Avg [1 = yes, 0 = no]
+# 10 - Subspace Data [1 = yes, 0 = no]
 
 
 
 MAT_FILE=ssTest.mat
 
 
-Num_ts=1001
+Num_ts=1
 ts_rep_freq=50
 Warmup_ts=0
 plot_freq=100
@@ -27,6 +28,8 @@ dt=0.01
 Cs=0
 Restart_flag=$8
 TimeAvg_flag=$9
+SubspaceData_flag=${10}
+echo $SubspaceData_flag
 
 # must re-process if you change:
 # N_divs, partition methodology, or the number of partitions.
@@ -48,10 +51,10 @@ fi
 # basically, pyNFC_preprocess.py just writes params.lbm now.
 python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
-$TimeAvg_flag
+$TimeAvg_flag $SubspaceData_flag
 
-#export OMP_NUM_THREADS=$6
+export OMP_NUM_THREADS=$6
 ##aprun -n $5 -d $6  ./pyNFC_run.py
-#mpirun -np $5 ./pyNFC_run.py
+mpirun -np $5 ./pyNFC_run.py
 
 #python ./processNFC.py 

@@ -35,6 +35,7 @@ parser.add_argument('dt',type=float)
 parser.add_argument('Cs',type=float)
 parser.add_argument('Restart_flag',type=int)
 parser.add_argument('TimeAvg_flag',type=int)
+parser.add_argument('SubspaceData_flag',type=int)
 # parse input arguments
 args = parser.parse_args()
 
@@ -58,6 +59,7 @@ dt = args.dt
 Cs = args.Cs
 Restart_flag = args.Restart_flag
 TimeAvg_flag=args.TimeAvg_flag
+SubspaceData_flag = args.SubspaceData_flag
 
 #numProcs = 6  #<--- for this version, I will need to know how many partitions I intend to create
 
@@ -172,6 +174,7 @@ if run_dec!='n' and run_dec!='N':
     params.write('%15.14f \n'%l_conv_fact)
     params.write('%g \n'%p_conv_fact)
     params.write('%d \n'%pRef_idx);
+    params.write('%d \n'%SubspaceData_flag)#1  = collect subspace data; 0 do not
     
     params.close()
     

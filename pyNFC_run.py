@@ -39,6 +39,8 @@ Lz_p = float(input_data.readline())
 t_conv_fact = float(input_data.readline())
 l_conv_fact = float(input_data.readline())
 p_conv_fact = float(input_data.readline())
+pRef_ind = int(input_data.readline())
+SubspaceData_flag = int(input_data.readline())
 input_data.close()
 
 #print "process %d of %d says hello!" % (rank, size)
@@ -55,6 +57,10 @@ if Restart_flag == 1:
     
 if TimeAvg_flag == 1:
     myPart.initialize_timeAvg()
+    
+if SubspaceData_flag == 1:
+    myPart.allocate_subspace_data_arrays(Num_ts)
+    
 
 # if there are subset nodes and if subset data is to be stored,
 # initialize the data structure that will store the subset data 

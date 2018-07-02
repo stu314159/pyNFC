@@ -46,9 +46,9 @@ ss1 = fc.YZ_Slice(aLx_p/2.,1.0, 2.0, 4.5, 5.0)
 ss2 = fc.YZ_Slice(aLx_p/4.,1.0, 2.0, 4.5, 5.0)
 ss3 = fc.YZ_Slice(aLx_p/5.,1.0, 2.0, 4.5, 5.0)
 
-myChan.add_subset(ss1)
-myChan.add_subset(ss2)
-myChan.add_subset(ss3)
+myChan.add_subset(ss1) # for the time being, limit yourself to 1 subset
+#myChan.add_subset(ss2)
+#myChan.add_subset(ss3)
 
 # write the mat file
 myChan.write_mat_file('ssTest');

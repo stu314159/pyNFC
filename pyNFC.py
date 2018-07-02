@@ -84,7 +84,7 @@ class NFC_LBM_partition(object):
         self.get_halo_nodes() # halo nodes are all global node numbers - local node number lists also produced
         self.get_interior_nodes() # local node numbers of all interior nodes produced
         self.allocate_data_arrays() # all global data arrays that will be required for the LBM simulation
-        self.initialize_node_lists() # snl, inl and onl lists from pre-processed data
+        self.initialize_node_lists() # ndType, ssNds, and ssNd_list 
 
         # halo nodes are now incorporated into local node lists and data arrays.
         # convert the adjacency matrix so that it is local
@@ -258,6 +258,23 @@ class NFC_LBM_partition(object):
                 lNd = self.global_to_local[i] #if it is, get the local node number
                 self.ndT[lNd] = gNt # set the ndT list to the indicated number
         ndl_f.close()
+        
+        # need to read "ssNds.lbm" to determine which of my nodes are ssNds.
+        ssNds_filename = "ssNds.lbm"
+        self.ss_nd_list = []
+        ss_f = open(ssNds_filename)
+        for line in ss_f.readlines():
+            gNt = int(line); # get the global node number
+            if gNt in self.global_to_local: # if this global node number is in this partition
+                lNd = self.global_to_local[gNt] # get the local partition index
+                if (lNd <= self.num_local_nodes):
+                    self.ssNds[lNd] = 1 # set the subspace node list value to 1
+                    self.ss_nd_list.append(lNd)
+                    
+        ss_f.close()
+        #print "rank %d has %d subspace nodes"%(self.rank,len(self.ss_nd_list))
+        self.ss_nd_list.sort() # sort the list for convenience.
+        
         
 
     def write_node_sorting(self):
@@ -650,7 +667,26 @@ class NFC_LBM_partition(object):
         self.fEven = np.empty([self.total_nodes , self.numSpd],dtype=np.float32)
         self.fOdd = np.empty_like(self.fEven)
         self.ndT = np.zeros([self.total_nodes],dtype=np.int32);
+        self.ssNds = np.zeros([self.total_nodes],dtype=np.int32);
 
+    def allocate_subspace_data_arrays(self,num_ts):
+        """
+        Allocate data arrays for storing subset data for this partition. over 
+        all time steps.  At the end of the simulation, all of the subspace
+        data will be written to a single binary data file using MPI's 
+        API.  This data file then will need to be post processed so that it can
+        be visualized and or further processed for turbulence data.
+        
+        """
+        #print "rank %d allocating subspace data arrays for %d timesteps"%(self.rank,num_ts)
+        self.ssNd_vx = np.zeros([len(self.ss_nd_list),num_ts],dtype=np.float32)
+        self.ssNd_vy = np.zeros_like(self.ssNd_vx)
+        self.ssNd_vz = np.zeros_like(self.ssNd_vx)
+        self.ssNd_rho = np.zeros_like(self.ssNd_vx)
+        
+        
+        
+        
     def initialize_data_arrays(self):
         """
          set initial density distributions.  Currently implemented to
