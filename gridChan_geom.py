@@ -52,7 +52,7 @@ gridChan.add_subset(ss1)
 gridChan.add_subset(ss2)
 
 # visualize boundary condition data
-#gridChan.write_bc_vtk()
+gridChan.write_bc_vtk()
 
 # set reference pressure near the end of the channel
 gridChan.set_pRef_indx(aLx_p/2.,aLy_p/2.,0.98*aLz_p)

@@ -3,10 +3,10 @@
 #PBS -I
 ##PBS -l select=1:ncpus=10:mpiprocs=10:accelerator_model=Tesla_K40s
 #PBS -l select=1:ncpus=24:mpiprocs=24
-#PBS -l walltime=07:00:00
+#PBS -l walltime=00:25:00
 #PBS -V
 #PBS -X
-#PBS -q standard
+#PBS -q debug
 #PBS -N ijob_pp
 #PBS -l ccm=1
 module load costinit

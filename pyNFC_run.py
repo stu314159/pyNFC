@@ -6,7 +6,7 @@
 
 from mpi4py import MPI
 import time
-
+import h5py
 #from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -61,7 +61,7 @@ if TimeAvg_flag == 1:
 #numTs = 10
 #plot_freq = 5;
 if rank == 0:
-    if rank==0:
+    if ((Restart_flag==1) and (rank==0)):
         print "Loading restart data."
     time1 = time.time()
 
