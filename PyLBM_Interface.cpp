@@ -623,6 +623,6 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_ss_uz",&PyLBM_Interface::set_ss_uz)
         		.def("set_ss_rho",&PyLBM_Interface::set_ss_rho)
         		.def("set_num_ssNds",&PyLBM_Interface::set_num_ssNds)
-        		.def("compute_ss_data",&PyLBM_Interface::compute_subspace_data)
+        		.def("compute_subspace_data",&PyLBM_Interface::compute_subspace_data)
         		;
 }

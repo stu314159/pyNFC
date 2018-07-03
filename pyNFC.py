@@ -12,6 +12,7 @@ import pyLattice as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
 import LBM_Interface as LB
 import h5py
+import scipy.io
 
 class NFC_LBM_partition(object):
     """
@@ -98,7 +99,8 @@ class NFC_LBM_partition(object):
         # pass pointers of node lists to myLB object
 #    
         self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
-        self.myLB.set_ssNds(self.ssNds) # assign ss Node list
+        #self.myLB.set_ssNds(self.ssNds) # assign ss Node list
+        self.myLB.set_ssNds(self.ss_nd_array) # assign ss Node lis
         self.myLB.set_adjacency(self.adjacency)
         self.myLB.set_fEven(self.fEven)
         self.myLB.set_fOdd(self.fOdd)
@@ -280,12 +282,18 @@ class NFC_LBM_partition(object):
         ss_f.close()
         #print "rank %d has %d subspace nodes"%(self.rank,len(self.ss_nd_list))
         self.ss_nd_list.sort() # sort the list for convenience.
-        
+        self.ss_nd_array = np.array(self.ss_nd_list,dtype=np.int32) # make this into a numpy array for Boost.
         self.ss_offset_int = np.sum(self.part_ss_sizes[0:self.rank]);
         #print "rank %d has offset int equal to %d"%(self.rank, self.ss_offset_int);
         
         # if rank == 0, write the part_ss_sizes to disk.<<<------****
-        
+        if self.rank==0:
+            filename = 'part_ss_sizes.mat'
+            part_dict = {}
+            part_dict['part_ss_sizes']=list(self.part_ss_sizes[:])
+            scipy.io.savemat(filename,part_dict)
+            
+            
     def write_ss_node_sorting(self):
         """
           write a file "ss_ordering.b_dat" that will contain the global
@@ -295,7 +303,7 @@ class NFC_LBM_partition(object):
         """
         ss_node_roster = np.empty([len(self.ss_nd_list)],dtype=np.int32);
         for nd in range(len(self.ss_nd_list)):
-            ss_node_roster[nd]=self.local_to_global[nd]
+            ss_node_roster[nd]=self.local_to_global[self.ss_nd_list[nd]]
             
         amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
         file_name = 'ss_ordering.b_dat'

@@ -104,6 +104,7 @@ if SubspaceData_flag == 1:
         print "Writing subspace data arrays to binary data files"
         
     myPart.write_subspace_data();
+    myPart.write_ss_node_sorting();
     
 if TimeAvg_flag == 1:
     myPart.write_timeAvg();

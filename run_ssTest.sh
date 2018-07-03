@@ -18,10 +18,10 @@
 MAT_FILE=ssTest.mat
 
 
-Num_ts=1
-ts_rep_freq=50
+Num_ts=10
+ts_rep_freq=1
 Warmup_ts=0
-plot_freq=100
+plot_freq=1
 
 Re=25
 dt=0.01
@@ -57,4 +57,4 @@ export OMP_NUM_THREADS=$6
 ##aprun -n $5 -d $6  ./pyNFC_run.py
 mpirun -np $5 ./pyNFC_run.py
 
-#python ./processNFC.py 
+python ./processNFC.py 
