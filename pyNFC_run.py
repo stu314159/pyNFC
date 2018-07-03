@@ -83,6 +83,9 @@ for ts in range(Num_ts):
             print "executing time step %d" % (ts+1)
     isEven = (ts%2 == 0)
     myPart.take_LBM_timestep(isEven)
+    
+    if (SubspaceData_flag == 1):
+        myPart.record_subspace_data(ts)
 
     if ((ts % plot_freq == 0) and (ts > Warmup_ts)):
         myPart.write_data(isEven)
@@ -95,6 +98,12 @@ if rank == 0:
     numLP = Nx*Ny*Nz
     LPUs = numLP*Num_ts/(ex_time)
     print "approximate LPU/sec = %g " % LPUs
+    
+if SubspaceData_flag == 1:
+    if rank == 0:
+        print "Writing subspace data arrays to binary data files"
+        
+    myPart.write_subspace_data();
     
 if TimeAvg_flag == 1:
     myPart.write_timeAvg();

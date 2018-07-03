@@ -261,11 +261,16 @@ class NFC_LBM_partition(object):
         ndl_f.close()
         
         # need to read "ssNds.lbm" to determine which of my nodes are ssNds.
+        
+        self.part_ss_sizes = np.zeros(self.size,dtype=np.int32); # so
+        # each process can know how many subspace nodes other partitions have
+        
         ssNds_filename = "ssNds.lbm"
         self.ss_nd_list = []
         ss_f = open(ssNds_filename)
         for line in ss_f.readlines():
             gNt = int(line); # get the global node number
+            self.part_ss_sizes[self.parts[gNt]]+=1
             if gNt in self.global_to_local: # if this global node number is in this partition
                 lNd = self.global_to_local[gNt] # get the local partition index
                 if (lNd <= self.num_local_nodes):
@@ -276,8 +281,29 @@ class NFC_LBM_partition(object):
         #print "rank %d has %d subspace nodes"%(self.rank,len(self.ss_nd_list))
         self.ss_nd_list.sort() # sort the list for convenience.
         
+        self.ss_offset_int = np.sum(self.part_ss_sizes[0:self.rank]);
+        #print "rank %d has offset int equal to %d"%(self.rank, self.ss_offset_int);
         
-
+        # if rank == 0, write the part_ss_sizes to disk.<<<------****
+        
+    def write_ss_node_sorting(self):
+        """
+          write a file "ss_ordering.b_dat" that will contain the global
+          node numbers of each subspace node (in order) <-- mpi file
+          
+          
+        """
+        ss_node_roster = np.empty([len(self.ss_nd_list)],dtype=np.int32);
+        for nd in range(len(self.ss_nd_list)):
+            ss_node_roster[nd]=self.local_to_global[nd]
+            
+        amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
+        file_name = 'ss_ordering.b_dat'
+        fh = MPI.File.Open(self.comm,file_name,amode)
+        offset = self.ss_offset_int;
+        fh.Write_at_all(offset,ss_node_roster)
+        fh.Close();
+            
     def write_node_sorting(self):
         """
            write a file "ordering.b_dat" that will contain the global 
@@ -306,6 +332,40 @@ class NFC_LBM_partition(object):
         fh.Write_at_all(offset,node_roster) 
         fh.Close()
 
+    def write_subspace_data(self):
+        """
+        at the end of the simulation, write all accumulated subspace data to 
+        binary data files for subsequent processing
+        """
+        amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
+        
+        # create file names
+        ss_ux_fn = "ss_ux.b_dat"
+        ss_uy_fn = "ss_uy.b_dat"
+        ss_uz_fn = "ss_uz.b_dat"
+        ss_rho_fn = "ss_rho.b_dat"
+        
+        self.ss_offset_bytes = self.num_ts*self.ss_offset_int*(np.dtype(np.float32).itemsize)
+        
+        # write ss_ux
+        fh = MPI.File.Open(self.comm,ss_ux_fn,amode)
+        fh.Write_at_all(self.ss_offset_bytes,self.ssNd_ux);
+        fh.Close()
+        
+        # write ss_uy
+        fh = MPI.File.Open(self.comm,ss_uy_fn,amode)
+        fh.Write_at_all(self.ss_offset_bytes,self.ssNd_uy);
+        fh.Close()
+        
+        # write ss_uz
+        fh = MPI.File.Open(self.comm,ss_uz_fn,amode)
+        fh.Write_at_all(self.ss_offset_bytes,self.ssNd_uz);
+        fh.Close()
+        
+        # write ss_rho
+        fh = MPI.File.Open(self.comm,ss_rho_fn,amode)
+        fh.Write_at_all(self.ss_offset_bytes,self.ssNd_rho);
+        fh.Close()
 
     def write_data(self,isEven):
         """
@@ -383,7 +443,12 @@ class NFC_LBM_partition(object):
 
         return ux, uy, uz, rho
         
-
+    def record_subspace_data(self,ts):
+        """
+        compute ux, uy, uz, and rho for subspace data set and store in the appropriate
+        copy of the subspace data arrays.
+        """
+        self.myLB.compute_subspace_data(ts)
 
     def report_statistics(self):
         """
@@ -681,7 +746,7 @@ class NFC_LBM_partition(object):
         
         """
         #print "rank %d allocating subspace data arrays for %d timesteps"%(self.rank,num_ts)
-        self.ssNd_ux = np.zeros([len(self.ss_nd_list),num_ts],dtype=np.float32)
+        self.ssNd_ux = np.zeros([num_ts,len(self.ss_nd_list)],dtype=np.float32)
         self.ssNd_uy = np.zeros_like(self.ssNd_ux)
         self.ssNd_uz = np.zeros_like(self.ssNd_ux)
         self.ssNd_rho = np.zeros_like(self.ssNd_ux)
@@ -692,7 +757,9 @@ class NFC_LBM_partition(object):
         self.myLB.set_ss_uz(self.ssNd_uz)
         self.myLB.set_ss_rho(self.ssNd_rho)
         
+        self.myLB.set_num_ssNds(len(self.ss_nd_list));
         
+        self.num_ts = num_ts;
         
         
         

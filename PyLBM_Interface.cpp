@@ -246,7 +246,11 @@ void PyLBM_Interface::set_ssNds(boost::python::object obj)
 }
 
 
+void PyLBM_Interface::set_num_ssNds(const int n_ssNds)
+{
 
+    num_ssNds = n_ssNds;
+}
 
 
 void PyLBM_Interface::getHaloInPointers(boost::python::object nd,
@@ -371,6 +375,60 @@ void PyLBM_Interface::set_inlSZ(int sz)
 void PyLBM_Interface::set_totalNodes(const int tn)
 {
 	totalNodes = tn;
+}
+
+void PyLBM_Interface::compute_subspace_data(const int ts)
+{
+    float * fIn;
+    
+    bool isEven;
+    if (ts%2==0)
+    {
+      isEven = true;
+    } else {
+    
+      isEven = false;
+    }
+    
+    if(isEven)
+	{
+		fIn = fEven;
+	}else
+	{
+		fIn = fOdd;
+	}
+	// declare local iteration variables
+	float ux_i, uy_i, uz_i,rho_i;
+	float * f;
+	int nd;
+	int ndType;
+	for(int ssIdx=0;ssIdx<num_ssNds;ssIdx++)
+	{
+	    nd = ssNds[ssIdx];
+	    f = fIn+(nd*numSpd);
+	    myLattice->computeMacroscopicData(rho_i,ux_i,uy_i,uz_i,f);
+	    ndType=ndT[nd];
+	    switch (ndType)
+		{
+		case 1:
+			ux_i = 0; uy_i = 0; uz_i = 0;
+			break;
+		case 2:
+			ux_i = 0; uy_i = 0; uz_i = u_bc;
+			break;
+		case 5:
+			ux_i = 0; uy_i = 0; uz_i = u_bc;
+		}
+		
+		// place the data in the appropriate data array
+		ss_ux[num_ssNds*ts+ssIdx]=ux_i;
+		ss_uy[num_ssNds*ts+ssIdx]=uy_i;
+		ss_uz[num_ssNds*ts+ssIdx]=uz_i;
+		ss_rho[num_ssNds*ts+ssIdx]=rho_i;
+	
+	}
+
+
 }
 
 void PyLBM_Interface::compute_local_data(const bool isEven)
@@ -564,5 +622,7 @@ BOOST_PYTHON_MODULE(LBM_Interface)
         		.def("set_ss_uy",&PyLBM_Interface::set_ss_uy)
         		.def("set_ss_uz",&PyLBM_Interface::set_ss_uz)
         		.def("set_ss_rho",&PyLBM_Interface::set_ss_rho)
+        		.def("set_num_ssNds",&PyLBM_Interface::set_num_ssNds)
+        		.def("compute_ss_data",&PyLBM_Interface::compute_subspace_data)
         		;
 }
