@@ -280,11 +280,11 @@ class NFC_LBM_partition(object):
                     self.ss_nd_list.append(lNd)
                     
         ss_f.close()
-        #print "rank %d has %d subspace nodes"%(self.rank,len(self.ss_nd_list))
+        print "rank %d has %d subspace nodes"%(self.rank,len(self.ss_nd_list))
         self.ss_nd_list.sort() # sort the list for convenience.
         self.ss_nd_array = np.array(self.ss_nd_list,dtype=np.int32) # make this into a numpy array for Boost.
         self.ss_offset_int = np.sum(self.part_ss_sizes[0:self.rank]);
-        #print "rank %d has offset int equal to %d"%(self.rank, self.ss_offset_int);
+        print "rank %d has offset int equal to %d"%(self.rank, self.ss_offset_int);
         
         # if rank == 0, write the part_ss_sizes to disk.<<<------****
         if self.rank==0:
@@ -308,7 +308,7 @@ class NFC_LBM_partition(object):
         amode = MPI.MODE_WRONLY | MPI.MODE_CREATE
         file_name = 'ss_ordering.b_dat'
         fh = MPI.File.Open(self.comm,file_name,amode)
-        offset = self.ss_offset_int;
+        offset = self.ss_offset_int*np.dtype(np.int32).itemsize;
         fh.Write_at_all(offset,ss_node_roster)
         fh.Close();
             

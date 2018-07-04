@@ -93,9 +93,14 @@ ss_uy_i /= u_conv_fact;
 ss_uz_i /= u_conv_fact;
 ss_rho_i *= p_conv_fact;
 
-order_map = np.fromfile('ss_ordering.b_dat',dtype=np.int32).astype(np.int32)
+# global node numbers of ss data in the order presented
+g_order_map = np.fromfile('ss_ordering.b_dat',dtype=np.int32).astype(np.int32)
 
-# re-order columns of data so that node numbers monotonically increasing.
+
+# re-order data so that node numbers are always increasing.
+
+# due to the structure of YZ-slices, global node numbers are always ascending.
+l_order_map = np.array(range(int(total_ss_nodes)));
 
 # obtain Ny and Nz structure of the YZ- subspace plane (only subspace supported for now)
 

@@ -42,7 +42,7 @@ myChan = fc.FluidChannel(Lx_p=aLx_p,Ly_p=aLy_p,Lz_p=aLz_p,obst=myObst,
                          N_divs=aNdivs)                         
 
 # add two subspaces
-ss1 = fc.YZ_Slice(aLx_p/2.,1.0, 2.0, 5.5, 6.5)
+ss1 = fc.YZ_Slice(aLx_p/2.,1.0, 2.0, 5.5, 13.75)
 ss2 = fc.YZ_Slice(aLx_p/4.,1.0, 2.0, 4.5, 5.0)
 ss3 = fc.YZ_Slice(aLx_p/5.,1.0, 2.0, 4.5, 5.0)
 
