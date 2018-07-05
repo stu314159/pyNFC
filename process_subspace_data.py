@@ -55,11 +55,14 @@ ZZ = np.reshape(Z,numEl)
 dx = x[1] - x[0]
 
 # need to get more information on the structure of the subset data file
-ss_filename = 'part_ss_sizes.mat'
+ss_filename = 'part_ss_sizes.mat' 
 ss_data = scipy.io.loadmat(ss_filename)
-part_ss_sizes = ss_data['part_ss_sizes']
-
+part_ss_sizes = ss_data['part_ss_sizes'] # lists the number of ss nodes in each partition
+num_ss_partitions = len(part_ss_sizes); # number of partitions used in the simulation
 total_ss_nodes = sum(part_ss_sizes.flatten());
+
+
+
 
 # part_ss_sizes is a list where each entry lists the number of ss nodes for 
 # each MPI process
@@ -96,15 +99,40 @@ ss_rho_i *= p_conv_fact;
 # global node numbers of ss data in the order presented
 g_order_map = np.fromfile('ss_ordering.b_dat',dtype=np.int32).astype(np.int32)
 
-
 # re-order data so that node numbers are always increasing.
+ordered_idx = np.argsort(g_order_map);
 
-# due to the structure of YZ-slices, global node numbers are always ascending.
-l_order_map = np.array(range(int(total_ss_nodes)));
+ss_ux = ss_ux_i[:,ordered_idx];
+ss_uy = ss_uy_i[:,ordered_idx];
+ss_uz = ss_uz_i[:,ordered_idx];
+ss_rho = ss_rho_i[:,ordered_idx];
 
-# obtain Ny and Nz structure of the YZ- subspace plane (only subspace supported for now)
+# each row of the above arrays consitutes the data for the subspace on a single time step.
+# need Ny_ss and Nz_ss so we know the structure of this data. 
+x_ss = XX[g_order_map[ordered_idx]];
+y_ss = YY[g_order_map[ordered_idx]];
+z_ss = ZZ[g_order_map[ordered_idx]];
+
+Y_ss_min = np.min(y_ss);
+Y_ss_max = np.max(y_ss);
+Ny_ss = (Y_ss_max - Y_ss_min)/dx + 1;
+
+Z_ss_min = np.min(z_ss);
+Z_ss_max = np.max(z_ss);
+Nz_ss = (Z_ss_max - Z_ss_min)/dx + 1;
 
 # re-shape the arrays into 3-D arrays: num_ts x Nz x Ny (?)
+Nz_ss = int(Nz_ss)
+Ny_ss = int(Ny_ss)
+
+ss_ux = np.reshape(ss_ux,(Num_ts,Nz_ss,Ny_ss))
+ss_uy = np.reshape(ss_uy,(Num_ts,Nz_ss,Ny_ss))
+ss_uz = np.reshape(ss_uz,(Num_ts,Nz_ss,Ny_ss))
+ss_rho = np.reshape(ss_rho,(Num_ts,Nz_ss,Ny_ss))
+
+# save to a *.mat file
+scipy.io.savemat('ss_data.mat',{'ss_ux':ss_ux, 'ss_uy':ss_uy, 
+                                'ss_uz':ss_uz, 'ss_rho':ss_rho})
 
 
 
