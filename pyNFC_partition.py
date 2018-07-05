@@ -45,7 +45,6 @@ rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
 ndType = list((geom_input['ndType']).flatten())
 
-
 Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
 Nx = math.ceil((Ny_divs-1)*(Lx_p/Lo))+1
 Nz = math.ceil((Ny_divs-1)*(Lz_p/Lo))+1
@@ -71,6 +70,7 @@ for i in range(len(ndType)):
     nT = int(ndType[i]);
     ndTypeFile.write('%i \n'%nT)
 ndTypeFile.close()
+#print time.time()-start
 
 if lattice_type == 'D3Q15':
    lat = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
@@ -82,12 +82,17 @@ else:
 
 print "initializing the adjacency list"
 lat.initialize_adjDict();
+#print time.time()-start
 print "creating %s partition for %d processes" % (partition_style, numProcs)
 lat.set_Partition(numParts= numProcs, style = partition_style)
+#print time.time()-start
+print "computing cutsize"
 lat.compute_cutSize()
+#print time.time()-start
 print "cut size for %s partition = %g" % (partition_style, lat.get_cutSize())
 #print "writing vtk file for %s partition" % partition_style
 #partition_vtk_filename = "partition_%s.vtk" % partition_style
 #lat.partition.write_vtk(partition_vtk_filename)
-print "writing %s partition to disk" % partition_style
-lat.partition.write_partition()
+# print "writing %s partition to disk" % partition_style
+# lat.partition.write_partition()
+# print time.time()-start

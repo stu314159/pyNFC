@@ -6,7 +6,6 @@ to the pre-processing libraries.  The output will be a list of length Nx*Ny*Nz
 containing the integer of which partition each lattice point lives.
 
 """
-
 import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
@@ -17,10 +16,11 @@ try:
 except ImportError:
   NO_PYMETIS=1
 
-
 import PartitionHelper as PH
 import numpy as np
 import sys
+
+import time
 
 class Lattice(object):
     """
@@ -32,11 +32,10 @@ class Lattice(object):
             Nx - number of lattice points in the x-direction
             Ny - number of lattice points in the y-direction
             Nz - number of lattice points in the z-direction
-            
         """
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz
         self.ex = []; self.ey = []; self.ez = []
-        self.bbSpd = []; self.w = []; 
+        self.bbSpd = []; self.w = [];
         #self.initialize_adjDict(); # just do it.
         self.adjDict = None
         self.cutSize = None  # must ask for cut size after partitioning
@@ -66,22 +65,18 @@ class Lattice(object):
     def get_nnodes(self):
         return self.Nx*self.Ny*self.Nz
 
-    def initialize_adjDict(self):  
-        
+    def initialize_adjDict(self):
         #self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
         self.partHelper = PH.PartitionHelper(self.Nx,self.Ny,self.Nz,self.get_numSpd());
         self.adjDict = {}
         self.partHelper.setAdjacency(self.adjDict); # now self.adjDict is populated
         # hopefully this took less time than before.
-        
-
 
     def compute_cutSize(self):
         if self.adjDict == None: # verify that the adjacency list has been initialized
             raise ValueError('adjacency list must be initialized before getting cut size')
         else:
             self.cutSize = pc.count_cuts(self.adjDict,self.partition.get_partition()) #yeah -- looks overly complicated
-
         return self.cutSize
 
     def get_cutSize(self):
@@ -92,14 +87,12 @@ class Lattice(object):
           numParts = number of partitions
           numTrials = number of random 3D partition permutations should be tested
           style = ['1D', '3D','metis']
-
         """
-        self.partition = Partitioner(self.Nx, self.Ny, self.Nz, 
+        self.partition = Partitioner(self.Nx, self.Ny, self.Nz,
                                      numParts = numParts, adjList = self.adjDict,
                                      numTrials = numTrials,
                                      style = style)
 
-    
 
 class D3Q15Lattice(Lattice):
     """
@@ -131,7 +124,6 @@ class D3Q19Lattice(Lattice):
 	       1./72.,1./72.,1./72.,1./72.,
 	       1./72.,1./72.,1./72.,1./72.]
 
-   
 class D3Q27Lattice(Lattice):
     """
     """
@@ -147,12 +139,13 @@ class D3Q27Lattice(Lattice):
                   1./216.,1./216.,1./216.,1./216.,
                   1./216.,1./216.,1./216.,1./216.]
 
+
 class Partitioner:
     """
      the class that will do the work to select and obtain a partition
     """
 
-    def __init__(self,Nx,Ny,Nz,numParts,adjList,numTrials = 2000, style = '1D'):
+    def __init__(self,Nx,Ny,Nz,numParts,adjList,numTrials = 100000, style = '1D'):
         """
           Nx - number of lattice points in the x-direction (int)
           Ny - number of lattice points in the y-direction (int)
@@ -160,11 +153,11 @@ class Partitioner:
           numParts - number of partitions to form (int)
           adjList - adjacency list (dictionary)
           numTrials - number of attempts that the randomized
-                      partition advisor should use to find 
+                      partition advisor should use to find
                       a good partitioning
           style - '1D', '3D','metis' partition style
-                      
         """
+        start = time.time()
         self.Nx = Nx; self.Ny = Ny; self.Nz = Nz
         self.numParts = numParts
         self.numTrials = numTrials
@@ -174,29 +167,30 @@ class Partitioner:
         if style=='1D':
             self.px = 1; self.py = 1; self.pz = self.numParts;
         elif style=='3D':
+            print "part advisor"
             [self.px,self.py,self.pz] = ps.part_advisor(self.Nx,self.Ny,self.Nz,
                                                         self.numParts,
                                                         self.numTrials)
-                    
-        if (style == '1D' or style == '3D'):  
-            self.part_vert = pc.set_geometric_partition(self.Nx, self.Ny, self.Nz,
+            print time.time()-start
+
+        if (style == '1D' or style == '3D'):
+            print "geometric partition"
+            self.part_vert = pc.set_geometric_partition_improved(self.Nx, self.Ny, self.Nz,
                                                 self.px, self.py, self.pz)
+            print time.time()-start
+
         else:
           if (NO_PYMETIS==1):
             print "pymetis partitioning selected but not available"
             sys.exit()
-          [cuts,  self.part_vert] = part_graph(self.numParts,self.adjList) 
-
-
+          [cuts,  self.part_vert] = part_graph(self.numParts,self.adjList)
 
     def get_partition(self):
         """
           give access to partition
         """
-
         return self.part_vert[:]
 
-    
     def get_partition_sizes(self):
         """
           give access to partition sizes
@@ -212,27 +206,21 @@ class Partitioner:
         spacing = [0.1, 0.1, 0.1] #<-- no need for this to correspond to actual physical spacing
         writeVTK(self.part_vert,'partitions',file_name,dims,origin,spacing)
 
-
     def write_partition(self):
         """
          write the partition information to parts.lbm
         """
-        
-#        np_pv = np.array(self.part_vert,dtype=np.int32);
-#        fn = 'parts.lbm';
-#        np_pv.astype('int32').tofile(fn)
+        print "writing to disk"
         parts = open('parts.lbm','w')
         for p in self.part_vert:
             parts.write('%d \n'% p)
-
         parts.close()
-   
-        
+        print "done writing to disk"
 
 
 if __name__=="__main__":
     """
-      put testing code here  
+      put testing code here
     """
     #Nx = 447; Ny = 447; Nz = 838;from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
     Nx = 50; Ny = 50; Nz = 250;
@@ -269,4 +257,3 @@ if __name__=="__main__":
 
     print "writing metis partition to disk"
     lat15.partition.write_partition()
-    
