@@ -14,6 +14,7 @@ sys.path.insert(1,'.')
 #import os
 import numpy as np
 import scipy.io
+from hdf5Helper import writeH5, writeXdmf
 
 # need to read subspace partition data and determine the number of time steps
 input_file_name = 'params.lbm'
@@ -113,6 +114,8 @@ x_ss = XX[g_order_map[ordered_idx]];
 y_ss = YY[g_order_map[ordered_idx]];
 z_ss = ZZ[g_order_map[ordered_idx]];
 
+X_ss = np.min(x_ss); # is constant
+
 Y_ss_min = np.min(y_ss);
 Y_ss_max = np.max(y_ss);
 Ny_ss = (Y_ss_max - Y_ss_min)/dx + 1;
@@ -125,14 +128,29 @@ Nz_ss = (Z_ss_max - Z_ss_min)/dx + 1;
 Nz_ss = int(Nz_ss)
 Ny_ss = int(Ny_ss)
 
-ss_ux = np.reshape(ss_ux,(Num_ts,Nz_ss,Ny_ss))
-ss_uy = np.reshape(ss_uy,(Num_ts,Nz_ss,Ny_ss))
-ss_uz = np.reshape(ss_uz,(Num_ts,Nz_ss,Ny_ss))
-ss_rho = np.reshape(ss_rho,(Num_ts,Nz_ss,Ny_ss))
+ss_ux_3 = np.reshape(ss_ux,(Num_ts,Nz_ss,Ny_ss))
+ss_uy_3 = np.reshape(ss_uy,(Num_ts,Nz_ss,Ny_ss))
+ss_uz_3 = np.reshape(ss_uz,(Num_ts,Nz_ss,Ny_ss))
+ss_rho_3 = np.reshape(ss_rho,(Num_ts,Nz_ss,Ny_ss))
 
 # save to a *.mat file
-scipy.io.savemat('ss_data.mat',{'ss_ux':ss_ux, 'ss_uy':ss_uy, 
-                                'ss_uz':ss_uz, 'ss_rho':ss_rho})
+scipy.io.savemat('ss_data.mat',{'ss_ux':ss_ux_3, 'ss_uy':ss_uy_3, 
+                                'ss_uz':ss_uz_3, 'ss_rho':ss_rho_3})
 
+velmag = np.sqrt(ss_ux**2 + ss_uy**2 + ss_uz**2);
 
-
+# conver the time steps into a series of *.h5 files and associated *.xmf
+dims = (Nz_ss,Ny_ss,1)
+for ts in range(Num_ts):
+    print 'processing subspace data set %d'%ts
+    h5_file = 'ss_out'+ str(ts) + '.h5'
+    xmf_file = 'ss_data' + str(ts) + '.xmf'
+    
+    ss_ux1 = ss_ux[ts,:]
+    ss_uy1 = ss_uy[ts,:]
+    ss_uz1 = ss_uz[ts,:]
+    ss_pressure = ss_rho[ts,:]
+    ss_pressure = ss_pressure.reshape(dims)
+    velmag_1 = velmag[ts,:]
+    writeH5(ss_pressure,ss_ux1,ss_uy1,ss_uz1,velmag_1,h5_file)
+    writeXdmf(dims,dx,xmf_file,h5_file)
