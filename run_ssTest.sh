@@ -18,8 +18,8 @@
 MAT_FILE=ssTest.mat
 
 
-Num_ts=10
-ts_rep_freq=1
+Num_ts=20
+ts_rep_freq=2
 Warmup_ts=0
 plot_freq=100
 
@@ -58,3 +58,8 @@ export OMP_NUM_THREADS=$6
 mpirun -np $5 ./pyNFC_run.py
 
 python ./processNFC.py 
+
+if [ "${10}" = "1" ]; then
+echo "processing subspace data"
+./process_subspace_data.py
+fi
