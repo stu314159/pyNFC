@@ -21,7 +21,7 @@ MAT_FILE=ssTest.mat
 Num_ts=10
 ts_rep_freq=1
 Warmup_ts=0
-plot_freq=1
+plot_freq=100
 
 Re=25
 dt=0.01

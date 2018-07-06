@@ -59,37 +59,49 @@ dx = x[1] - x[0]
 ss_filename = 'part_ss_sizes.mat' 
 ss_data = scipy.io.loadmat(ss_filename)
 part_ss_sizes = ss_data['part_ss_sizes'] # lists the number of ss nodes in each partition
-num_ss_partitions = len(part_ss_sizes); # number of partitions used in the simulation
+#num_ss_partitions = len(part_ss_sizes); # number of partitions used in the simulation
 total_ss_nodes = sum(part_ss_sizes.flatten());
 
+part_ss_sizes = np.array(part_ss_sizes,dtype=np.int32).reshape(4,);
+num_ss_partitions = len(part_ss_sizes)
+ss_offsets = np.cumsum(part_ss_sizes)
 
 
-
-# part_ss_sizes is a list where each entry lists the number of ss nodes for 
-# each MPI process
-
-# ss_node_ordering.b_dat contains a list (by process rank) of the global
-# subspace node numbers.
-
-# the actual subspace data is in the following 4 files:
-# ss_ux.b_dat
-# ss_uy.b_dat
-# ss_uz.b_dat
-# ss_rho.b_dat
 
 # I want to put these into 4 numpy arrays.  Each array will be of size
 # equal to the total number of subspace nodes x num_ts
 ss_ux_raw = np.fromfile('ss_ux.b_dat',dtype=np.float32);
-ss_ux_i = np.reshape(ss_ux_raw, (Num_ts,int(total_ss_nodes)))
+#ss_ux_i = np.reshape(ss_ux_raw, (Num_ts,int(total_ss_nodes)))
 
 ss_uy_raw = np.fromfile('ss_uy.b_dat',dtype=np.float32);
-ss_uy_i = np.reshape(ss_uy_raw,(Num_ts,int(total_ss_nodes)));
+#ss_uy_i = np.reshape(ss_uy_raw,(Num_ts,int(total_ss_nodes)));
 
 ss_uz_raw = np.fromfile('ss_uz.b_dat',dtype=np.float32);
-ss_uz_i = np.reshape(ss_uz_raw,(Num_ts,int(total_ss_nodes)));
+#ss_uz_i = np.reshape(ss_uz_raw,(Num_ts,int(total_ss_nodes)));
 
 ss_rho_raw = np.fromfile('ss_rho.b_dat',dtype=np.float32);
-ss_rho_i = np.reshape(ss_rho_raw,(Num_ts,int(total_ss_nodes)));
+#ss_rho_i = np.reshape(ss_rho_raw,(Num_ts,int(total_ss_nodes)));
+
+ss_ux_i = np.empty((Num_ts,int(total_ss_nodes)),dtype=np.float32);
+ss_uy_i = np.empty_like(ss_ux_i)
+ss_uz_i = np.empty_like(ss_ux_i)
+ss_rho_i = np.empty_like(ss_ux_i)
+
+for i in range(num_ss_partitions):
+    if i==0:
+        l_lp = 0
+    else:
+        l_lp = ss_offsets[i-1]
+    
+    u_lp = ss_offsets[i]
+    
+    l_idx = l_lp*Num_ts;
+    u_idx = u_lp*Num_ts;
+    
+    ss_ux_i[:,l_lp:u_lp]=ss_ux_raw[l_idx:u_idx].reshape(Num_ts,int(part_ss_sizes[i]))
+    ss_uy_i[:,l_lp:u_lp]=ss_uy_raw[l_idx:u_idx].reshape(Num_ts,int(part_ss_sizes[i]))
+    ss_uz_i[:,l_lp:u_lp]=ss_uz_raw[l_idx:u_idx].reshape(Num_ts,int(part_ss_sizes[i]))
+
 
 # convert units
 ss_ux_i /= u_conv_fact;
