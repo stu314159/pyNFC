@@ -145,9 +145,16 @@ ss_uy_3 = np.reshape(ss_uy,(Num_ts,Nz_ss,Ny_ss))
 ss_uz_3 = np.reshape(ss_uz,(Num_ts,Nz_ss,Ny_ss))
 ss_rho_3 = np.reshape(ss_rho,(Num_ts,Nz_ss,Ny_ss))
 
+# re-order the data so it is amenable with Matlab/Octave
+ss_ux_3 = np.array(ss_ux_3,order='F')
+ss_uy_3 = np.array(ss_uy_3,order='F')
+ss_uz_3 = np.array(ss_uz_3,order='F')
+ss_rho_3 = np.array(ss_rho_3,order='F')
+
 # save to a *.mat file
 scipy.io.savemat('ss_data.mat',{'ss_ux':ss_ux_3, 'ss_uy':ss_uy_3, 
-                                'ss_uz':ss_uz_3, 'ss_rho':ss_rho_3})
+                                'ss_uz':ss_uz_3, 'ss_rho':ss_rho_3,
+                                'dx':dx, 'dt':(1./t_conv_fact)})
 
 velmag = np.sqrt(ss_ux**2 + ss_uy**2 + ss_uz**2);
 
