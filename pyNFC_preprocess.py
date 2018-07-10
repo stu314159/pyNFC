@@ -35,6 +35,7 @@ parser.add_argument('dt',type=float)
 parser.add_argument('Cs',type=float)
 parser.add_argument('Restart_flag',type=int)
 parser.add_argument('TimeAvg_flag',type=int)
+parser.add_argument('SubspaceData_flag',type=int)
 # parse input arguments
 args = parser.parse_args()
 
@@ -58,6 +59,7 @@ dt = args.dt
 Cs = args.Cs
 Restart_flag = args.Restart_flag
 TimeAvg_flag=args.TimeAvg_flag
+SubspaceData_flag = args.SubspaceData_flag
 
 #numProcs = 6  #<--- for this version, I will need to know how many partitions I intend to create
 
@@ -76,9 +78,9 @@ Ny_divs = int(geom_input['Ny_divs'])
 rho_p = float(geom_input['rho_p'])
 nu_p = float(geom_input['nu_p'])
 pRef_idx = int(geom_input['pRef_idx'])
-#snl = list((geom_input['snl']).flatten())
-#inl = list((geom_input['inl']).flatten()) # must be inlet on Z-min
-#onl = list((geom_input['onl']).flatten()) # must be outlet on Z-max
+
+ndType = list((geom_input['ndType']).flatten())
+ssNds = list((geom_input['ssNds']).flatten())
 
 Ny = math.ceil((Ny_divs-1)*(Ly_p/Lo))+1
 Nx = math.ceil((Ny_divs-1)*(Lx_p/Lo))+1
@@ -106,6 +108,24 @@ p_conv_fact = (((l_conv_fact/t_conv_fact)**2)*(1./3.))/(l_conv_fact**3)
 
 rho_lbm = rho_p*(l_conv_fact**3)
 #rho_lbm = rho_p
+
+print 'There are %d nodes listed in ndType'%len(ndType)
+print 'Writing those to file'
+ndTypeFileName = 'ndType.lbm'
+ndTypeFile = open(ndTypeFileName,'w')
+for i in range(len(ndType)):
+    nT = int(ndType[i]);
+    ndTypeFile.write('%i \n'%nT)
+ndTypeFile.close()
+
+print 'There are %d nodes listed as subspace nodes'%len(ssNds)
+print 'Writing those to file'
+ssNdFileName = 'ssNds.lbm'
+ssNdFile = open(ssNdFileName,'w')
+for i in range(len(ssNds)):
+    ss = int(ssNds[i])
+    ssNdFile.write('%i \n'%ss)
+ssNdFile.close()
 
 print 'l_conv_fact = %g.\n'%l_conv_fact
 print 'p_conv_fact = %g.\n'%p_conv_fact
@@ -154,6 +174,7 @@ if run_dec!='n' and run_dec!='N':
     params.write('%15.14f \n'%l_conv_fact)
     params.write('%g \n'%p_conv_fact)
     params.write('%d \n'%pRef_idx);
+    params.write('%d \n'%SubspaceData_flag)#1  = collect subspace data; 0 do not
     
     params.close()
     

@@ -66,6 +66,14 @@ public:
 	void insert_boundary_data(bool isEven);
 	LBM_DataHandler fData;
 	Lattice * myLattice;
+	void compute_subspace_data(const int ts);
+	
+	void set_num_ssNds(const int num_ssNds);
+	void set_ssNds(boost::python::object obj);
+	void set_ss_ux(boost::python::object obj);
+	void set_ss_uy(boost::python::object obj);
+	void set_ss_uz(boost::python::object obj);
+	void set_ss_rho(boost::python::object obj);
 
 	LBM_HaloDataOrganizer myHalo_in;
 	LBM_HaloDataOrganizer myHalo_out;
@@ -101,6 +109,13 @@ private:
 	float * wAvg;
 	float * rhoAvg;
 	bool timeAvg;
+	
+	int num_ssNds;
+	int * ssNds;
+	float * ss_ux;
+	float * ss_uy;
+	float * ss_uz;
+	float * ss_rho;
 
 
 };

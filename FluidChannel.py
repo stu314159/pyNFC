@@ -1196,6 +1196,12 @@ class FluidChannel:
 
         mat_dict['ndType'] = list(self.ndType[:])
         mat_dict['pRef_idx'] = self.pRef_indx;
+        
+        
+        # add a list of subset nodes
+        
+        mat_dict['ssNds']=self.get_subset_nodeSet()
+        
 
         scipy.io.savemat(geom_filename,mat_dict)
 
@@ -1204,8 +1210,19 @@ class FluidChannel:
         add a subset object to the list of subsets associated with this fluid channel
         
         """
-        self.subsetList.append(ss);
-    
+        
+        self.subsetList.append(ss)
+        
+    def get_subset_nodeSet(self):
+        """
+        convert list of subset objects to set of fluid channel nodes
+        contained within the subsets.
+        """
+        nodeSet = np.empty(0)
+        for ss in self.subsetList:
+            nodeSet = np.union1d(nodeSet,ss.get_members(self.x[:],self.y[:],self.z[:]))
+            
+        return list(nodeSet.flatten())
     def set_pRef_indx(self,Xref,Yref,Zref):
         """
         find the node index within the fluid channel that can
