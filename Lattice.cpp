@@ -210,7 +210,7 @@ void Lattice::computeFout(LBM_DataHandler& f)
 		return;
 	}
 
-	// node type 2 and 3 apply macroscopic boundary conditions
+	// node type 2, 3, and 5 apply macroscopic boundary conditions
 	switch (f.nodeType)
 	{
 	case 2:

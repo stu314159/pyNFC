@@ -381,10 +381,7 @@ class NFC_LBM_partition(object):
 
         """
 
-
-
         ux, uy, uz, rho = self.compute_local_data(isEven);
-
 
         # self.offset_bytes is the number of bytes offset
 
