@@ -1,9 +1,11 @@
 # location of the Python header files
 PYTHON_VERSION = 2.7
-PYTHON_INCLUDE = /gpfs/pkgs/mhpcc/anaconda2-5.0.1/include/python$(PYTHON_VERSION)
-PYTHON_LIB=/gpfs/pkgs/mhpcc/anaconda2-5.0.1/lib
+PYTHON_INCLUDE = /gpfs/home/sblair/.conda/envs/pynfc2/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/gpfs/home/sblair/.conda/envs/pynfc2/lib
 BOOST_PYLIB = py27
- 
+
+#PYTHON_INCLUDE = /gpfs/pkgs/mhpcc/anaconda2-5.0.1/lib/python2.7/include/python$(PYTHON_VERSION)
+#PYTHON_LIB = /gpfs/pkgs/mhpcc/anaconda2-5.0.1/lib 
 # location of the Boost Python include files and library
  
 BOOST_INC = /gpfs/pkgs/mhpcc/boost/include

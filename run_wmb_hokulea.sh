@@ -16,8 +16,8 @@
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=wall_mounted_brick.mat
 
-Num_ts=1001
-ts_rep_freq=500
+Num_ts=101
+ts_rep_freq=50
 Warmup_ts=0
 plot_freq=100
 Re=25
@@ -27,9 +27,9 @@ Restart_flag=$8
 TimeAvg_flag=$9
 
 if [ "$7" = "1" ]; then
-python -np 1 ./wmb_geom.py $1
+python ./wmb_geom.py $1
 
-python -np 1 ./pyNFC_partition.py $MAT_FILE $2 $4 $5
+python  ./pyNFC_partition.py $MAT_FILE $2 $4 $5
 
 else
 echo "pre-processing skipped, commencing time steps"
@@ -42,6 +42,6 @@ $TimeAvg_flag
 export OMP_NUM_THREADS=$6
 mpirun -np $5 ./pyNFC_run.py
 
-mpirun -np 1 ./processNFC.py 
+python ./processNFC.py 
 
 
