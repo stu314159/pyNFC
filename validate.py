@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import numpy as np
 import numpy.linalg as la
@@ -28,7 +30,8 @@ uz[order_map] = uz_i
 
 
 
-umag_tst = np.sqrt(ux**2+uy**2+uz**2)
+#umag_tst = np.sqrt(ux**2+uy**2+uz**2)
+umag_tst = ux**2+uy**2+uz**2
 
 umag_gold = np.load('gold_standard.npy')
 

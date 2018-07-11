@@ -17,14 +17,14 @@
 MAT_FILE=wall_mounted_brick.mat
 
 
-Num_ts=1001
+Num_ts=501
 ts_rep_freq=50
 Warmup_ts=0
 plot_freq=100
 
 Re=25
 dt=0.01
-Cs=1.0
+Cs=0.0
 Restart_flag=$8
 TimeAvg_flag=$9
 SubspaceData_flag=${10}

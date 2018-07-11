@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import numpy as np
 
@@ -26,7 +28,8 @@ ux[order_map] = ux_i
 uy[order_map] = uy_i
 uz[order_map] = uz_i
 
-umag = np.sqrt(ux**2+uy**2+uz**2)
+#umag = np.sqrt(ux**2+uy**2+uz**2)
+umag = ux**2+uy**2+uz**2;
 
 filename = 'gold_standard'
 np.save(filename,umag)

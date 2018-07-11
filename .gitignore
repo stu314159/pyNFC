@@ -16,3 +16,4 @@
 *.settings/
 processNFC_serial
 *.lst
+*.npy

@@ -96,6 +96,12 @@ for i in range(nDumps):
   pressure -= pRef; # adjust for reference pressure
   
   velmag = np.sqrt(ux**2+uy**2+uz**2)
+  #velmag = (ux**2+uy**2+uz**2)
+  #if velmag >= 0:
+  #    velmag = np.sqrt(velmag)
+  #else:
+  #    velmag = 0.
+      
 
   # Create dimensions tuple for pressure reshape and XMF writer
   dims = (Nz,Ny,Nx)

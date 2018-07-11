@@ -75,6 +75,15 @@ if rank == 0:
     if ((Restart_flag==1) and (rank==0)):
         print "Loading restart data."
     time1 = time.time()
+    
+    
+    
+# condsider, at this point, what data you would need to put on a gpu device to 
+# allow accelerated computing:
+# fEven, fOdd, inl, bnl (along with sizes of each),
+# ndT
+
+# for subspace data processing, one would need  ss_nd_array and the number of ss nodes
 
 for ts in range(Num_ts):
     
