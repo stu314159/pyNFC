@@ -6,7 +6,7 @@
 
 from mpi4py import MPI
 import time
-import h5py
+
 #from vtkHelper import saveVelocityAndPressureVTK_binary as writeVTK
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -39,6 +39,8 @@ Lz_p = float(input_data.readline())
 t_conv_fact = float(input_data.readline())
 l_conv_fact = float(input_data.readline())
 p_conv_fact = float(input_data.readline())
+pRef_ind = int(input_data.readline())
+SubspaceData_flag = int(input_data.readline())
 input_data.close()
 
 #print "process %d of %d says hello!" % (rank, size)
@@ -55,7 +57,16 @@ if Restart_flag == 1:
     
 if TimeAvg_flag == 1:
     myPart.initialize_timeAvg()
+    
+if SubspaceData_flag == 1:
+    myPart.allocate_subspace_data_arrays(Num_ts)
+    
 
+# if there are subset nodes and if subset data is to be stored,
+# initialize the data structure that will store the subset data 
+# and write it to disk in an appropriate data structure.
+    
+# NFC_LBM_partition should own this data structure.
     
 # do some time stepping
 #numTs = 10
@@ -72,6 +83,9 @@ for ts in range(Num_ts):
             print "executing time step %d" % (ts+1)
     isEven = (ts%2 == 0)
     myPart.take_LBM_timestep(isEven)
+    
+    if (SubspaceData_flag == 1):
+        myPart.record_subspace_data(ts)
 
     if ((ts % plot_freq == 0) and (ts > Warmup_ts)):
         myPart.write_data(isEven)
@@ -84,6 +98,13 @@ if rank == 0:
     numLP = Nx*Ny*Nz
     LPUs = numLP*Num_ts/(ex_time)
     print "approximate LPU/sec = %g " % LPUs
+    
+if SubspaceData_flag == 1:
+    if rank == 0:
+        print "Writing subspace data arrays to binary data files"
+        
+    myPart.write_subspace_data();
+    myPart.write_ss_node_sorting();
     
 if TimeAvg_flag == 1:
     myPart.write_timeAvg();
