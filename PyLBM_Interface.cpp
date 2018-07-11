@@ -504,9 +504,21 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 	{
 		ndList = interior_nl; ndList_len = inl_sz;
 	}
+	
+	// the rest of this function is parallelizable.  Each ndI can be processed 
+	// independently
+	
+	// fEven and fOdd are sampled and modified (depending on even/odd time step)
+	// ndList is sampled to get node type. 
+	// u_bc, rho_bc, omega, dynamics, Cs, and omegaMRT are all previously 
+	// established variables contained in the fData object.
+	
+	// timeAvg is a boolean; known in advance.
+	// uAvg, vAvg, wAvg and rhoAvg also are modified (if timeAvg == True)
 #pragma omp parallel for
 	for(int ndI=0; ndI<ndList_len;ndI++)
 	{
+	   // create an "envelope" and stuff in the data
 		LBM_DataHandler fData_l(numSpd); // a copy constructor would be cleaner here.
 		fData_l.u_bc = fData.u_bc;
 		fData_l.rho_bc = fData.rho_bc;
@@ -514,12 +526,16 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		fData_l.dynamics = fData.dynamics;
 		fData_l.Cs = fData.Cs;
 		fData_l.omegaMRT = fData.omegaMRT;
+		
 		// get the node number (for the local partition)
 		int nd = ndList[ndI];
+		
 		// set the node type in fData
 		set_ndType(nd,fData_l);
+		
 		// get the incoming data
 		set_fIn(fIn,nd,fData_l);
+		
 		// compute fOut
 		computeFout(fData_l); // passes fData to the appropriate lattice function and gets fOut
 
@@ -540,6 +556,7 @@ void PyLBM_Interface::process_nodeList(const bool isEven,const int nodeListnum)
 		streamData(fOut,nd,fData_l);
 
 	}
+	// end of parallel section
 
 }
 

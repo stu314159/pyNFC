@@ -19,7 +19,7 @@ EXT=cpp
 
 CC=mpic++
 #CC_FLAGS= -fast  -fPIC -std=c++11
-CC_FLAGS=-O3 -std=c++11 -fPIC
+CC_FLAGS=-O3 -std=c++11 -fPIC -fopenmp
 
 SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp \
 	LBM_HaloData.cpp LBM_HaloDataOrganizer.cpp
