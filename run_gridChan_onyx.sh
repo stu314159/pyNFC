@@ -11,20 +11,21 @@
 # 7 - pre-process
 # 8 - restart
 # 9 - time average
-
+# 10 - Subspace Data [1 = yes, 0 = no]
 
 # saves mat file named ChanCavityTest.mat
 MAT_FILE=gridChan.mat
 
-Num_ts=24001
+Num_ts=15001
 ts_rep_freq=1000
 Warmup_ts=0
-plot_freq=2000
+plot_freq=3000
 Re=1000
-dt=0.00025
-Cs=150.0
+dt=0.0002
+Cs=3.0
 Restart_flag=$8
 TimeAvg_flag=$9
+SubspaceData_flag=${10}
 
 
 # must re-process if you change:
@@ -48,7 +49,7 @@ fi
 # basically, pyNFC_preprocess.py just writes params.lbm now.
 aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
-$TimeAvg_flag
+$TimeAvg_flag $SubspaceData_flag
 
 #module unload mpi4py
 
@@ -58,3 +59,7 @@ aprun -n $5 -d $6  ./pyNFC_run.py
 aprun -n 1 ./processNFC.py 
 #aprun -n 1 ./processNFC_serial
 
+if [ "${10}" = "1" ]; then
+echo "processing subspace data"
+./process_subspace_data.py
+fi

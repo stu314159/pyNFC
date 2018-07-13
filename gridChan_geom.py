@@ -20,7 +20,7 @@ aN_divs = args.nDivs
 # overall channel dimensions
 aLx_p = 0.42465 # meters
 aLy_p = 0.42465 # meters
-aLz_p = 2.15 # meters (change to 2.15 m for actual LBM calcs)
+aLz_p = 1.0 # meters (change to 2.15 m for actual LBM calcs)
 
 # thickness of grids (m)
 xT = 0.00965 # x-thickness of vertical grids
