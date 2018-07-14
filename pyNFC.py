@@ -20,6 +20,13 @@ class NFC_LBM_partition(object):
     each partition has:
          
     """
+    def __del__(self):
+        """
+        at least need to destroy the cuda context
+        """
+        cuda.close()
+        print "rank %d released local gpu %d"%(self.rank,self.my_dev)
+    
     def __init__(self,rank,size,comm,Nx,Ny,Nz,rho_lbm,u_bc,dynamics,omega,Cs,lattice_type='D3Q15',):
         """
           rank - MPI rank for this partition
@@ -97,6 +104,13 @@ class NFC_LBM_partition(object):
         self.in_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
+        # set up GPU context
+        num_gpus = len(cuda.gpus);
+        self.my_dev = self.rank%num_gpus;
+        cuda.select_device(self.my_dev);
+        
+        print "rank %d selected GPU %d of %d"%(self.rank,self.my_dev,num_gpus)
+        
         # put necessary data arrays on the GPU:
         d_fEven = cuda.to_device(self.fEven);
         d_fOdd = cuda.to_device(self.fOdd);
@@ -104,6 +118,9 @@ class NFC_LBM_partition(object):
         d_boundaryNL = cuda.to_device(self.bnl_l);
         d_interiorNL = cuda.to_device(self.int_l);
         d_adjacency = cuda.to_device(self.adjacency);
+        
+        # note: on Hokulea, when running multiple MPI processes on a node, 
+        # pushing data (to the default device) results in an error.  
         
         # pass pointers of node lists to myLB object
 #    
