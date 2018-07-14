@@ -213,6 +213,31 @@ class NFC_LBM_partition(object):
         fh.Write_at_all(self.offset_bytes,self.rhoAvg[:self.num_local_nodes])
         fh.Close()
         
+    def process_nodeList(self,isEven,listNum):
+        """
+        do LBM timestep for a list of nodes
+        
+        """
+        if (isEven):
+            fIn = self.fEven; fOut = self.fOdd;
+        else:
+            fIn = self.fOdd; fOut = self.fEven;
+            
+        if listNum == 0:
+            theList = self.bnl_l;
+        if listNum == 1:
+            theList = self.int_l;
+            
+        for nd in theList:
+            ndType = self.ndT[nd];
+            f_in = fIn[nd,:];
+            
+            f_out = self.lattice.compute_fOut(f_in,ndType,self.omega,
+                                              self.Cs,self.u_bc,self.rho_lbm)
+            
+            self.stream(fOut,f_out,nd)
+    
+    
     def take_LBM_timestep(self,isEven):
         """
           carry out the LBM process for a time step.  Orchestrate processing of all
@@ -222,10 +247,12 @@ class NFC_LBM_partition(object):
         # process boundary lattice points
 
         #self.myLB.process_nodeList(isEven,0);
+        self.process_nodeList(isEven,0);
 
         # extract halo data
 
         #self.myLB.extract_halo_data(isEven)
+        self.extract_halo_data(isEven);
 
         # initiate communication of halo data
 
@@ -243,6 +270,7 @@ class NFC_LBM_partition(object):
         # process interior lattice points
   
         #self.myLB.process_nodeList(isEven,1)
+        self.process_nodeList(isEven,0);
 
         # be sure MPI communication is done
 
@@ -252,6 +280,7 @@ class NFC_LBM_partition(object):
         # load incoming data to appropriate array
 
         #self.myLB.insert_boundary_data(isEven)
+        self.insert_boundary_data(isEven)
 
         # done.
         
@@ -458,6 +487,17 @@ class NFC_LBM_partition(object):
         uy = np.zeros([self.num_local_nodes],dtype=np.float32)
         uz = np.zeros([self.num_local_nodes],dtype=np.float32)
         rho = np.zeros([self.num_local_nodes],dtype=np.float32)
+        
+        # get pointer to current data
+        if isEven:
+            fIn = self.fEven;
+        else:
+            fIn = self.fOdd;
+        
+        for nd in range(self.num_local_nodes):
+            f = fIn[nd,:];
+            ux[nd],uy[nd],uz[nd],rho[nd] = self.lattice.compute_macroscopic_data(f)
+            
     
         #self.myLB.set_ux(ux);
         #self.myLB.set_uy(uy);

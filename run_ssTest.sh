@@ -58,7 +58,7 @@ export OMP_NUM_THREADS=$6
 ##aprun -n $5 -d $6  ./pyNFC_run.py
 mpirun -np $5 ./pyNFC_run.py
 
-#python ./processNFC.py 
+python ./processNFC.py 
 
 #if [ "${10}" = "1" ]; then
 #echo "processing subspace data"
