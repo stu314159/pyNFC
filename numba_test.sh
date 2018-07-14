@@ -2,4 +2,4 @@
 
 # 1 - number of partitions
 
-./run_ssTest.sh 3 D3Q19 3 1D $1 1 1 0 0 0
+./run_ssTest.sh 11 D3Q15 1 1D $1 1 1 0 0 0

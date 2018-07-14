@@ -21,10 +21,10 @@ MAT_FILE=ssTest.mat
 Num_ts=21
 ts_rep_freq=2
 Warmup_ts=0
-plot_freq=10
+plot_freq=4
 
 Re=25
-dt=0.05
+dt=0.01
 Cs=0
 Restart_flag=$8
 TimeAvg_flag=$9

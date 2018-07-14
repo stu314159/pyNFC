@@ -270,7 +270,7 @@ class NFC_LBM_partition(object):
         # process interior lattice points
   
         #self.myLB.process_nodeList(isEven,1)
-        self.process_nodeList(isEven,0);
+        self.process_nodeList(isEven,1);
 
         # be sure MPI communication is done
 
@@ -496,7 +496,7 @@ class NFC_LBM_partition(object):
         
         for nd in range(self.num_local_nodes):
             f = fIn[nd,:];
-            ux[nd],uy[nd],uz[nd],rho[nd] = self.lattice.compute_macroscopic_data(f)
+            rho[nd],ux[nd],uy[nd],uz[nd] = self.lattice.compute_macroscopic_data(f)
             
     
         #self.myLB.set_ux(ux);
