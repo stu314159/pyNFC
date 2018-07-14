@@ -10,23 +10,15 @@ from mpi4py import MPI
 
 import pyLattice as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
-#import LBM_Interface as LB
+import LBM_Interface as LB
 import h5py
 import scipy.io
-from numba import cuda
 
 class NFC_LBM_partition(object):
     """
     each partition has:
          
     """
-    def __del__(self):
-        """
-        at least need to destroy the cuda context
-        """
-        cuda.close()
-        print "rank %d released local gpu %d"%(self.rank,self.my_dev)
-    
     def __init__(self,rank,size,comm,Nx,Ny,Nz,rho_lbm,u_bc,dynamics,omega,Cs,lattice_type='D3Q15',):
         """
           rank - MPI rank for this partition
@@ -64,20 +56,20 @@ class NFC_LBM_partition(object):
               
                 
         self.numSpd = self.lattice.get_numSpd()
-        #self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
-        #self.myLB.set_Ubc(self.u_bc)
-        #self.myLB.set_rhoBC(self.rho_lbm)
-        #self.myLB.set_omega(self.omega)
-        #self.myLB.set_dynamics(self.dynamics)
-        #self.myLB.set_Cs(self.Cs)
-        #self.myLB.set_MPIcomm(self.comm)
-        #self.myLB.set_timeAvg(self.timeAvg)
+        self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
+        self.myLB.set_Ubc(self.u_bc)
+        self.myLB.set_rhoBC(self.rho_lbm)
+        self.myLB.set_omega(self.omega)
+        self.myLB.set_dynamics(self.dynamics)
+        self.myLB.set_Cs(self.Cs)
+        self.myLB.set_MPIcomm(self.comm)
+        self.myLB.set_timeAvg(self.timeAvg)
         
         # if dynamics == 3, construct lattice.omegaMRT and pass its pointer to myLB
         if self.dynamics == 3:
             self.lattice.set_omega(omega)
             self.lattice.constructOmegaMRT(self.omega);
-            #self.myLB.set_omegaMRT(self.lattice.omegaMRT); # pass the MRT operator pointer to myLB
+            self.myLB.set_omegaMRT(self.lattice.omegaMRT); # pass the MRT operator pointer to myLB
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
@@ -104,37 +96,19 @@ class NFC_LBM_partition(object):
         self.in_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
         
-        # set up GPU context
-        num_gpus = len(cuda.gpus);
-        self.my_dev = self.rank%num_gpus;
-        cuda.select_device(self.my_dev);
-        
-        print "rank %d selected GPU %d of %d"%(self.rank,self.my_dev,num_gpus)
-        
-        # put necessary data arrays on the GPU:
-        d_fEven = cuda.to_device(self.fEven);
-        d_fOdd = cuda.to_device(self.fOdd);
-        d_ndType = cuda.to_device(self.ndT);
-        d_boundaryNL = cuda.to_device(self.bnl_l);
-        d_interiorNL = cuda.to_device(self.int_l);
-        d_adjacency = cuda.to_device(self.adjacency);
-        
-        # note: on Hokulea, when running multiple MPI processes on a node, 
-        # pushing data (to the default device) results in an error.  
-        
         # pass pointers of node lists to myLB object
 #    
-        #self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
+        self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
         #self.myLB.set_ssNds(self.ssNds) # assign ss Node list
-        #self.myLB.set_ssNds(self.ss_nd_array) # assign ss Node lis
-        #self.myLB.set_adjacency(self.adjacency)
-        #self.myLB.set_fEven(self.fEven)
-        #self.myLB.set_fOdd(self.fOdd)
-        #self.myLB.set_boundaryNL(self.bnl_l)
-        #self.myLB.set_bnlSZ(int(self.num_bn))
-        #self.myLB.set_inlSZ(int(self.num_in))
-        #self.myLB.set_interiorNL(self.int_l)
-        #self.myLB.set_totalNodes(int(self.total_nodes))
+        self.myLB.set_ssNds(self.ss_nd_array) # assign ss Node lis
+        self.myLB.set_adjacency(self.adjacency)
+        self.myLB.set_fEven(self.fEven)
+        self.myLB.set_fOdd(self.fOdd)
+        self.myLB.set_boundaryNL(self.bnl_l)
+        self.myLB.set_bnlSZ(int(self.num_bn))
+        self.myLB.set_inlSZ(int(self.num_in))
+        self.myLB.set_interiorNL(self.int_l)
+        self.myLB.set_totalNodes(int(self.total_nodes))
         
         
 
@@ -161,11 +135,11 @@ class NFC_LBM_partition(object):
         self.rhoAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
         
         # pass pointers to PyLBM_Interface object
-        #self.myLB.set_uAvg(self.uAvg);
-        #self.myLB.set_vAvg(self.vAvg);
-        #self.myLB.set_wAvg(self.wAvg);
-        #self.myLB.set_rhoAvg(self.rhoAvg);
-        #self.myLB.set_timeAvg(True);
+        self.myLB.set_uAvg(self.uAvg);
+        self.myLB.set_vAvg(self.vAvg);
+        self.myLB.set_wAvg(self.wAvg);
+        self.myLB.set_rhoAvg(self.rhoAvg);
+        self.myLB.set_timeAvg(True);
         
     def write_timeAvg(self):
         """
@@ -213,31 +187,6 @@ class NFC_LBM_partition(object):
         fh.Write_at_all(self.offset_bytes,self.rhoAvg[:self.num_local_nodes])
         fh.Close()
         
-    def process_nodeList(self,isEven,listNum):
-        """
-        do LBM timestep for a list of nodes
-        
-        """
-        if (isEven):
-            fIn = self.fEven; fOut = self.fOdd;
-        else:
-            fIn = self.fOdd; fOut = self.fEven;
-            
-        if listNum == 0:
-            theList = self.bnl_l;
-        if listNum == 1:
-            theList = self.int_l;
-            
-        for nd in theList:
-            ndType = self.ndT[nd];
-            f_in = fIn[nd,:];
-            
-            f_out = self.lattice.compute_fOut(f_in,ndType,self.omega,
-                                              self.Cs,self.u_bc,self.rho_lbm)
-            
-            self.stream(fOut,f_out,nd)
-    
-    
     def take_LBM_timestep(self,isEven):
         """
           carry out the LBM process for a time step.  Orchestrate processing of all
@@ -245,14 +194,12 @@ class NFC_LBM_partition(object):
         """
         
         # process boundary lattice points
-
-        #self.myLB.process_nodeList(isEven,0);
-        self.process_nodeList(isEven,0);
+ 
+        self.myLB.process_nodeList(isEven,0);
 
         # extract halo data
 
-        #self.myLB.extract_halo_data(isEven)
-        self.extract_halo_data(isEven);
+        self.myLB.extract_halo_data(isEven)
 
         # initiate communication of halo data
 
@@ -269,8 +216,7 @@ class NFC_LBM_partition(object):
 
         # process interior lattice points
   
-        #self.myLB.process_nodeList(isEven,1)
-        self.process_nodeList(isEven,1);
+        self.myLB.process_nodeList(isEven,1)
 
         # be sure MPI communication is done
 
@@ -279,8 +225,7 @@ class NFC_LBM_partition(object):
 
         # load incoming data to appropriate array
 
-        #self.myLB.insert_boundary_data(isEven)
-        self.insert_boundary_data(isEven)
+        self.myLB.insert_boundary_data(isEven)
 
         # done.
         
@@ -487,24 +432,13 @@ class NFC_LBM_partition(object):
         uy = np.zeros([self.num_local_nodes],dtype=np.float32)
         uz = np.zeros([self.num_local_nodes],dtype=np.float32)
         rho = np.zeros([self.num_local_nodes],dtype=np.float32)
-        
-        # get pointer to current data
-        if isEven:
-            fIn = self.fEven;
-        else:
-            fIn = self.fOdd;
-        
-        for nd in range(self.num_local_nodes):
-            f = fIn[nd,:];
-            rho[nd],ux[nd],uy[nd],uz[nd] = self.lattice.compute_macroscopic_data(f)
-            
     
-        #self.myLB.set_ux(ux);
-        #self.myLB.set_uy(uy);
-        #self.myLB.set_uz(uz);
-        #self.myLB.set_rho(rho);
+        self.myLB.set_ux(ux);
+        self.myLB.set_uy(uy);
+        self.myLB.set_uz(uz);
+        self.myLB.set_rho(rho);
 
-        #self.myLB.compute_local_data(isEven);
+        self.myLB.compute_local_data(isEven);
 
        
         ux[np.where(self.ndT[:self.num_local_nodes]==1)] = 0.;
@@ -522,7 +456,7 @@ class NFC_LBM_partition(object):
         compute ux, uy, uz, and rho for subspace data set and store in the appropriate
         copy of the subspace data arrays.
         """
-        #self.myLB.compute_subspace_data(ts)
+        self.myLB.compute_subspace_data(ts)
 
     def report_statistics(self):
         """
@@ -698,17 +632,17 @@ class NFC_LBM_partition(object):
         self.num_ngb = len(self.ngb_list)
         
         # register and initialize neighbors in PyLBM_Interface object
-       # for ngb in self.ngb_list:
-       #     numData = self.HDO_out_dict[ngb].count_data_members()
-       #     self.myLB.registerNeighbor(int(ngb),int(numData))
-       #     # get pointers to incoming halo data
-       #     self.myLB.getHaloInPointers(self.HDO_in_dict[ngb].lnn_array,
-       #                                 self.HDO_in_dict[ngb].spd_array,
-       #                                 self.HDO_in_dict[ngb].buffer,int(ngb))
-       #     # get pointers to outgoing halo data
-       #     self.myLB.getHaloOutPointers(self.HDO_out_dict[ngb].lnn_array,
-       #                                 self.HDO_out_dict[ngb].spd_array,
-       #                                 self.HDO_out_dict[ngb].buffer,int(ngb))
+        for ngb in self.ngb_list:
+            numData = self.HDO_out_dict[ngb].count_data_members()
+            self.myLB.registerNeighbor(int(ngb),int(numData))
+            # get pointers to incoming halo data
+            self.myLB.getHaloInPointers(self.HDO_in_dict[ngb].lnn_array,
+                                        self.HDO_in_dict[ngb].spd_array,
+                                        self.HDO_in_dict[ngb].buffer,int(ngb))
+            # get pointers to outgoing halo data
+            self.myLB.getHaloOutPointers(self.HDO_out_dict[ngb].lnn_array,
+                                        self.HDO_out_dict[ngb].spd_array,
+                                        self.HDO_out_dict[ngb].buffer,int(ngb))
             
        
     def extract_halo_data(self,isEven):

@@ -194,7 +194,7 @@ class Lattice(object):
             rho_bc - (optional) outlet pressure
             
           output:
-           fOut - outgoing particle density distribution for streaming (one node only)
+           fOut - outgoing particle density distribution for streaming
 
         """
         fluidNode = False; solidNode = False; inletNode = False; outletNode = False;
