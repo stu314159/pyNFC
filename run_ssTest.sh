@@ -18,13 +18,13 @@
 MAT_FILE=ssTest.mat
 
 
-Num_ts=20
+Num_ts=21
 ts_rep_freq=2
 Warmup_ts=0
-plot_freq=100
+plot_freq=10
 
 Re=25
-dt=0.01
+dt=0.05
 Cs=0
 Restart_flag=$8
 TimeAvg_flag=$9
@@ -57,9 +57,9 @@ export OMP_NUM_THREADS=$6
 ##aprun -n $5 -d $6  ./pyNFC_run.py
 mpirun -np $5 ./pyNFC_run.py
 
-python ./processNFC.py 
+#python ./processNFC.py 
 
-if [ "${10}" = "1" ]; then
-echo "processing subspace data"
-./process_subspace_data.py
-fi
+#if [ "${10}" = "1" ]; then
+#echo "processing subspace data"
+#./process_subspace_data.py
+#fi

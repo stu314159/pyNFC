@@ -10,7 +10,7 @@ from mpi4py import MPI
 
 import pyLattice as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
-import LBM_Interface as LB
+#import LBM_Interface as LB
 import h5py
 import scipy.io
 
@@ -56,20 +56,20 @@ class NFC_LBM_partition(object):
               
                 
         self.numSpd = self.lattice.get_numSpd()
-        self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
-        self.myLB.set_Ubc(self.u_bc)
-        self.myLB.set_rhoBC(self.rho_lbm)
-        self.myLB.set_omega(self.omega)
-        self.myLB.set_dynamics(self.dynamics)
-        self.myLB.set_Cs(self.Cs)
-        self.myLB.set_MPIcomm(self.comm)
-        self.myLB.set_timeAvg(self.timeAvg)
+        #self.myLB = LB.PyLBM_Interface(self.numSpd) # boost interface
+        #self.myLB.set_Ubc(self.u_bc)
+        #self.myLB.set_rhoBC(self.rho_lbm)
+        #self.myLB.set_omega(self.omega)
+        #self.myLB.set_dynamics(self.dynamics)
+        #self.myLB.set_Cs(self.Cs)
+        #self.myLB.set_MPIcomm(self.comm)
+        #self.myLB.set_timeAvg(self.timeAvg)
         
         # if dynamics == 3, construct lattice.omegaMRT and pass its pointer to myLB
         if self.dynamics == 3:
             self.lattice.set_omega(omega)
             self.lattice.constructOmegaMRT(self.omega);
-            self.myLB.set_omegaMRT(self.lattice.omegaMRT); # pass the MRT operator pointer to myLB
+            #self.myLB.set_omegaMRT(self.lattice.omegaMRT); # pass the MRT operator pointer to myLB
         
         #print "process %d of %d constructed %s lattice " % (rank,size,lattice_type)
         self.ex = np.array(self.lattice.get_ex(),dtype=np.int32);
@@ -98,17 +98,17 @@ class NFC_LBM_partition(object):
         
         # pass pointers of node lists to myLB object
 #    
-        self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
+        #self.myLB.set_ndT(self.ndT) #replace use of inl, onl and snl
         #self.myLB.set_ssNds(self.ssNds) # assign ss Node list
-        self.myLB.set_ssNds(self.ss_nd_array) # assign ss Node lis
-        self.myLB.set_adjacency(self.adjacency)
-        self.myLB.set_fEven(self.fEven)
-        self.myLB.set_fOdd(self.fOdd)
-        self.myLB.set_boundaryNL(self.bnl_l)
-        self.myLB.set_bnlSZ(int(self.num_bn))
-        self.myLB.set_inlSZ(int(self.num_in))
-        self.myLB.set_interiorNL(self.int_l)
-        self.myLB.set_totalNodes(int(self.total_nodes))
+        #self.myLB.set_ssNds(self.ss_nd_array) # assign ss Node lis
+        #self.myLB.set_adjacency(self.adjacency)
+        #self.myLB.set_fEven(self.fEven)
+        #self.myLB.set_fOdd(self.fOdd)
+        #self.myLB.set_boundaryNL(self.bnl_l)
+        #self.myLB.set_bnlSZ(int(self.num_bn))
+        #self.myLB.set_inlSZ(int(self.num_in))
+        #self.myLB.set_interiorNL(self.int_l)
+        #self.myLB.set_totalNodes(int(self.total_nodes))
         
         
 
@@ -135,11 +135,11 @@ class NFC_LBM_partition(object):
         self.rhoAvg = np.zeros([self.num_local_nodes],dtype=np.float32);
         
         # pass pointers to PyLBM_Interface object
-        self.myLB.set_uAvg(self.uAvg);
-        self.myLB.set_vAvg(self.vAvg);
-        self.myLB.set_wAvg(self.wAvg);
-        self.myLB.set_rhoAvg(self.rhoAvg);
-        self.myLB.set_timeAvg(True);
+        #self.myLB.set_uAvg(self.uAvg);
+        #self.myLB.set_vAvg(self.vAvg);
+        #self.myLB.set_wAvg(self.wAvg);
+        #self.myLB.set_rhoAvg(self.rhoAvg);
+        #self.myLB.set_timeAvg(True);
         
     def write_timeAvg(self):
         """
@@ -194,12 +194,12 @@ class NFC_LBM_partition(object):
         """
         
         # process boundary lattice points
- 
-        self.myLB.process_nodeList(isEven,0);
+
+        #self.myLB.process_nodeList(isEven,0);
 
         # extract halo data
 
-        self.myLB.extract_halo_data(isEven)
+        #self.myLB.extract_halo_data(isEven)
 
         # initiate communication of halo data
 
@@ -216,7 +216,7 @@ class NFC_LBM_partition(object):
 
         # process interior lattice points
   
-        self.myLB.process_nodeList(isEven,1)
+        #self.myLB.process_nodeList(isEven,1)
 
         # be sure MPI communication is done
 
@@ -225,7 +225,7 @@ class NFC_LBM_partition(object):
 
         # load incoming data to appropriate array
 
-        self.myLB.insert_boundary_data(isEven)
+        #self.myLB.insert_boundary_data(isEven)
 
         # done.
         
@@ -433,12 +433,12 @@ class NFC_LBM_partition(object):
         uz = np.zeros([self.num_local_nodes],dtype=np.float32)
         rho = np.zeros([self.num_local_nodes],dtype=np.float32)
     
-        self.myLB.set_ux(ux);
-        self.myLB.set_uy(uy);
-        self.myLB.set_uz(uz);
-        self.myLB.set_rho(rho);
+        #self.myLB.set_ux(ux);
+        #self.myLB.set_uy(uy);
+        #self.myLB.set_uz(uz);
+        #self.myLB.set_rho(rho);
 
-        self.myLB.compute_local_data(isEven);
+        #self.myLB.compute_local_data(isEven);
 
        
         ux[np.where(self.ndT[:self.num_local_nodes]==1)] = 0.;
@@ -456,7 +456,7 @@ class NFC_LBM_partition(object):
         compute ux, uy, uz, and rho for subspace data set and store in the appropriate
         copy of the subspace data arrays.
         """
-        self.myLB.compute_subspace_data(ts)
+        #self.myLB.compute_subspace_data(ts)
 
     def report_statistics(self):
         """
@@ -632,17 +632,17 @@ class NFC_LBM_partition(object):
         self.num_ngb = len(self.ngb_list)
         
         # register and initialize neighbors in PyLBM_Interface object
-        for ngb in self.ngb_list:
-            numData = self.HDO_out_dict[ngb].count_data_members()
-            self.myLB.registerNeighbor(int(ngb),int(numData))
-            # get pointers to incoming halo data
-            self.myLB.getHaloInPointers(self.HDO_in_dict[ngb].lnn_array,
-                                        self.HDO_in_dict[ngb].spd_array,
-                                        self.HDO_in_dict[ngb].buffer,int(ngb))
-            # get pointers to outgoing halo data
-            self.myLB.getHaloOutPointers(self.HDO_out_dict[ngb].lnn_array,
-                                        self.HDO_out_dict[ngb].spd_array,
-                                        self.HDO_out_dict[ngb].buffer,int(ngb))
+       # for ngb in self.ngb_list:
+       #     numData = self.HDO_out_dict[ngb].count_data_members()
+       #     self.myLB.registerNeighbor(int(ngb),int(numData))
+       #     # get pointers to incoming halo data
+       #     self.myLB.getHaloInPointers(self.HDO_in_dict[ngb].lnn_array,
+       #                                 self.HDO_in_dict[ngb].spd_array,
+       #                                 self.HDO_in_dict[ngb].buffer,int(ngb))
+       #     # get pointers to outgoing halo data
+       #     self.myLB.getHaloOutPointers(self.HDO_out_dict[ngb].lnn_array,
+       #                                 self.HDO_out_dict[ngb].spd_array,
+       #                                 self.HDO_out_dict[ngb].buffer,int(ngb))
             
        
     def extract_halo_data(self,isEven):
