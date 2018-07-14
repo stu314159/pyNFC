@@ -53,6 +53,7 @@ python ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
 $TimeAvg_flag $SubspaceData_flag
 
+export OMPI_MCA_mpi_warn_on_fork=0
 export OMP_NUM_THREADS=$6
 ##aprun -n $5 -d $6  ./pyNFC_run.py
 mpirun -np $5 ./pyNFC_run.py
