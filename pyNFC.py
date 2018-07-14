@@ -13,6 +13,7 @@ from pyNFC_Util import NFC_Halo_Data_Organizer
 #import LBM_Interface as LB
 import h5py
 import scipy.io
+from numba import cuda
 
 class NFC_LBM_partition(object):
     """
@@ -95,6 +96,14 @@ class NFC_LBM_partition(object):
         self.out_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
         self.in_requests = [MPI.REQUEST_NULL for i in range(self.num_ngb)]
         self.statuses = [MPI.Status() for i in range(self.num_ngb)]
+        
+        # put necessary data arrays on the GPU:
+        d_fEven = cuda.to_device(self.fEven);
+        d_fOdd = cuda.to_device(self.fOdd);
+        d_ndType = cuda.to_device(self.ndT);
+        d_boundaryNL = cuda.to_device(self.bnl_l);
+        d_interiorNL = cuda.to_device(self.int_l);
+        d_adjacency = cuda.to_device(self.adjacency);
         
         # pass pointers of node lists to myLB object
 #    
