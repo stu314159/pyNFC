@@ -8,11 +8,12 @@ import numpy as np
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTKpt
 from mpi4py import MPI
 
-import pyLattice as pl
+import pyLattice_numba as pl
 from pyNFC_Util import NFC_Halo_Data_Organizer
 #import LBM_Interface as LB
 import h5py
 import scipy.io
+import numba
 from numba import cuda
 
 class NFC_LBM_partition(object):

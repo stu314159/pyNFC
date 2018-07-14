@@ -1,10 +1,12 @@
-# pyLattice.py
+# pyLattice_numba.py
 """
 class module for the Lattice class to be used with pyNFC
 
 
 """
 import numpy as np
+import numba
+from numba import cuda
 
 
 class Lattice(object):

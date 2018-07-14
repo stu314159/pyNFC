@@ -13,7 +13,7 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 import sys
 sys.path.insert(1,'.')
-import pyNFC
+import pyNFC_numba
 # Information about the LBM run that produced the data - I should get this from params.lbm
 # Read data from params.lbm
 input_file_name = 'params.lbm'
@@ -47,7 +47,7 @@ input_data.close()
 
 # each process initialize their partition:
 
-myPart = pyNFC.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,dynamics,omega,Cs,lattice_type)
+myPart = pyNFC_numba.NFC_LBM_partition(rank,size,comm,Nx,Ny,Nz,rho_lbm,u_lbm,dynamics,omega,Cs,lattice_type)
 
 myPart.write_node_sorting() # should this be done in the constructor?
 
