@@ -21,7 +21,7 @@ MAT_FILE=ssTest.mat
 Num_ts=21
 ts_rep_freq=2
 Warmup_ts=0
-plot_freq=4
+plot_freq=5
 
 Re=25
 dt=0.01
@@ -56,7 +56,7 @@ $TimeAvg_flag $SubspaceData_flag
 export OMPI_MCA_mpi_warn_on_fork=0
 export OMP_NUM_THREADS=$6
 ##aprun -n $5 -d $6  ./pyNFC_run.py
-mpirun -np $5 ./pyNFC_run.py
+mpirun -np $5 ./pyNFC_run_numba.py
 
 python ./processNFC.py 
 
