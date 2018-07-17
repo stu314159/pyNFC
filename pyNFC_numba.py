@@ -48,7 +48,8 @@ class NFC_LBM_partition(object):
 
         # LBM simulation parameters
 
-        self.rho_lbm = rho_lbm; self.u_bc = u_bc; self.omega = omega; self.Cs = Cs
+        self.rho_lbm = np.float32(rho_lbm); self.u_bc = np.float32(u_bc); 
+        self.omega = np.float32(omega); self.Cs = np.float32(Cs)
         self.dynamics = dynamics;
         self.timeAvg = False
 
@@ -623,7 +624,7 @@ class NFC_LBM_partition(object):
                                   np.array(self.hnl_l,dtype=np.int32))
 
         self.int_l = np.setxor1d(all_nodes,not_interior) # self.int_l = interior node list in local node numbers
-        self.num_in = self.int_l.size; # number of interior nodes
+        self.num_in = np.int32(self.int_l.size); # number of interior nodes
 
     def get_halo_nodes(self):
         """
@@ -661,7 +662,7 @@ class NFC_LBM_partition(object):
         for bn in self.boundary_nodes_g:
             self.bnl_l.append(self.global_to_local[bn])
         self.bnl_l = sorted(self.bnl_l[:]) # make it sorted
-        self.num_bn = len(self.bnl_l)
+        self.num_bn = np.int32(len(self.bnl_l))
         self.bnl_l = np.array(self.bnl_l,dtype=np.int32)
 
         """
