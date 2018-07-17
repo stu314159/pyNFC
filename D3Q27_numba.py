@@ -25,6 +25,8 @@ w27 = np.array([8./27.,2./27.,2./27.,2./27.,2./27.,2./27.,2./27.,
 
 bbSpd27 = np.array([0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15,26,25,24,23,22,21,20,19],
                  dtype=np.int32);
+                   
+numSpd = 27;
 
                    
 @cuda.jit('void(float32[:],float32,float32,float32,float32,float32[:],float32[:],float32[:],float32[:])',device=True)
@@ -32,7 +34,7 @@ def compute_f_eq(f_eq,rho,ux,uy,uz,ex,ey,ez,w):
     """
     
     """
-    for spd in range(27):
+    for spd in range(numSpd):
         cu = 3.*(ex[spd]*ux + ey[spd]*uy + ez[spd]*uz);
         f_eq[spd] = w[spd]*rho*(1. + cu + 0.5*(cu*cu) 
         - 3./2.*(ux*ux + uy*uy + uz*uz));
@@ -40,7 +42,7 @@ def compute_f_eq(f_eq,rho,ux,uy,uz,ex,ey,ez,w):
 @cuda.jit('float32(float32[:])',device=True)               
 def compute_rho(f):
     rho = 0.;
-    for i in range(27):
+    for i in range(numSpd):
         rho = rho + f[i]
         
     return rho
@@ -53,7 +55,7 @@ def compute_u(f,e,rho):
     """
     u = 0.;
     
-    for i in range(27):
+    for i in range(numSpd):
         u = u + f[i]*e[i];
         
     return u/rho;
@@ -64,7 +66,7 @@ def bounce_back(f_out,f_in,bbSpd):
     bounce-back for solid nodes
     
     """
-    for spd in range(27):
+    for spd in range(numSpd):
         f_out[bbSpd[spd]] = f_in[spd];
 
 @cuda.jit('float32(float32[:],float32)',device=True)     
@@ -97,10 +99,38 @@ def compute_Pi1_flat(Pi1_flat,f_in,f_eq,Qflat):
     for i in range(9):
         Pi1_flat[i] = 0.
     
-    for spd in range(27):
+    for spd in range(numSpd):
         for k in range(9):
             Pi1_flat[k]+=(f_in[spd] - f_eq[spd])*Qflat[spd,k];
-     
+        
+    
+@cuda.jit('void(float32[:],float32[:],float32[:],float32[:,:],float32[:])',device=True)
+def regularize_boundary_nodes(f_in, f_eq, Pi1_flat,Qflat,w):
+    """
+    apply regularization process to inlet and outlet boundary nodes as addapted
+    from J. Latt dissertation
+    """
+    for spd in range(numSpd):
+        ft = 0.;
+        for k in range(9):
+            ft += w[spd]*(9./2.)*Qflat[spd,k]*Pi1_flat[k];
+        f_in[spd] = f_eq[spd]+ft;
+
+@cuda.jit('void(float32[:,:],float32[:],float32[:],float32[:],float32[:],float32[:])',device=True)
+def compute_strain_tensor(S,ex,ey,ez,f_in,f_eq):
+    """
+    generates the 3x3 viscous strain tensor for use with the
+    1-parameter turbulence model
+    """
+    for i in range(3):
+        for j in range(3):
+            S[i,j] = 0.;
+    
+    for spd in range(numSpd):
+        e = [ex[spd],ey[spd],ez[spd]]; # I hope this works.
+        for i in range(3):
+            for j in range(3):
+                S[i,j] += e[i]*e[j]*(f_in[spd] - f_eq[spd]);
 
 @cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
 def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
@@ -130,9 +160,10 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
     
     if (tid < N):
         # get fIn data
-        f_in = cuda.local.array(27,dtype=numba.float32);
-        f_out = cuda.local.array(27,dtype=numba.float32);
-        for i in range(27):
+        f_in = cuda.local.array(numSpd,dtype=numba.float32);
+        f_out = cuda.local.array(numSpd,dtype=numba.float32);
+        S = cuda.local.array((3,3),dtype=numba.float32);
+        for i in range(numSpd):
             f_in[i] = fIn[tid,i];
             
         ## load constant data into shared arrays
@@ -174,6 +205,8 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
             if (ndT == 2) or (ndT == 3): # regularize boundary nodes
                 Pi1_flat = cuda.local.array(9,dtype=numba.float32);
                 compute_Pi1_flat(Pi1_flat,f_in,f_eq,Qflat);
+                regularize_boundary_nodes(f_in, f_eq, Pi1_flat,Qflat,w);
+            compute_strain_tensor(S,ex,ey,ez,f_in,f_eq);
         
         
         MacroV[tid,0] = rho;
