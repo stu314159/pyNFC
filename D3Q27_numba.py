@@ -203,7 +203,7 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
         for i in range(numSpd):
             f_in[i] = fIn[nd,i];
             
-        ## load constant data into shared arrays
+        # load constant data into shared arrays
         if (tid < 27):
             for k in range(9):
                 sQflat[tid,k]=Qflat27[tid,k];

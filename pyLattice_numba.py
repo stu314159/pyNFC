@@ -682,7 +682,7 @@ class D3Q27Lattice(Lattice):
         blockdim = self.TPB
         
         # call my driver kernel to proces the node list.
-        D3Q27.process_node_list[griddim,blockdim](fOut,fIn,MacroV,adjArray,ndType,
+        D3Q27.process_node_list[griddim,blockdim](fOut,fIn,adjArray,MacroV,ndType,
                    u_bc,rho_lbm,omega,Cs,
                    ndList,Qflat,N);
   
