@@ -145,6 +145,15 @@ def apply_turbulence_model(omega,Cs,S):
     nu_e = P/6.;
     return 1./(3.*(nu+nu_e)+0.5)
 
+@cuda.jit('void(float32[:],float32[:],float32)',device=True)
+def relax(f_in, f_eq, omega):
+    """
+    relax toward equilibrium
+    """
+    
+    for spd in range(numSpd):
+        f_in[spd] = f_in[spd] - omega*(f_in[spd] - f_eq[spd]);
+        
 
 @cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
 def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
@@ -222,6 +231,7 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
                 regularize_boundary_nodes(f_in, f_eq, Pi1_flat,Qflat,w);
             compute_strain_tensor(S,ex,ey,ez,f_in,f_eq);
             omega_t = apply_turbulence_model(omega,Cs,S);
+            relax(f_in,f_eq,omega_t);
         
         
         MacroV[tid,0] = rho;
