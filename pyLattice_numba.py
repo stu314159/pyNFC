@@ -673,6 +673,7 @@ class D3Q27Lattice(Lattice):
         rho_lbm - scalar float for density/pressure boundary condition
         omega - scalar float for relaxation parameter
         Cs - scalar float for turbulence model parameter
+        Qflat - flattened tensor array for regularization scheme.
         ndList - device array with the local node number of all nodes on the node list
         N - integer - number of nodes on the node list
         """
