@@ -177,6 +177,9 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
     #bbSpd = cuda.shared.array(27,dtype=numba.int32);
     sQflat = cuda.shared.array((27,9),dtype=numba.float32);
     
+    # it may be a big issue that these get established every single time step
+    # even though, they are constant
+    # could I just make them global??? (within the D3Q27 namespace, of course...)
     ex = cuda.const.array_like(ex27);
     ey = cuda.const.array_like(ey27);
     ez = cuda.const.array_like(ez27);

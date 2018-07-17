@@ -225,40 +225,40 @@ class NFC_LBM_partition(object):
         
         """
         if (isEven):
-            #fIn = self.d_fEven; fOut = self.d_fOdd;
-            fIn = self.fEven; fOut = self.fOdd;
+            fIn = self.d_fEven; fOut = self.d_fOdd;
+            #fIn = self.fEven; fOut = self.fOdd;
         else:
-            #fIn = self.d_fOdd; fOut = self.d_fEven;
-            fIn = self.fOdd; fOut = self.fEven;
+            fIn = self.d_fOdd; fOut = self.d_fEven;
+            #fIn = self.fOdd; fOut = self.fEven;
             
         if listNum == 0:
-            theList = self.bnl_l;
-        #    theList = self.d_boundaryNL
-        #    M = self.num_bn
+        #    theList = self.bnl_l;
+            theList = self.d_boundaryNL
+            M = self.num_bn
         if listNum == 1:
-            theList = self.int_l;
-        #    theList = self.d_interiorNL
-        #    M = self.num_in
+        #    theList = self.int_l;
+            theList = self.d_interiorNL
+            M = self.num_in
         
             
-        #self.lattice.process_node_list_numba(fOut,fIn,self.d_MacroV,self.d_adjacency,
-        #                                     self.d_ndType, self.u_bc,
-        #                                     self.rho_lbm, self.omega, self.Cs,
-        #                                     self.d_Qflat,theList, M) 
+        self.lattice.process_node_list_numba(fOut,fIn,self.d_MacroV,self.d_adjacency,
+                                             self.d_ndType, self.u_bc,
+                                             self.rho_lbm, self.omega, self.Cs,
+                                             self.d_Qflat,theList, M) 
         # need to configure a grid of threads and 
         # launch a kernel that will process the node list.
         #num_blocks = np.ceil(float(M)/float(self.TPB))
         #griddim = int(num_blocks);
         #blockdim = self.TPB
         
-        for nd in theList:
-            ndType = self.ndT[nd];
-            f_in = fIn[nd,:];
-            
-            f_out = self.lattice.compute_fOut(f_in,ndType,self.omega,
-                                              self.Cs,self.u_bc,self.rho_lbm)
-            
-            self.stream(fOut,f_out,nd)
+        #for nd in theList:
+        #    ndType = self.ndT[nd];
+        #    f_in = fIn[nd,:];
+        #    
+        #    f_out = self.lattice.compute_fOut(f_in,ndType,self.omega,
+        #                                      self.Cs,self.u_bc,self.rho_lbm)
+        #    
+        #    self.stream(fOut,f_out,nd)
     
     
     def take_LBM_timestep(self,isEven):
