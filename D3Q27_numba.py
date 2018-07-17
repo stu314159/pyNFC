@@ -87,7 +87,20 @@ def set_outlet_bc_macro(f,rho):
                (f[5]+f[11]+f[13]+f[17]+f[19]+f[21]+f[23]+f[25]) +
                (f[0]+f[1]+f[2]+f[3]+f[4]+f[7]+f[8]+f[9]+f[10]));
     return uz;
-        
+
+@cuda.jit('void(float32[:],float32[:],float32[:],float32[:,:])',device=True)
+def compute_Pi1_flat(Pi1_flat,f_in,f_eq,Qflat):
+    """
+    compute the 3x3 (flattened) array required for the regularization processes
+    """
+    # initialize Pi1_flat to zero
+    for i in range(9):
+        Pi1_flat[i] = 0.
+    
+    for spd in range(27):
+        for k in range(9):
+            Pi1_flat[k]+=(f_in[spd] - f_eq[spd])*Qflat[spd,k];
+     
 
 @cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
 def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
@@ -106,7 +119,7 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
     ez = cuda.const.array_like(ez27);
     w = cuda.const.array_like(w27);
     bbSpd = cuda.const.array_like(bbSpd27);
-    Qflat = cuda.const.array_like(Qflat27)
+    Qflat = cuda.const.array_like(Qflat27); # numSpd x 9 flattened tensor
     
     
 # figure out which thread I am...
@@ -159,7 +172,8 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
             # compute equilibribum
             f_eq = cuda.local.array(27,dtype=numba.float32)
             if (ndT == 2) or (ndT == 3): # regularize boundary nodes
-                pass
+                Pi1_flat = cuda.local.array(9,dtype=numba.float32);
+                compute_Pi1_flat(Pi1_flat,f_in,f_eq,Qflat);
         
         
         MacroV[tid,0] = rho;
