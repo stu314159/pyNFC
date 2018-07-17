@@ -9,6 +9,7 @@ Created on Mon Jul 16 08:32:46 2018
 import numpy as np
 import numba
 from numba import cuda
+import math
 
 ex27 = np.array([0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1,0,0,0,0,1,1,1,1,-1,-1,-1,-1],
               dtype=np.float32);
@@ -127,7 +128,7 @@ def compute_strain_tensor(S,ex,ey,ez,f_in,f_eq):
             S[i,j] = 0.;
     
     for spd in range(numSpd):
-        e = [ex[spd],ey[spd],ez[spd]]; # I hope this works.
+        e = (ex[spd],ey[spd],ez[spd]); # I hope this works. (nope)
         for i in range(3):
             for j in range(3):
                 S[i,j] += e[i]*e[j]*(f_in[spd] - f_eq[spd]);
@@ -139,9 +140,9 @@ def apply_turbulence_model(omega,Cs,S):
     1-parameter Smagorinsky-type turbulence model.  (needs validation)
     """
     nu = ((1./omega) - 0.5)*3.0;
-    P = np.sqrt(S[0,0]**2 + S[1,1]**2 + S[2,2]**2 + 
+    P = math.sqrt(S[0,0]**2 + S[1,1]**2 + S[2,2]**2 + 
                 2.0*(S[0,1]**2 + S[0,2]**2 + S[1,2]**2));
-    P *= Cs; P = np.sqrt(P + nu**2) - nu;
+    P *= Cs; P = math.sqrt(P + nu**2) - nu;
     nu_e = P/6.;
     return 1./(3.*(nu+nu_e)+0.5)
 
@@ -164,7 +165,7 @@ def stream(fOut,adjArray,f_out,tid):
         tgtNd = adjArray[tid,spd];
         fOut[tgtNd,spd] = f_out[spd];
 
-@cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
+@cuda.jit('void(float32[:,:],float32[:,:],int32[:,:],float32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
 def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
     """
     a D3Q27-specific kernel to process LBM nodes
@@ -174,14 +175,14 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
     #ez = cuda.shared.array(27,dtype=numba.float32);
     #w = cuda.shared.array(27,dtype=numba.float32);
     #bbSpd = cuda.shared.array(27,dtype=numba.int32);
-    #Qflat = cuda.shared.array((27,9),dtype=numba.float32);
+    sQflat = cuda.shared.array((27,9),dtype=numba.float32);
     
     ex = cuda.const.array_like(ex27);
     ey = cuda.const.array_like(ey27);
     ez = cuda.const.array_like(ez27);
     w = cuda.const.array_like(w27);
     bbSpd = cuda.const.array_like(bbSpd27);
-    Qflat = cuda.const.array_like(Qflat27); # numSpd x 9 flattened tensor
+    #Qflat = cuda.const.array_like(Qflat27); # numSpd x 9 flattened tensor <-- cannot be constant
     
     
 # figure out which thread I am...
@@ -195,11 +196,14 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
         f_in = cuda.local.array(numSpd,dtype=numba.float32);
         f_out = cuda.local.array(numSpd,dtype=numba.float32);
         S = cuda.local.array((3,3),dtype=numba.float32);
+        nd = theList[tid];
         for i in range(numSpd):
-            f_in[i] = fIn[tid,i];
+            f_in[i] = fIn[nd,i];
             
         ## load constant data into shared arrays
-        #if (tx < 27):
+        if (tid < 27):
+            for k in range(9):
+                sQflat[tid,k]=Qflat27[tid,k];
         #    ex[tx] = ex_c[tx];
         #    ey[tx] = ey_c[tx];
         #    ez[tx] = ez_c[tx];
@@ -217,7 +221,7 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
         
                
         # get the node type
-        ndT = ndType[tid];
+        ndT = ndType[nd];
         
         # set macroscopic BCs:
         if ndT == 1: # solid node
@@ -236,8 +240,8 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
             f_eq = cuda.local.array(27,dtype=numba.float32)
             if (ndT == 2) or (ndT == 3): # regularize boundary nodes
                 Pi1_flat = cuda.local.array(9,dtype=numba.float32);
-                compute_Pi1_flat(Pi1_flat,f_in,f_eq,Qflat);
-                regularize_boundary_nodes(f_in, f_eq, Pi1_flat,Qflat,w);
+                compute_Pi1_flat(Pi1_flat,f_in,f_eq,sQflat);
+                regularize_boundary_nodes(f_in, f_eq, Pi1_flat,sQflat,w);
             compute_strain_tensor(S,ex,ey,ez,f_in,f_eq);
             omega_t = apply_turbulence_model(omega,Cs,S);
             f_out = relax(f_in,f_eq,omega_t);
@@ -245,13 +249,13 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
             
         
         # save macroscopic dependent variables
-        MacroV[tid,0] = rho;
-        MacroV[tid,1] = ux;
-        MacroV[tid,2] = uy;
-        MacroV[tid,3] = uz;
+        MacroV[nd,0] = rho;
+        MacroV[nd,1] = ux;
+        MacroV[nd,2] = uy;
+        MacroV[nd,3] = uz;
         
         # stream data to neighbors in the fOut array
-        stream(fOut,adjArray,f_out,tid);
+        stream(fOut,adjArray,f_out,nd);
 
 
 
