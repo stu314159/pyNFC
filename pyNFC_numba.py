@@ -13,7 +13,7 @@ from pyNFC_Util import NFC_Halo_Data_Organizer
 #import LBM_Interface as LB
 import h5py
 import scipy.io
-import numba
+#import numba
 from numba import cuda
 
 class NFC_LBM_partition(object):
@@ -458,10 +458,15 @@ class NFC_LBM_partition(object):
           write your partition of data to the MPI data file
 
         """
+       # get data from the GPU
+        self.MacroV = self.d_MacroV.copy_to_host();
+        rho = self.MacroV[:,0];
+        ux = self.MacroV[:,1];
+        uy = self.MacroV[:,2];
+        uz = self.MacroV[:,3];
 
 
-
-        ux, uy, uz, rho = self.compute_local_data(isEven);
+        #ux, uy, uz, rho = self.compute_local_data(isEven);
 
 
         # self.offset_bytes is the number of bytes offset
@@ -831,7 +836,7 @@ class NFC_LBM_partition(object):
         self.fOdd = np.empty_like(self.fEven)
         self.ndT = np.zeros([self.total_nodes],dtype=np.int32);
         self.ssNds = np.zeros([self.total_nodes],dtype=np.int32);
-        self.MacroV = np.zeros([self.total_nodes],dtype=np.float32);
+        self.MacroV = np.zeros([self.total_nodes,4],dtype=np.float32);
         
 
     def allocate_subspace_data_arrays(self,num_ts):

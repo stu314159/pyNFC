@@ -154,9 +154,9 @@ class NFC_Halo_Data_Organizer(object):
                    self.d_buffer,self.nData);
         
         
-        for d in range(len(self.lnn_list)):
-            ln = self.lnn_list[d]; spd = self.spd_list[d];
-            f[ln,spd] = self.buffer[d]
+        #for d in range(len(self.lnn_list)):
+        #    ln = self.lnn_list[d]; spd = self.spd_list[d];
+        #    f[ln,spd] = self.buffer[d]
         
         # give this a shot
         #f[self.lnn_list[:],self.spd_list[:]]
