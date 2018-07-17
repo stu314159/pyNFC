@@ -18,7 +18,7 @@
 MAT_FILE=ssTest.mat
 
 
-Num_ts=21
+Num_ts=3
 ts_rep_freq=2
 Warmup_ts=0
 plot_freq=5

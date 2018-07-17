@@ -113,12 +113,16 @@ class NFC_LBM_partition(object):
         print "rank %d selected GPU %d of %d"%(self.rank,self.my_dev,num_gpus)
         
         # put necessary data arrays on the GPU:
-        d_fEven = cuda.to_device(self.fEven);
-        d_fOdd = cuda.to_device(self.fOdd);
-        d_ndType = cuda.to_device(self.ndT);
-        d_boundaryNL = cuda.to_device(self.bnl_l);
-        d_interiorNL = cuda.to_device(self.int_l);
-        d_adjacency = cuda.to_device(self.adjacency);
+        self.d_fEven = cuda.to_device(self.fEven);
+        self.d_fOdd = cuda.to_device(self.fOdd);
+        self.d_ndType = cuda.to_device(self.ndT);
+        self.d_boundaryNL = cuda.to_device(self.bnl_l);
+        self.d_interiorNL = cuda.to_device(self.int_l);
+        self.d_adjacency = cuda.to_device(self.adjacency);
+        self.d_MacroV = cuda.to_device(self.MacroV); # macroscopic variables
+        
+        
+        #self.TPB = 64;
         
         # note: on Hokulea, when running multiple MPI processes on a node, 
         # pushing data (to the default device) results in an error.  
@@ -220,15 +224,32 @@ class NFC_LBM_partition(object):
         
         """
         if (isEven):
+            #fIn = self.d_fEven; fOut = self.d_fOdd;
             fIn = self.fEven; fOut = self.fOdd;
         else:
+            #fIn = self.d_fOdd; fOut = self.d_fEven;
             fIn = self.fOdd; fOut = self.fEven;
             
         if listNum == 0:
             theList = self.bnl_l;
+        #    theList = self.d_boundaryNL
+        #    M = self.num_bn
         if listNum == 1:
             theList = self.int_l;
+        #    theList = self.d_interiorNL
+        #    M = self.num_in
+        
             
+        #self.lattice.process_node_list_numba(fOut,fIn,self.d_adjacency,
+        #                                     self.d_ndType, self.u_bc,
+        #                                     self.rho_lbm, self.omega, self.Cs,
+        #                                     theList, M) 
+        # need to configure a grid of threads and 
+        # launch a kernel that will process the node list.
+        #num_blocks = np.ceil(float(M)/float(self.TPB))
+        #griddim = int(num_blocks);
+        #blockdim = self.TPB
+        
         for nd in theList:
             ndType = self.ndT[nd];
             f_in = fIn[nd,:];
@@ -809,6 +830,7 @@ class NFC_LBM_partition(object):
         self.fOdd = np.empty_like(self.fEven)
         self.ndT = np.zeros([self.total_nodes],dtype=np.int32);
         self.ssNds = np.zeros([self.total_nodes],dtype=np.int32);
+        self.MacroV = np.zeros([self.total_nodes],dtype=np.float32);
         
 
     def allocate_subspace_data_arrays(self,num_ts):

@@ -5,9 +5,9 @@ class module for the Lattice class to be used with pyNFC
 
 """
 import numpy as np
-import numba
-from numba import cuda
-
+#import numba
+#from numba import cuda
+import D3Q27_numba as D3Q27
 
 class Lattice(object):
     """
@@ -199,17 +199,17 @@ class Lattice(object):
            fOut - outgoing particle density distribution for streaming (one node only)
 
         """
-        fluidNode = False; solidNode = False; inletNode = False; outletNode = False;
-        if ndType == 0:
-            fluidNode = True;
-        elif ndType == 1:
-            solidNode = True;
-        elif ndType == 2:
-            inletNode = True;
-        elif ndType == 3:
-            outletNode = True;
-        else:
-            raise ValueError("ndType must be one of 0, 1, 2, or 3")
+        #fluidNode = False; solidNode = False; inletNode = False; outletNode = False;
+        #if ndType == 0:
+        #    fluidNode = True;
+        #elif ndType == 1:
+        #    solidNode = True;
+        #elif ndType == 2:
+        #    inletNode = True;
+        #elif ndType == 3:
+        #    outletNode = True;
+        #else:
+        #    raise ValueError("ndType must be one of 0, 1, 2, or 3")
 
         rho, ux, uy, uz = self.compute_macroscopic_data(fIn)
 
@@ -505,6 +505,11 @@ class D3Q27Lattice(Lattice):
         self.constructMt();
         #self.orthogonalizeM();
         self.M = np.copy(self.Mt)
+        self.TPB = 64;
+        
+        
+        # allocate const arrays for w, ex, ey, ez, bbSpd
+        
         
         
 
@@ -654,7 +659,31 @@ class D3Q27Lattice(Lattice):
         """
         sp = [6,14,12,18,16,26,24,22,20]; bbSp = [5,11,13,15,17,19,21,23,25];
         f[sp] += f[bbSp] - fEq[bbSp];
-
+        
+        
+    def process_node_list_numba(self,fOut,fIn,MacroV,adjArray,ndType,u_bc,rho_lbm,
+                                omega, Cs, ndList,N):
+        """
+        fOut - device array where output data will be streamed
+        fIn -  device array where input data is obtained
+        MacroV - device array holding [rho, ux, uy, uz] for each lattice point
+        adjArray - device array where adjacency data is stored (for streaming)
+        ndType - device array with node type data for all nodes on the partition
+        u_bc - scalar float for velocity bc
+        rho_lbm - scalar float for density/pressure boundary condition
+        omega - scalar float for relaxation parameter
+        Cs - scalar float for turbulence model parameter
+        ndList - device array with the local node number of all nodes on the node list
+        N - integer - number of nodes on the node list
+        """
+        num_blocks = np.ceil(float(N)/float(self.TPB))
+        griddim = int(num_blocks);
+        blockdim = self.TPB
+        
+        # call my driver kernel to proces the node list.
+        D3Q27.process_node_list[griddim,blockdim](fOut,fIn,MacroV,adjArray,ndType,
+                   u_bc,rho_lbm,omega,Cs,
+                   ndList,N);
   
 if __name__=="__main__":
     """  

@@ -97,6 +97,7 @@ void D3Q27Lattice::set_outlet_bc_micro(LBM_DataHandler& f)
 void D3Q27Lattice::set_outlet_bc_macro(LBM_DataHandler& f)
 {
 	f.rho = f.rho_bc;
+        //f.ux = 0.; f.uy = 0.;
 	f.uz = -1. + (1./f.rho)*(2.*
 			(f.f[5]+f.f[11]+f.f[13]+f.f[15]+f.f[17]+f.f[19]+
 					f.f[21]+f.f[23]+f.f[25])+
