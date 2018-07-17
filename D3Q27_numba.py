@@ -155,6 +155,15 @@ def relax(f_in, f_eq, omega):
         f_in[spd] = f_in[spd] - omega*(f_in[spd] - f_eq[spd]);
         
 
+@cuda.jit('void(float32[:,:],int32[:,:],float32[:],int32)',device=True)
+def stream(fOut,adjArray,f_out,tid):
+    """
+    execute the LBM streaming operation
+    """
+    for spd in range(numSpd):
+        tgtNd = adjArray[tid,spd];
+        fOut[tgtNd,spd] = f_out[spd];
+
 @cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
 def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
     """
@@ -231,14 +240,18 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
                 regularize_boundary_nodes(f_in, f_eq, Pi1_flat,Qflat,w);
             compute_strain_tensor(S,ex,ey,ez,f_in,f_eq);
             omega_t = apply_turbulence_model(omega,Cs,S);
-            relax(f_in,f_eq,omega_t);
+            f_out = relax(f_in,f_eq,omega_t);
         
+            
         
+        # save macroscopic dependent variables
         MacroV[tid,0] = rho;
         MacroV[tid,1] = ux;
         MacroV[tid,2] = uy;
         MacroV[tid,3] = uz;
         
+        # stream data to neighbors in the fOut array
+        stream(fOut,adjArray,f_out,tid);
 
 
 
