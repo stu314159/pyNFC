@@ -132,6 +132,20 @@ def compute_strain_tensor(S,ex,ey,ez,f_in,f_eq):
             for j in range(3):
                 S[i,j] += e[i]*e[j]*(f_in[spd] - f_eq[spd]);
 
+
+@cuda.jit('float32(float32,float32,float32[:,:])',device=True)
+def apply_turbulence_model(omega,Cs,S):
+    """
+    1-parameter Smagorinsky-type turbulence model.  (needs validation)
+    """
+    nu = ((1./omega) - 0.5)*3.0;
+    P = np.sqrt(S[0,0]**2 + S[1,1]**2 + S[2,2]**2 + 
+                2.0*(S[0,1]**2 + S[0,2]**2 + S[1,2]**2));
+    P *= Cs; P = np.sqrt(P + nu**2) - nu;
+    nu_e = P/6.;
+    return 1./(3.*(nu+nu_e)+0.5)
+
+
 @cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
 def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
     """
@@ -207,6 +221,7 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qfla
                 compute_Pi1_flat(Pi1_flat,f_in,f_eq,Qflat);
                 regularize_boundary_nodes(f_in, f_eq, Pi1_flat,Qflat,w);
             compute_strain_tensor(S,ex,ey,ez,f_in,f_eq);
+            omega_t = apply_turbulence_model(omega,Cs,S);
         
         
         MacroV[tid,0] = rho;
