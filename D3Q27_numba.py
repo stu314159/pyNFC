@@ -89,22 +89,24 @@ def set_outlet_bc_macro(f,rho):
     return uz;
         
 
-@cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,int32[:],int32)')
-def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,theList,N):
+@cuda.jit('void(float32[:,:],float32[:,:],float32[:,:],int32[:,:],int32[:],float32,float32,float32,float32,float32[:,:],int32[:],int32)')
+def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,Qflat27,theList,N):
     """
     a D3Q27-specific kernel to process LBM nodes
     """
-    ex = cuda.shared.array(27,dtype=numba.float32);
-    ey = cuda.shared.array(27,dtype=numba.float32);
-    ez = cuda.shared.array(27,dtype=numba.float32);
-    w = cuda.shared.array(27,dtype=numba.float32);
-    bbSpd = cuda.shared.array(27,dtype=numba.int32);
+    #ex = cuda.shared.array(27,dtype=numba.float32);
+    #ey = cuda.shared.array(27,dtype=numba.float32);
+    #ez = cuda.shared.array(27,dtype=numba.float32);
+    #w = cuda.shared.array(27,dtype=numba.float32);
+    #bbSpd = cuda.shared.array(27,dtype=numba.int32);
+    #Qflat = cuda.shared.array((27,9),dtype=numba.float32);
     
-    ex_c = cuda.const.array_like(ex27);
-    ey_c = cuda.const.array_like(ey27);
-    ez_c = cuda.const.array_like(ez27);
-    w_c = cuda.const.array_like(w27);
-    bbSpd_c = cuda.const.array_like(bbSpd27);
+    ex = cuda.const.array_like(ex27);
+    ey = cuda.const.array_like(ey27);
+    ez = cuda.const.array_like(ez27);
+    w = cuda.const.array_like(w27);
+    bbSpd = cuda.const.array_like(bbSpd27);
+    Qflat = cuda.const.array_like(Qflat27)
     
     
 # figure out which thread I am...
@@ -120,13 +122,15 @@ def process_node_list(fOut,fIn,adjArray,MacroV,ndType,u_bc,rho_lbm,omega,Cs,theL
         for i in range(27):
             f_in[i] = fIn[tid,i];
             
-        # load constant data into shared arrays
-        if (tx < 27):
-            ex[tx] = ex_c[tx];
-            ey[tx] = ey_c[tx];
-            ez[tx] = ez_c[tx];
-            w[tx] = w_c[tx];
-            bbSpd[tx] = bbSpd_c[tx];
+        ## load constant data into shared arrays
+        #if (tx < 27):
+        #    ex[tx] = ex_c[tx];
+        #    ey[tx] = ey_c[tx];
+        #    ez[tx] = ez_c[tx];
+        #    w[tx] = w_c[tx];
+        #    bbSpd[tx] = bbSpd_c[tx];
+        #    for s in range(9):
+        #        Qflat[tx,s] = Qflat_c[tx,s]
         
         # compute macroscopic data
         rho = compute_rho(f_in);

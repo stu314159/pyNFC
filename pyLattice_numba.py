@@ -662,7 +662,7 @@ class D3Q27Lattice(Lattice):
         
         
     def process_node_list_numba(self,fOut,fIn,MacroV,adjArray,ndType,u_bc,rho_lbm,
-                                omega, Cs, ndList,N):
+                                omega, Cs,Qflat, ndList,N):
         """
         fOut - device array where output data will be streamed
         fIn -  device array where input data is obtained
@@ -683,7 +683,7 @@ class D3Q27Lattice(Lattice):
         # call my driver kernel to proces the node list.
         D3Q27.process_node_list[griddim,blockdim](fOut,fIn,MacroV,adjArray,ndType,
                    u_bc,rho_lbm,omega,Cs,
-                   ndList,N);
+                   ndList,Qflat,N);
   
 if __name__=="__main__":
     """  

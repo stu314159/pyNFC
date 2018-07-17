@@ -120,6 +120,7 @@ class NFC_LBM_partition(object):
         self.d_interiorNL = cuda.to_device(self.int_l);
         self.d_adjacency = cuda.to_device(self.adjacency);
         self.d_MacroV = cuda.to_device(self.MacroV); # macroscopic variables
+        self.d_Qflat = cuda.to_device(self.lattice.Qflat);
         
         
         #self.TPB = 64;
@@ -240,10 +241,10 @@ class NFC_LBM_partition(object):
         #    M = self.num_in
         
             
-        #self.lattice.process_node_list_numba(fOut,fIn,self.d_adjacency,
+        #self.lattice.process_node_list_numba(fOut,fIn,self.d_MacroV,self.d_adjacency,
         #                                     self.d_ndType, self.u_bc,
         #                                     self.rho_lbm, self.omega, self.Cs,
-        #                                     theList, M) 
+        #                                     self.d_Qflat,theList, M) 
         # need to configure a grid of threads and 
         # launch a kernel that will process the node list.
         #num_blocks = np.ceil(float(M)/float(self.TPB))
