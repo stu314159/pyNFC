@@ -16,6 +16,9 @@ import numpy as np
 import scipy.io
 import math
 import argparse
+import time
+
+start = time.time()
 
 parser = argparse.ArgumentParser(prog='pyNFC_partition.py',
                                  description='lattice partitioning script for pyNFC')
@@ -61,16 +64,18 @@ XX = np.reshape(X,int(numEl))
 YY = np.reshape(Y,int(numEl))
 ZZ = np.reshape(Z,int(numEl))
 
-
 print 'There are %d nodes listed in ndType'%len(ndType)
 print 'Writing those to file'
 ndTypeFileName = 'ndType.lbm'
 ndTypeFile = open(ndTypeFileName,'w')
-for i in range(len(ndType)):
-    nT = int(ndType[i]);
-    ndTypeFile.write('%i \n'%nT)
+
+ndTypeArray = np.asarray(ndType,dtype=np.int64)
+ndTypeSize = ndTypeArray.shape[0]
+
+for i in range(ndTypeSize):
+    ndTypeFile.write('%i \n' % ndType[i])
 ndTypeFile.close()
-#print time.time()-start
+print time.time()-start
 
 if lattice_type == 'D3Q15':
    lat = pp.D3Q15Lattice(int(Nx),int(Ny),int(Nz))
@@ -82,17 +87,18 @@ else:
 
 print "initializing the adjacency list"
 lat.initialize_adjDict();
-#print time.time()-start
+print time.time()-start
 print "creating %s partition for %d processes" % (partition_style, numProcs)
 lat.set_Partition(numParts= numProcs, style = partition_style)
-#print time.time()-start
+print time.time()-start
 print "computing cutsize"
 lat.compute_cutSize()
-#print time.time()-start
+print time.time()-start
 print "cut size for %s partition = %g" % (partition_style, lat.get_cutSize())
-#print "writing vtk file for %s partition" % partition_style
-#partition_vtk_filename = "partition_%s.vtk" % partition_style
-#lat.partition.write_vtk(partition_vtk_filename)
-# print "writing %s partition to disk" % partition_style
-# lat.partition.write_partition()
-# print time.time()-start
+# print "writing vtk file for %s partition" % partition_style
+# partition_vtk_filename = "partition_%s.vtk" % partition_style
+# lat.partition.write_vtk(partition_vtk_filename)
+if partition_style == 'metis':
+    print "writing %s partition to disk" % partition_style
+    lat.partition.write_partition()
+    print time.time()-start

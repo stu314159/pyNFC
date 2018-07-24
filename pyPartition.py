@@ -6,6 +6,8 @@ to the pre-processing libraries.  The output will be a list of length Nx*Ny*Nz
 containing the integer of which partition each lattice point lives.
 
 """
+import numpy as np
+#import numba
 import partition_suggestion as ps
 import partition_compare as pc
 from vtkHelper import saveStructuredPointsVTK_ascii as writeVTK
@@ -17,7 +19,6 @@ except ImportError:
   NO_PYMETIS=1
 
 import PartitionHelper as PH
-import numpy as np
 import sys
 
 import time
@@ -66,23 +67,26 @@ class Lattice(object):
         return self.Nx*self.Ny*self.Nz
 
     def initialize_adjDict(self):
-        #self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
-        self.partHelper = PH.PartitionHelper(self.Nx,self.Ny,self.Nz,self.get_numSpd());
-        self.adjDict = {}
-        self.partHelper.setAdjacency(self.adjDict); # now self.adjDict is populated
+        self.adjDict = pc.set_adjacency(self.Nx,self.Ny,self.Nz,self.ex,self.ey,self.ez)
+        #self.partHelper = PH.PartitionHelper(self.Nx,self.Ny,self.Nz,self.get_numSpd());
+        #self.adjDict = {}
+        #self.partHelper.setAdjacency(self.adjDict); # now self.adjDict is populated
         # hopefully this took less time than before.
 
     def compute_cutSize(self):
-        if self.adjDict == None: # verify that the adjacency list has been initialized
-            raise ValueError('adjacency list must be initialized before getting cut size')
-        else:
-            self.cutSize = pc.count_cuts(self.adjDict,self.partition.get_partition()) #yeah -- looks overly complicated
+
+        self.cutSize = pc.count_cuts(self.adjDict,self.partition.get_partition()) #yeah -- looks overly complicated
         return self.cutSize
+        # if self.adjDict == None: # verify that the adjacency list has been initialized
+        #     raise ValueError('adjacency list must be initialized before getting cut size')
+        # else:
+        #     self.cutSize = pc.count_cuts(self.adjDict,self.partition.get_partition()) #yeah -- looks overly complicated
+        # return self.cutSize
 
     def get_cutSize(self):
         return self.cutSize
 
-    def set_Partition(self, numParts = 1, numTrials = 2000, style = '1D'):
+    def set_Partition(self, numParts = 1, numTrials = 10000, style = '1D'):
         """
           numParts = number of partitions
           numTrials = number of random 3D partition permutations should be tested
@@ -145,7 +149,7 @@ class Partitioner:
      the class that will do the work to select and obtain a partition
     """
 
-    def __init__(self,Nx,Ny,Nz,numParts,adjList,numTrials = 100000, style = '1D'):
+    def __init__(self,Nx,Ny,Nz,numParts,adjList,numTrials = 10000, style = '1D'):
         """
           Nx - number of lattice points in the x-direction (int)
           Ny - number of lattice points in the y-direction (int)
@@ -168,9 +172,11 @@ class Partitioner:
             self.px = 1; self.py = 1; self.pz = self.numParts;
         elif style=='3D':
             print "part advisor"
-            [self.px,self.py,self.pz] = ps.part_advisor(self.Nx,self.Ny,self.Nz,
-                                                        self.numParts,
-                                                        self.numTrials)
+            # [self.px,self.py,self.pz] = ps.part_advisor(self.Nx,self.Ny,self.Nz,
+            #                                             self.numParts,
+            #                                             self.numTrials)
+            [self.px,self.py,self.pz] = ps.part_advisor_bf(self.Nx,self.Ny,self.Nz,
+                                                        self.numParts)
             print time.time()-start
 
         if (style == '1D' or style == '3D'):
@@ -180,15 +186,18 @@ class Partitioner:
             print time.time()-start
 
         else:
-          if (NO_PYMETIS==1):
-            print "pymetis partitioning selected but not available"
-            sys.exit()
-          [cuts,  self.part_vert] = part_graph(self.numParts,self.adjList)
+            if (NO_PYMETIS==1):
+                print "pymetis partitioning selected but not available"
+                sys.exit()
+            self.adjList_dict = self.numpy_to_dict(self.adjList)
+            [cuts, self.part_vert] = part_graph(self.numParts,self.adjList_dict)
 
     def get_partition(self):
         """
-          give access to partition
+          give access to partition as a numpy array
         """
+        if isinstance(self.part_vert,list):
+            self.part_vert = np.asarray(self.part_vert,dtype=np.int32)
         return self.part_vert[:]
 
     def get_partition_sizes(self):
@@ -197,10 +206,22 @@ class Partitioner:
         """
         return [self.px, self.py, self.pz]
 
+    def numpy_to_dict(self,numpyArray):
+        """
+          give access to partition sizes
+        """
+        dictionary={}
+        N = numpyArray.shape[0]
+        for i in range(N):
+            dictionary[i]=numpyArray[i].astype(np.int64)
+        return dictionary
+
     def write_vtk(self,file_name = 'partition_pa.vtk'):
         """
           write out a vtk file to allow visualization of the partitioning
         """
+        if not isinstance(self.part_vert,list):
+            self.part_vert = self.part_vert.tolist()
         dims = [self.Nx, self.Ny, self.Nz]
         origin = [0., 0., 0.]
         spacing = [0.1, 0.1, 0.1] #<-- no need for this to correspond to actual physical spacing
@@ -210,12 +231,14 @@ class Partitioner:
         """
          write the partition information to parts.lbm
         """
-        print "writing to disk"
+        if isinstance(self.part_vert,list):
+            self.part_vert = np.asarray(self.part_vert,dtype=np.int32)
+        N = self.part_vert.shape[0]
+
         parts = open('parts.lbm','w')
-        for p in self.part_vert:
-            parts.write('%d \n'% p)
+        for p in range(N):
+            parts.write('%d \n'% self.part_vert[p])
         parts.close()
-        print "done writing to disk"
 
 
 if __name__=="__main__":
@@ -230,7 +253,7 @@ if __name__=="__main__":
     lat15.initialize_adjDict();
     numProcs = 64;
     print "setting the partition"
-    lat15.set_Partition(numParts = numProcs,numTrials = 8000,style = '3D')
+    lat15.set_Partition(numParts = numProcs,numTrials = 10000,style = '3D')
 
     print "compute cut size"
     lat15.compute_cutSize()

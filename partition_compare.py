@@ -7,9 +7,11 @@ functions as well as using pymetis.
 Try to see why one might be better than the other.
 """
 
-import math
 #import argparse
+import math
 import numpy as np
+import numba
+#from numba import cuda
 
 NO_PYMETIS=0
 try:
@@ -89,6 +91,7 @@ def set_geometric_partition(Nx,Ny,Nz,px,py,pz):
                         break
     return part_vert
 
+@numba.jit(nopython=False,parallel=True,fastmath=True)
 def set_geometric_partition_improved(Nx,Ny,Nz,px,py,pz):
     """
     Nx = integer, number of lattice points in the x direction
@@ -100,30 +103,35 @@ def set_geometric_partition_improved(Nx,Ny,Nz,px,py,pz):
     returns part_vert for a geometric partition
     """
     #size of partitions in x y z direction
-    xpartsize = []
-    ypartsize = []
-    zpartsize = []
+    xpartsize = np.zeros(px,dtype=np.int32)
+    ypartsize = np.zeros(py,dtype=np.int32)
+    zpartsize = np.zeros(pz,dtype=np.int32)
     bx = Nx/px; by = Ny/py; bz = Nz/pz # block x,y and z minimum sizes
 
     for z in range(pz):
-        zpartsize.append(bz)
         if ((Nz%pz)>z):
-          zpartsize[z]+=1
+            zpartsize[z] = bz + 1
+        else:
+            zpartsize[z] = bz
 
     for y in range(py):
-        ypartsize.append(by)
         if ((Ny%py)>y):
-          ypartsize[y]+=1
+            ypartsize[y] = by + 1
+        else:
+            ypartsize[y] = by
 
     for x in range(px):
-        xpartsize.append(bx)
         if ((Nx%px)>x):
-          xpartsize[x]+=1
+            xpartsize[x] = bx + 1
+        else:
+            xpartsize[x] = bx
 
-    part_vert = []
+    part_vert = np.zeros(shape=Nz*Ny*Nx,dtype=np.int32)
+    #part_vert = []
     parts = open('parts.lbm','w')
 
     #write partitions
+    index = 0
     for z in range(pz):
         zpartition = z * py * px
         for k in range(zpartsize[z]):
@@ -134,12 +142,15 @@ def set_geometric_partition_improved(Nx,Ny,Nz,px,py,pz):
                         xpartition = x
                         for i in range(xpartsize[x]):
                             partition = xpartition + ypartition + zpartition
-                            part_vert.append(partition)
+                            part_vert[index] = partition
+                            #part_vert.append(partition)
                             parts.write('%d \n'% partition)
+                            index = index + 1
 
     parts.close()
     return part_vert
 
+@numba.jit(nopython=True,parallel=True,fastmath=True)
 def count_cuts(adj,vert_part):
     """
     adj is an iterable object containing an adjacency matrix for a logically graph-like object
@@ -147,13 +158,17 @@ def count_cuts(adj,vert_part):
 
     returns cut - integer with the number of edges that cross partitions
     """
-    edge_cuts = set()
 
-    for i in adj:
+    edge_cuts = set()
+    adjSize = adj.shape[0]
+    ngbsSize = adj.shape[1]
+
+    for i in range(adjSize):
         my_part = vert_part[i]
         ngbs = adj[i]
-        for n in ngbs:
+        for j in range(ngbsSize):
             #ngb_part = vert_part[n]
+            n = int(ngbs[j])
             if (vert_part[n]!= my_part):
                 min_vert = min(i,n)
                 max_vert = max(i,n)
@@ -161,6 +176,7 @@ def count_cuts(adj,vert_part):
                 edge_cuts.add(cut_edge)
     return len(edge_cuts)
 
+@numba.jit(nopython=False,parallel=True,fastmath=True)
 def set_adjacency(Nx,Ny,Nz,ex,ey,ez):
     """
     Nx = num of lattice points in X-direction
@@ -173,7 +189,8 @@ def set_adjacency(Nx,Ny,Nz,ex,ey,ez):
     returns adjDict = dictionary where the keys are the global lattice point numbers
     and the values are lists of neighboring lattice points
     """
-    adjDict = {}
+    adjDict = np.zeros(shape=(Nx*Ny*Nz,len(ex)),dtype=np.int64)
+    #adjDict = {}
 
     for z in range(Nz):
         for y in range(Ny):
@@ -183,10 +200,10 @@ def set_adjacency(Nx,Ny,Nz,ex,ey,ez):
                     dx = int(ex[spd]); dy = int(ey[spd]); dz = int(ez[spd]);
                     tx = (x+dx)%Nx; ty= (y+dy)%Ny; tz = (z+dz)%Nz
                     tid = tx+ty*Nx+tz*Nx*Ny
-                    adjDict.setdefault(gid,[]).append(tid)
+                    adjDict[gid][spd] = tid
+                    #adjDict.setdefault(gid,[]).append(tid)
 
     return adjDict
-
 
 if __name__=='__main__':
     Ny_divs = 7
