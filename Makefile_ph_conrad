@@ -5,7 +5,6 @@ PYTHON_LIB=/p/home/sblair/anaconda2/lib
 BOOST_PYLIB = py27
  
 # location of the Boost Python include files and library
- 
 BOOST_INC = /app/COST/boost/1.58.0/gnu/include
 BOOST_LIB = /app/COST/boost/1.58.0/gnu/lib
 
@@ -15,18 +14,14 @@ FILE=PartitionHelper
 EXT=cpp
 
 # varibles that work on local laptopt
-#MPI_CC=pgc++
-##MPI_FLAGS=-fast  -fPIC -std=c++11 -acc -ta=tesla:cc50
-#MPI_FLAGS=-fast -fPIC -std=c++11 -mp=nonuma -Minfo
 MPI_CC=g++
 MPI_FLAGS=-O3 -fopenmp -std=c++11 -fPIC
-
 PYTHON_INCLUDE = /home/stu/anaconda2/include/python$(PYTHON_VERSION)
 PYTHON_LIB=/home/stu/anaconda2/lib
 BOOST_INC = /usr/include
 BOOST_LIB = /usr/lib/x86_64-linux-gnu
 
-# for compilation on SHEPARD/CONRAD with PGI or CRAY compilers
+# for compilation on DOD HPC Machines with PGI, CRAY, Intel or GNU compilers
 ifeq ($(PE_ENV),PGI)
 	MPI_CC=CC
 	MPI_FLAGS= -std=c++11 -fast -fPIC \
