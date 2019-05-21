@@ -25,6 +25,7 @@ dt=0.004
 Cs=5
 Restart_flag=$8
 TimeAvg_flag=$9
+SS_data_flag=0
 
 if [ "$7" = "1" ]; then
 aprun -n 1 ./wmb_geom.py $1
@@ -37,7 +38,7 @@ fi
 
 aprun -n 1 ./pyNFC_preprocess.py $MAT_FILE $2 $3 $4 $5 \
 $Num_ts $ts_rep_freq $Warmup_ts $plot_freq $Re $dt $Cs $Restart_flag \
-$TimeAvg_flag
+$TimeAvg_flag $SS_data_flag
 
 export OMP_NUM_THREADS=$6
 
