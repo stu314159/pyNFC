@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-##!/home/users/sblair/anaconda2/bin/python
-##!/usr/bin/env python2
 
 # -*- coding: utf-8 -*-
 """
@@ -45,7 +43,7 @@ myChan = fc.FluidChannel(Lx_p=aLx_p,Ly_p=aLy_p,Lz_p=aLz_p,obst=myObst,
 myChan.write_mat_file('wall_mounted_brick');
 
 # write vtk of boundary conditions so you can visualize them
-#myChan.write_bc_vtk();
+myChan.write_bc_vtk();
 
 myChan.set_pRef_indx(aLx_p/2.,aLy_p/2.,0.95*aLz_p);
 #print "selected pressure reference is node number %d \n"%myChan.pRef_indx

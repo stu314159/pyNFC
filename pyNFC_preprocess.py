@@ -1,6 +1,4 @@
 #!/usr/bin/env python 
-##!/home/users/sblair/anaconda2/bin/python
-##!/p/home/sblair/anaconda2/bin/python
 
 #pyNFC_preprocess.py
 """
@@ -10,10 +8,6 @@
 
 """
 
-#import FluidChannel as fc
-#import pyPartition as pp
-#from pymetis import part_graph #<-- requires that the PrgEnv-intel module be selected
-#import numpy as np
 import scipy.io
 import math
 import argparse
@@ -61,11 +55,6 @@ Restart_flag = args.Restart_flag
 TimeAvg_flag=args.TimeAvg_flag
 SubspaceData_flag = args.SubspaceData_flag
 
-#numProcs = 6  #<--- for this version, I will need to know how many partitions I intend to create
-
-# --- do input file processing as with genInput.py - will also add in the partitioning information ---- 
-# ---- this means, I will need to know the number of processes in advance, I guess ----- though
-# ---- this could alternatively be done from the pyNFC code...think about that...
 #----You should not have to edit anything below this line -------------------
 
 geom_input = scipy.io.loadmat(geom_filename)
