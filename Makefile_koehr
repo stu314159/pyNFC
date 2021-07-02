@@ -1,0 +1,40 @@
+# location of the Python header files
+PYTHON_VERSION = 2.7
+PYTHON_INCLUDE = /p/app/COST/python/2.7.9/gnu/include/python$(PYTHON_VERSION)
+PYTHON_LIB=/p/app/COST/python/2.7.9/gnu/lib
+BOOST_PYLIB = py27
+ 
+# location of the Boost Python include files and library
+ 
+BOOST_INC = /p/app/COST/boost/1.58.0/gnu/include
+BOOST_LIB = /p/app/COST/boost/1.58.0/gnu/lib
+MPI4PY_INC=/p/app/COST/mpi4py/3.0.0/gnu/sgimpt/python2.7/lib/python2.7/site-packages/mpi4py/include
+# compile mesh classes
+TARGET = LBM_Interface
+FILE=PyLBM_Interface
+EXT=cpp
+
+MPI_CC=mpicc
+MPI_FLAGS= -std=c++11 -O3 -Wall -fPIC -fopenmp
+MY_LIBS= -lboost_python-$(BOOST_PYLIB) -lpython$(PYTHON_VERSION)
+
+SOURCES= Lattice.cpp D3Q15Lattice.cpp D3Q19Lattice.cpp D3Q27Lattice.cpp LBM_DataHandler.cpp  \
+	LBM_HaloData.cpp LBM_HaloDataOrganizer.cpp
+OBJECTS= Lattice.o  D3Q15Lattice.o D3Q19Lattice.o D3Q27Lattice.o LBM_DataHandler.o \
+	LBM_HaloData.o LBM_HaloDataOrganizer.o
+	 
+
+$(FILE).so: $(FILE).o $(OBJECTS)
+	$(MPI_CC) -O3 -fopenmp -std=c++11 -shared -Wl,--export-dynamic $(FILE).o -I$(MPI4PY_INC) -I$(BOOST_INC) -L$(MY_LIBS) -L$(BOOST_LIB)  -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) -o $(TARGET).so $(OBJECTS)
+ 
+$(FILE).o: $(FILE).cpp
+	$(MPI_CC) -O3 -fopenmp -std=c++11 -I$(MPI4PY_INC) -I$(PYTHON_INCLUDE) -I$(BOOST_INC)  -fPIC -c $(FILE).$(EXT)
+
+%.o:%.cpp
+	$(MPI_CC) $(MPI_FLAGS)  -c $^
+
+clean:
+	rm -f *.o *.so $(TARGET) *~
+
+
+
